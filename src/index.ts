@@ -10,15 +10,28 @@ export class Mapper<TSource, TTarget> {
   private compile(mappingConfig: MappingConfiguration<TSource, TTarget>): (source: TSource) => TTarget {
     const body = Object.entries(mappingConfig).map(([targetKey, configValue]) => {
       if (typeof configValue === 'function') {
-        return `target['${targetKey}'] = (${configValue.toString()})(source);`;
+        return `try {
+            target['${targetKey}'] = (${configValue.toString()})(source);
+          } catch(error) {
+            throw new Error("Mapping error at field '${targetKey}': " + error.message);
+          }
+        `;
       } else if (configValue instanceof Mapper) {
-        return `target['${targetKey}'] = ${configValue.transformFunction.toString()}(source['${targetKey}']);`;
+        return `try {
+            target['${targetKey}'] = ${configValue.transformFunction.toString()}(source['${targetKey}']);
+          } catch(error) {
+            throw new Error("Mapping error at field '${targetKey}': " + error.message);
+          }
+        `;
       } else {
-        return `target['${targetKey}'] = source['${configValue}'];`;
+        return `try {
+            target['${targetKey}'] = source['${configValue}'];
+          } catch(error) {
+            throw new Error("Mapping error at field '${targetKey}' from source field '${configValue}': " + error.message);
+          }
+        `;
       }
     }).join("\n");
-
-    // console.log('body: ', body);
 
     const func = new Function('source', `const target = {}; ${body} return target;`);
     return func as (source: TSource) => TTarget;
