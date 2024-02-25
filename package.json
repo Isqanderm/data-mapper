@@ -1,0 +1,32 @@
+{
+  "name": "onion-mapper",
+  "version": "0.0.1",
+  "description": "Mapper for Onion project",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc",
+    "clean": "rm -rf build",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Isqanderm/onion-mapper.git"
+  },
+  "keywords": [
+    "Mapper",
+    "Onion",
+    "Onion",
+    "Architecture"
+  ],
+  "author": "Isqanderm",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Isqanderm/onion-mapper/issues"
+  },
+  "homepage": "https://github.com/Isqanderm/onion-mapper#readme",
+  "devDependencies": {
+    "prettier": "^3.2.5",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.3"
+  }
+}
