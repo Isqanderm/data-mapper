@@ -1,6 +1,6 @@
 {
   "name": "onion-mapper",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Mapper for Onion package",
   "main": "build/index.js",
   "scripts": {

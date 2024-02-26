@@ -5,6 +5,8 @@ export class Mapper<TSource, TTarget> {
 
   constructor(mappingConfig: MappingConfiguration<TSource, TTarget>) {
     this.transformFunction = this.compile(mappingConfig);
+
+    this.execute = this.execute.bind(this);
   }
 
   private getValueByPath(configValue: string): string {
