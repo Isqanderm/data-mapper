@@ -11,7 +11,7 @@ export type DeepPath<Source, K extends keyof Source> = K extends string
   : never;
 
 export type MappingConfiguration<TSource, TTarget> = {
-  [P in keyof TTarget]?:
+  [P in keyof TTarget]:
     | keyof TSource
     | Transformer<TSource, TTarget[P]>
     | Mapper<any, any>
