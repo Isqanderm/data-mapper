@@ -1,9 +1,14 @@
-import { MappingConfiguration } from "./interface";
+import { DefaultValues, MappingConfiguration } from "./interface";
 
 export class Mapper<TSource, TTarget> {
   private readonly transformFunction: (source: TSource) => TTarget;
+  private readonly defaultValues?: DefaultValues<TTarget>;
 
-  constructor(mappingConfig: MappingConfiguration<TSource, TTarget>) {
+  constructor(
+    mappingConfig: MappingConfiguration<TSource, TTarget>,
+    defaultValues?: DefaultValues<TTarget>,
+  ) {
+    this.defaultValues = defaultValues;
     this.transformFunction = this.compile(mappingConfig);
 
     this.execute = this.execute.bind(this);
@@ -24,7 +29,8 @@ export class Mapper<TSource, TTarget> {
       .map(([targetKey, configValue]) => {
         if (typeof configValue === "function") {
           return `try {
-            target['${targetKey}'] = (${configValue.toString()})(source);
+            const result = (${configValue.toString()})(source);
+            result === undefined ? void 0 : target['${targetKey}'] = result;
           } catch(error) {
             throw new Error("Mapping error at field '${targetKey}': " + error.message);
           }
@@ -38,7 +44,8 @@ export class Mapper<TSource, TTarget> {
         `;
         } else if (typeof configValue === "string") {
           return `try {
-            target['${targetKey}'] = source${this.getValueByPath(configValue)};
+            const result = source${this.getValueByPath(configValue)};
+            result === undefined ? void 0 : target['${targetKey}'] = result;
           } catch(error) {
             throw new Error("Mapping error at field '${targetKey}' from source field '${configValue}': " + error.message);
           }
@@ -49,8 +56,9 @@ export class Mapper<TSource, TTarget> {
 
     const func = new Function(
       "source",
-      `const target = {}; ${body} return target;`,
+      `const target = ${this.defaultValues ? JSON.stringify(this.defaultValues) : "{}"}; ${body} return target;`,
     );
+
     return func as (source: TSource) => TTarget;
   }
 

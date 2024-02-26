@@ -1,5 +1,15 @@
 import type { Mapper } from "./index";
 
+export type ExcludeMapperProperties<T> = {
+  [Key in keyof T as T[Key] extends Mapper<any, any> ? never : Key]: T[Key];
+};
+
+export type Nullable<T> = {
+  [Key in keyof T]: T[Key] | null;
+};
+
+export type DefaultValues<T> = Partial<Nullable<ExcludeMapperProperties<T>>>;
+
 export type Transformer<T, TResult> = (source: T) => TResult;
 
 export type DeepPath<Source, K extends keyof Source> = K extends string
@@ -15,5 +25,5 @@ export type MappingConfiguration<TSource, TTarget> = {
     | keyof TSource
     | Transformer<TSource, TTarget[P]>
     | Mapper<any, any>
-    | DeepPath<TSource, keyof TSource> ;
+    | DeepPath<TSource, keyof TSource>;
 };

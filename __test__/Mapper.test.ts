@@ -2,8 +2,8 @@ import { Mapper } from "../src";
 
 class Address {
   constructor(
-    public street: string,
     public city: string,
+    public street: string,
   ) {}
 }
 
@@ -164,5 +164,68 @@ describe("Mapper", () => {
         person.contactInfo.address.street,
       );
     });
+  });
+
+  it("maps simple properties with default values", () => {
+    class User {
+      constructor(
+        public name: string,
+        public lastName?: string,
+      ) {}
+    }
+
+    interface UserDTO {
+      firstName: string;
+      lastName: string;
+    }
+
+    const userMapper = new Mapper<User, UserDTO>(
+      {
+        firstName: "name",
+        lastName: "lastName",
+      },
+      { lastName: null },
+    );
+
+    const user = new User("John Doe");
+    const userDTO = userMapper.execute(user);
+
+    expect(userDTO.firstName).toBe(user.name);
+    expect(userDTO.lastName).toBe(null);
+  });
+
+  it("should correctly map using a nested mapper with default values", () => {
+    class Address {
+      constructor(
+        public city: string,
+        public street?: string,
+      ) {}
+    }
+
+    class User {
+      constructor(
+        public name: string,
+        public address: Address,
+      ) {}
+    }
+
+    const addressMapper = new Mapper<Address, AddressDTO>(
+      {
+        cityName: "city",
+        streetName: "street",
+      },
+      { streetName: "AnyStreet" },
+    );
+    const userMapper = new Mapper<User, UserDTO>({
+      fullName: "name",
+      address: addressMapper,
+    });
+
+    const user = new User("John Doe", new Address("Anytown"));
+    const userDTO = userMapper.execute(user);
+
+    expect(userDTO.fullName).toEqual(user.name);
+    expect(userDTO.address.cityName).toEqual(user.address.city);
+    expect(userDTO.address.streetName).toEqual('AnyStreet');
   });
 });
