@@ -28,7 +28,7 @@ const employee = new Employee(
   "john.doe@example.com",
   30,
 );
-const employeeDTO = employeeMapper.map(employee);
+const employeeDTO = employeeMapper.execute(employee);
 
 console.log(employeeDTO);
 // { fullName: 'John Doe', emailAddress: 'john.doe@example.com', isAdult: true }

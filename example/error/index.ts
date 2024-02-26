@@ -26,7 +26,7 @@ source.validField = "Some valid data";
 source.problematicField = 123; // it`s Number, not String
 
 try {
-  const target = mapper.map(source);
+  const target = mapper.execute(source);
   console.log(target);
 } catch (error) {
   const e = error as Error;

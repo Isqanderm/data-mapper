@@ -42,7 +42,7 @@ const user = {
   },
 };
 
-const userDTO = userMapper.map(user);
+const userDTO = userMapper.execute(user);
 console.log(userDTO);
 // {
 //   fullName: "John Doe",

@@ -46,7 +46,7 @@ describe('Mapper Performance Tests', () => {
     });
 
     const start = performance.now();
-    const simpleUserDTOs = simpleUsers.map(user => simpleUserMapper.map(user));
+    const simpleUserDTOs = simpleUsers.map(user => simpleUserMapper.execute(user));
     const end = performance.now();
 
     console.log(`Mapping ${N} SimpleUser objects took ${end - start} ms`);
@@ -67,7 +67,7 @@ describe('Mapper Performance Tests', () => {
     });
 
     const start = performance.now();
-    const advancedUserDTOs = advancedUsers.map(user => advancedUserMapper.map(user));
+    const advancedUserDTOs = advancedUsers.map(user => advancedUserMapper.execute(user));
     const end = performance.now();
 
     console.log(`Mapping ${N} nested objects took ${end - start} ms`);
@@ -85,7 +85,7 @@ describe('Mapper Performance Tests', () => {
     });
 
     const start = performance.now();
-    const advancedUserDTOs = advancedUsers.map(user => advancedUserMapper.map(user));
+    const advancedUserDTOs = advancedUsers.map(user => advancedUserMapper.execute(user));
     const end = performance.now();
 
     console.log(`Mapping ${N} AdvancedUser objects took ${end - start} ms`);

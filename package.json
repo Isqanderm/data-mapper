@@ -1,11 +1,13 @@
 {
   "name": "onion-mapper",
   "version": "0.0.1",
-  "description": "Mapper for Onion project",
-  "main": "index.js",
+  "description": "Mapper for Onion package",
+  "main": "build/index.js",
   "scripts": {
     "build": "tsc",
+    "build:watch": "tsc --watch",
     "clean": "rm -rf build",
+    "prepublishOnly": "npm run clean && npm run test && npm run build",
     "test": "jest"
   },
   "repository": {
@@ -13,12 +15,18 @@
     "url": "git+https://github.com/Isqanderm/onion-mapper.git"
   },
   "keywords": [
-    "Mapper",
-    "Onion",
-    "Onion",
-    "Architecture"
+    "onion",
+    "architecture",
+    "dependency injection",
+    "data mapping"
   ],
-  "author": "Isqanderm",
+  "files": [
+    "build",
+    "src",
+    "README.md",
+    "LICENSE"
+  ],
+  "author": "Isqanderm <aleksandr.melnik.personal@gmail.com> (https://www.linkedin.com/in/isqander-melnik)",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/Isqanderm/onion-mapper/issues"

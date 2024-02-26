@@ -24,7 +24,7 @@ const mappingConfig: MappingConfiguration<Employee, EmployeeDTO> = {
 const employeeMapper = new Mapper<Employee, EmployeeDTO>(mappingConfig);
 
 const employee = new Employee("John Doe", "john.doe@example.com", 30);
-const employeeDTO = employeeMapper.map(employee);
+const employeeDTO = employeeMapper.execute(employee);
 
 console.log(employeeDTO);
 // { fullName: 'John Doe', emailAddress: 'john.doe@example.com', isAdult: true }
