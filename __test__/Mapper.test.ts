@@ -72,13 +72,13 @@ describe("Mapper", () => {
     expect(userDTO.address.cityName).toBe(user.address.city.toLowerCase());
   });
 
-  it('should correctly map using a nested mapper', () => {
+  it("should correctly map using a nested mapper", () => {
     const addressMapper = new Mapper<Address, AddressDTO>({
-      cityName: 'city',
-      streetName: 'street',
+      cityName: "city",
+      streetName: "street",
     });
     const userMapper = new Mapper<User, UserDTO>({
-      fullName: 'name',
+      fullName: "name",
       address: addressMapper,
     });
 
@@ -88,5 +88,80 @@ describe("Mapper", () => {
     expect(userDTO.fullName).toEqual(user.name);
     expect(userDTO.address.cityName).toEqual(user.address.city);
     expect(userDTO.address.streetName).toEqual(user.address.street);
+  });
+
+  describe("Nested Mappers", () => {
+    it("should correctly map objects with three levels of nesting", () => {
+      class Address {
+        constructor(
+          public city: string,
+          public street: string,
+        ) {}
+      }
+
+      class ContactInfo {
+        constructor(
+          public email: string,
+          public address: Address,
+        ) {}
+      }
+
+      class Person {
+        constructor(
+          public name: string,
+          public contactInfo: ContactInfo,
+        ) {}
+      }
+
+      interface AddressDTO {
+        city: string;
+        street: string;
+      }
+
+      interface ContactInfoDTO {
+        email: string;
+        address: AddressDTO;
+      }
+
+      interface PersonDTO {
+        name: string;
+        contactInfo: ContactInfoDTO;
+      }
+
+      const addressMapper = new Mapper<Address, AddressDTO>({
+        city: "city",
+        street: "street",
+      });
+
+      const contactInfoMapper = new Mapper<ContactInfo, ContactInfoDTO>({
+        email: "email",
+        address: addressMapper,
+      });
+
+      const personMapper = new Mapper<Person, PersonDTO>({
+        name: "name",
+        contactInfo: contactInfoMapper,
+      });
+
+      const person = new Person(
+        "John Doe",
+        new ContactInfo(
+          "john@example.com",
+          new Address("New York", "5th Avenue"),
+        ),
+      );
+
+      const personDTO = personMapper.execute(person);
+
+      // Проверки
+      expect(personDTO.name).toEqual(person.name);
+      expect(personDTO.contactInfo.email).toEqual(person.contactInfo.email);
+      expect(personDTO.contactInfo.address.city).toEqual(
+        person.contactInfo.address.city,
+      );
+      expect(personDTO.contactInfo.address.street).toEqual(
+        person.contactInfo.address.street,
+      );
+    });
   });
 });
