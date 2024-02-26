@@ -34,6 +34,7 @@ describe("Mapper", () => {
   it("maps simple properties correctly", () => {
     const userMapper = new Mapper<User, UserDTO>({
       fullName: "name",
+      address: "address",
     });
 
     const user = new User("John Doe", new Address("123 Main St", "Anytown"));
