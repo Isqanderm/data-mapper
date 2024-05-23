@@ -38,7 +38,7 @@ interface AdvancedUserDotsDTO {
 
 describe('Mapper Performance Tests', () => {
   it('Simple mapping performance', () => {
-    const N = 100000;
+    const N = 1_000_000;
     const simpleUsers = Array.from({ length: N }, (_, i) => new SimpleUser(i, `User ${i}`));
     const simpleUserMapper = new Mapper<SimpleUser, SimpleUserDTO>({
       userId: 'id',
@@ -54,7 +54,7 @@ describe('Mapper Performance Tests', () => {
   });
 
   it('Nested mapping performance', () => {
-    const N = 100000;
+    const N = 1_000_000;
     const advancedUsers = Array.from({ length: N }, (_, i) => new AdvancedUser(`User ${i}`, i % 30 + 18, new Address(`Street ${i}`, `City ${i}`)));
     const addressMapper = new Mapper<Address, AddressDTO>({
       streetName: 'street',
@@ -75,7 +75,7 @@ describe('Mapper Performance Tests', () => {
   });
 
   it('Dots mapping performance', () => {
-    const N = 100000;
+    const N = 1_000_000;
     const advancedUsers = Array.from({ length: N }, (_, i) => new AdvancedUser(`User ${i}`, i % 30 + 18, new Address(`Street ${i}`, `City ${i}`)));
     const advancedUserMapper = new Mapper<AdvancedUser, AdvancedUserDotsDTO>({
       fullName: 'name',
