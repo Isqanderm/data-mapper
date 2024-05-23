@@ -60,6 +60,22 @@ const mapper = new UserMapper<User, TargetUser>({
 const target = mapper.execute(sourceObject);
 ```
 
+### Mapping with nested config
+
+Mapping with composition allows combining multiple mappers to create complex data transformations.
+
+```ts
+const mapper = new UserMapper<User, TargetUser>({
+  name: 'firstName',
+  address: {
+    city: 'address.city',
+    street: 'address.street',
+  },
+});
+
+const target = mapper.execute(sourceObject);
+```
+
 ## License
 
 `onion-mapper` is distributed under the MIT license. See the LICENSE file in the root directory of the project for more information.
