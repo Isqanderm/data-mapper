@@ -1,7 +1,7 @@
 {
-  "name": "onion-mapper",
-  "version": "1.1.0",
-  "description": "Mapper for Onion package",
+  "name": "@tech-pioneer/data-mapper",
+  "version": "1.0.0",
+  "description": "Data mapper",
   "main": "build/index.js",
   "scripts": {
     "build": "tsc",
@@ -16,10 +16,10 @@
     "url": "git+https://github.com/Isqanderm/onion-mapper.git"
   },
   "keywords": [
-    "onion",
-    "architecture",
-    "dependency injection",
-    "data mapping"
+    "data mapping",
+    "mapping",
+    "mapper",
+    "transform"
   ],
   "files": [
     "build",
@@ -30,9 +30,9 @@
   "author": "Isqanderm <aleksandr.melnik.personal@gmail.com> (https://www.linkedin.com/in/isqander-melnik)",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/Isqanderm/onion-mapper/issues"
+    "url": "https://github.com/Isqanderm/data-mapper/issues"
   },
-  "homepage": "https://github.com/Isqanderm/onion-mapper#readme",
+  "homepage": "https://github.com/Isqanderm/data-mapper#readme",
   "devDependencies": {
     "@babel/core": "^7.23.9",
     "@babel/preset-env": "^7.23.9",
