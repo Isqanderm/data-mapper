@@ -1,7 +1,8 @@
 {
-  "name": "@tech-pioneer/data-mapper",
+  "name": "om-data-mapper",
   "version": "1.0.0",
   "description": "Data mapper",
+  "private": false,
   "main": "build/index.js",
   "scripts": {
     "build": "tsc",

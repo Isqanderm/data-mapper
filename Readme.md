@@ -1,18 +1,18 @@
-# data-mapper
+# om-data-mapper
 
-`data-mapper` is a flexible and powerful tool for object mapping in JavaScript and TypeScript, supporting simple mapping, deep mapping, and mapping through composition.
+`om-data-mapper` is a flexible and powerful tool for object mapping in JavaScript and TypeScript, supporting simple mapping, deep mapping, and mapping through composition.
 
 ## Installation
 
-Install `data-mapper` using npm:
+Install `om-data-mapper` using npm:
 
 ```bash
-npm i --save @tech-pioneer/data-mapper
+npm i --save om-data-mapper
 ```
 
 ## Features
 
-`data-mapper` offers the following features:
+`om-data-mapper` offers the following features:
 
 ### Simple Mapping
 
@@ -78,4 +78,4 @@ const target = mapper.execute(sourceObject);
 
 ## License
 
-`data-mapper` is distributed under the MIT license. See the LICENSE file in the root directory of the project for more information.
+`om-data-mapper` is distributed under the MIT license. See the LICENSE file in the root directory of the project for more information.
