@@ -31,7 +31,7 @@ export type MappingConfiguration<Source, Target> = {
   [P in keyof Target]:
     | keyof Source
     | Transformer<Source, Target[P]>
-    | Mapper<any, any>
+    | Mapper<any, Target[P]>
     | DeepPath<Source, keyof Source>
     | MappingConfiguration<Source, Target[P]>;
 };
