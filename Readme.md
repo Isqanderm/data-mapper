@@ -1,18 +1,18 @@
-# onion-mapper
+# data-mapper
 
-`onion-mapper` is a flexible and powerful tool for object mapping in JavaScript and TypeScript, supporting simple mapping, deep mapping, and mapping through composition.
+`data-mapper` is a flexible and powerful tool for object mapping in JavaScript and TypeScript, supporting simple mapping, deep mapping, and mapping through composition.
 
 ## Installation
 
-Install `onion-mapper` using npm:
+Install `data-mapper` using npm:
 
 ```bash
-npm i --save onion-mapper
+npm i --save @tech-pioneer/data-mapper
 ```
 
 ## Features
 
-`onion-mapper` offers the following features:
+`data-mapper` offers the following features:
 
 ### Simple Mapping
 
@@ -78,4 +78,4 @@ const target = mapper.execute(sourceObject);
 
 ## License
 
-`onion-mapper` is distributed under the MIT license. See the LICENSE file in the root directory of the project for more information.
+`data-mapper` is distributed under the MIT license. See the LICENSE file in the root directory of the project for more information.
