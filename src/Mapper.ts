@@ -1,7 +1,9 @@
 import { DefaultValues, MappingConfiguration } from "./interface";
 
 export class Mapper<Source, Target> {
-  private readonly transformFunction: (source: Source) => Target;
+  private readonly transformFunction: (
+    source: Source,
+  ) => Target;
   private readonly defaultValues?: DefaultValues<Target>;
 
   constructor(
@@ -16,11 +18,11 @@ export class Mapper<Source, Target> {
   }
 
   private getValueByPath(configValue: string): string {
-    return configValue.split(".").reduce((accum, part) => {
-      accum += `['${part}']`;
+    return configValue.split(".").map(part => `['${part}']`).join('');
+  }
 
-      return accum;
-    }, "");
+  private get defValues() {
+    return this.defaultValues ? JSON.stringify(this.defaultValues) : "{}";
   }
 
   private createCompiler([targetKey, configValue]: [
@@ -28,32 +30,35 @@ export class Mapper<Source, Target> {
     Mapper<any, any> | string | Function | unknown,
   ]) {
     if (typeof configValue === "function") {
+      const funcBody = configValue.toString();
       return `try {
-            const result = (${configValue.toString()})(source);
-            result === undefined ? void 0 : target['${targetKey}'] = result;
+            target['${targetKey}'] = (${funcBody})(source, defaultValues['${targetKey}'] || {}) || defaultValues['${targetKey}'];
           } catch(error) {
             throw new Error("Mapping error at field '${targetKey}': " + error.message);
           }
         `;
     } else if (configValue instanceof Mapper) {
+      const transformFunc = configValue.transformFunction.toString();
       return `try {
-            target['${targetKey}'] = ${configValue.transformFunction.toString()}(source['${targetKey}']);
+            target['${targetKey}'] = ${transformFunc}(source['${targetKey}']);
           } catch(error) {
             throw new Error("Mapping error at field '${targetKey}': " + error.message);
           }
         `;
     } else if (typeof configValue === "string") {
+      const path = this.getValueByPath(configValue);
       return `try {
-            const result = source${this.getValueByPath(configValue)};
-            result === undefined ? void 0 : target['${targetKey}'] = result;
+            target['${targetKey}'] = source${path} || defaultValues['${targetKey}'];
           } catch(error) {
             throw new Error("Mapping error at field '${targetKey}' from source field '${configValue}': " + error.message);
           }
         `;
     } else if (typeof configValue === "object" && configValue !== null) {
-      const nestedMapping = this.compile(configValue as MappingConfiguration<any, any>);
+      const nestedMapping = this.compile(
+        configValue as MappingConfiguration<any, any>,
+      ).toString();
       return `try {
-            target['${targetKey}'] = (${nestedMapping.toString()})(source);
+            target['${targetKey}'] = (${nestedMapping})(source, defaultValues['${targetKey}'] || {});
           } catch(error) {
             throw new Error("Mapping error at nested field '${targetKey}': " + error.message);
           }
@@ -63,17 +68,19 @@ export class Mapper<Source, Target> {
 
   private compile(
     mappingConfig: MappingConfiguration<Source, Target>,
-  ): (source: Source) => Target {
+  ): (source: Source, defaultValues?: DefaultValues<Target>) => Target {
     const body = Object.entries(mappingConfig)
       .map(this.createCompiler)
       .join("\n");
 
     const func = new Function(
-      "source",
-      `const target = ${this.defaultValues ? JSON.stringify(this.defaultValues) : "{}"}; ${body} return target;`,
+      `source, defaultValues = ${this.defValues}`,
+      `const target = {}; ${body} return target;`,
     );
 
-    return func as (source: Source) => Target;
+    return func as (
+      source: Source
+    ) => Target;
   }
 
   execute(source: Source): Target {

@@ -167,31 +167,39 @@ describe("Mapper", () => {
   });
 
   it("maps simple properties with default values", () => {
-    class User {
-      constructor(
-        public name: string,
-        public lastName?: string,
-      ) {}
+    interface User {
+      name: string;
+      lastName?: string;
+      years?: number;
     }
 
     interface UserDTO {
       firstName: string;
       lastName: string;
+      profile: {
+        years: number;
+      };
     }
 
     const userMapper = new Mapper<User, UserDTO>(
       {
         firstName: "name",
         lastName: "lastName",
+        profile: {
+          years: "years",
+        },
       },
-      { lastName: null },
+      { lastName: null, profile: { years: 31 } },
     );
 
-    const user = new User("John Doe");
+    const user: User = {
+      name: "John Doe",
+    };
     const userDTO = userMapper.execute(user);
 
     expect(userDTO.firstName).toBe(user.name);
     expect(userDTO.lastName).toBe(null);
+    expect(userDTO.profile.years).toBe(31);
   });
 
   it("should correctly map using a nested mapper with default values", () => {
@@ -226,6 +234,6 @@ describe("Mapper", () => {
 
     expect(userDTO.fullName).toEqual(user.name);
     expect(userDTO.address.cityName).toEqual(user.address.city);
-    expect(userDTO.address.streetName).toEqual('AnyStreet');
+    expect(userDTO.address.streetName).toEqual("AnyStreet");
   });
 });
