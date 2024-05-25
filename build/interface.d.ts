@@ -13,6 +13,6 @@ export type DefaultValues<T> = Partial<Nullable<ExcludeMapperProperties<T>>>;
 export type Transformer<T, Result> = (source: T) => Result;
 export type DeepPath<Source, K extends keyof Source> = K extends string ? IsObjectWithProperties<Source[K]> extends true ? IsArray<Source[K]> extends true ? K | `${K}.${number}` | `${K}.${number}.${DeepPath<ExtractArrayType<Source[K]>, keyof ExtractArrayType<Source[K]>>}` : K | `${K}.${DeepPath<Source[K], keyof Source[K]>}` : K : never;
 export type MappingConfiguration<Source, Target> = {
-    [P in keyof Target]: keyof Source | Transformer<Source, Target[P]> | Mapper<any, any> | DeepPath<Source, keyof Source> | MappingConfiguration<Source, Target[P]>;
+    [P in keyof Target]: keyof Source | Transformer<Source, Target[P]> | Mapper<any, Target[P]> | DeepPath<Source, keyof Source> | MappingConfiguration<Source, Target[P]>;
 };
 //# sourceMappingURL=interface.d.ts.map
