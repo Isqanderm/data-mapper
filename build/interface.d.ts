@@ -15,4 +15,8 @@ export type DeepPath<Source, K extends keyof Source> = K extends string ? IsObje
 export type MappingConfiguration<Source, Target> = {
     [P in keyof Target]: keyof Source | Transformer<Source, Target[P]> | Mapper<any, Target[P]> | DeepPath<Source, keyof Source> | MappingConfiguration<Source, Target[P]>;
 };
+export interface MappingResult<T> {
+    result: T;
+    errors: string[];
+}
 //# sourceMappingURL=interface.d.ts.map

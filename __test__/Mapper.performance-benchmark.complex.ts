@@ -1,5 +1,6 @@
-import { Suite } from 'benchmark';
-import { Mapper } from '../src/Mapper';
+import { Suite } from "benchmark";
+import mapper from "@cookbook/mapper-js";
+import { Mapper } from "../src/Mapper";
 
 class Country {
   name?: string;
@@ -35,13 +36,13 @@ class UserDTO {
 }
 
 const countryMapper = new Mapper<Country, CountryDTO>({
-  countryName: 'name',
-  countryCode: 'code',
+  countryName: "name",
+  countryCode: "code",
 });
 
 const addressMapper = new Mapper<Address, AddressDTO>({
-  streetName: 'street',
-  cityName: 'city',
+  streetName: "street",
+  cityName: "city",
   country: countryMapper,
   fullAddress: function (object) {
     return `${object.city}, ${object.street}, ${object.country?.name}`;
@@ -49,7 +50,7 @@ const addressMapper = new Mapper<Address, AddressDTO>({
 });
 
 const userMapper = new Mapper<User, UserDTO>({
-  fullName: 'name',
+  fullName: "name",
   address: addressMapper,
 });
 
@@ -76,14 +77,26 @@ function mapUser(source: User): UserDTO {
   };
 }
 
+const mappingJs = mapper((map) => ({
+  'fullName': map('name').value,
+  'address.streetName': map('address.street').value,
+  'address.cityName': map('address.city').value,
+  'address.fullAddress': map('address')
+    // @ts-ignore
+    .transform(({ city, street, country }: Address): string => `${city}, ${street}, ${country?.name}`)
+    .value,
+  'address.country.countryName': map('address.country.name').value,
+  'address.country.countryCode': map('address.country.code').value,
+}));
+
 const user: User = {
-  name: 'John Doe',
+  name: "John Doe",
   address: {
-    street: 'Main St',
-    city: 'Metropolis',
+    street: "Main St",
+    city: "Metropolis",
     country: {
-      name: 'USA',
-      code: 'US',
+      name: "USA",
+      code: "US",
     },
   },
 };
@@ -91,16 +104,20 @@ const user: User = {
 const suite = new Suite();
 
 suite
-  .add('UserMapper#execute', function () {
+  .add("UserMapper#execute", function () {
     userMapper.execute(user);
   })
-  .add('Vanilla mapper', function () {
+  .add("@cookbook/mapper-js", function () {
+    // @ts-ignore
+    mappingJs(user);
+  })
+  .add("Vanilla mapper", function () {
     mapUser(user);
   })
-  .on('cycle', function (event: any) {
+  .on("cycle", function (event: any) {
     console.log(String(event.target));
   })
-  .on('complete', function (this: any) {
-    console.log('Fastest is ' + this.filter('fastest').map('name'));
+  .on("complete", function (this: any) {
+    console.log("Fastest is " + this.filter("fastest").map("name"));
   })
   .run({ async: true });

@@ -16,8 +16,8 @@ class EmployeeDTO {
 }
 
 const mappingConfig: MappingConfiguration<Employee, EmployeeDTO> = {
-  fullName: 'name',
-  emailAddress: 'email',
+  fullName: "name",
+  emailAddress: "email",
   isAdult: (source) => source.age >= 18,
 };
 

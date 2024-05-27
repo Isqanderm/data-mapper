@@ -38,7 +38,7 @@ describe("Mapper", () => {
     });
 
     const user = new User("John Doe", new Address("123 Main St", "Anytown"));
-    const userDTO = userMapper.execute(user);
+    const { result: userDTO } = userMapper.execute(user);
 
     expect(userDTO.fullName).toBe(user.name);
   });
@@ -51,7 +51,7 @@ describe("Mapper", () => {
     });
 
     const user = new User("Jane Doe", new Address("456 Elm St", "Springfield"));
-    const userDTO = userMapper.execute(user);
+    const { result: userDTO } = userMapper.execute(user);
 
     expect(userDTO.streetName).toBe(user.address.street);
     expect(userDTO.cityName).toBe(user.address.city);
@@ -67,7 +67,7 @@ describe("Mapper", () => {
     });
 
     const user = new User("John Doe", new Address("123 Main St", "Anytown"));
-    const userDTO = userMapper.execute(user);
+    const { result: userDTO } = userMapper.execute(user);
 
     expect(userDTO.address.streetName).toBe(user.address.street.toUpperCase());
     expect(userDTO.address.cityName).toBe(user.address.city.toLowerCase());
@@ -84,7 +84,7 @@ describe("Mapper", () => {
     });
 
     const user = new User("John Doe", new Address("Anytown", "123 Main St"));
-    const userDTO = userMapper.execute(user);
+    const { result: userDTO } = userMapper.execute(user);
 
     expect(userDTO.fullName).toEqual(user.name);
     expect(userDTO.address.cityName).toEqual(user.address.city);
@@ -152,7 +152,7 @@ describe("Mapper", () => {
         ),
       );
 
-      const personDTO = personMapper.execute(person);
+      const { result: personDTO } = personMapper.execute(person);
 
       // Проверки
       expect(personDTO.name).toEqual(person.name);
@@ -195,7 +195,7 @@ describe("Mapper", () => {
     const user: User = {
       name: "John Doe",
     };
-    const userDTO = userMapper.execute(user);
+    const { result: userDTO } = userMapper.execute(user);
 
     expect(userDTO.firstName).toBe(user.name);
     expect(userDTO.lastName).toBe(null);
@@ -230,7 +230,7 @@ describe("Mapper", () => {
     });
 
     const user = new User("John Doe", new Address("Anytown"));
-    const userDTO = userMapper.execute(user);
+    const { result: userDTO } = userMapper.execute(user);
 
     expect(userDTO.fullName).toEqual(user.name);
     expect(userDTO.address.cityName).toEqual(user.address.city);

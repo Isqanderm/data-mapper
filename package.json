@@ -1,6 +1,6 @@
 {
   "name": "om-data-mapper",
-  "version": "1.1.1",
+  "version": "1.2.0",
   "description": "Data mapper",
   "private": false,
   "main": "build/index.js",
@@ -14,7 +14,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Isqanderm/onion-mapper.git"
+    "url": "git+https://github.com/Isqanderm/data-mapper.git"
   },
   "keywords": [
     "data mapping",
@@ -38,6 +38,7 @@
     "@babel/core": "^7.23.9",
     "@babel/preset-env": "^7.23.9",
     "@babel/preset-typescript": "^7.23.3",
+    "@cookbook/mapper-js": "^1.1.1",
     "@types/benchmark": "^2.1.5",
     "@types/jest": "^29.5.12",
     "babel-jest": "^29.7.0",

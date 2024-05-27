@@ -35,3 +35,8 @@ export type MappingConfiguration<Source, Target> = {
     | DeepPath<Source, keyof Source>
     | MappingConfiguration<Source, Target[P]>;
 };
+
+export interface MappingResult<T> {
+  result: T;
+  errors: string[];
+}

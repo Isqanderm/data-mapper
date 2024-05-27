@@ -1,4 +1,4 @@
-import {Mapper} from "../../src";
+import { Mapper } from "../../src";
 
 class Source {
   validField?: string;

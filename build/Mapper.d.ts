@@ -1,4 +1,4 @@
-import { DefaultValues, MappingConfiguration } from "./interface";
+import { DefaultValues, MappingConfiguration, MappingResult } from "./interface";
 export declare class Mapper<Source, Target> {
     private readonly transformFunction;
     private readonly defaultValues?;
@@ -7,6 +7,6 @@ export declare class Mapper<Source, Target> {
     private get defValues();
     private createCompiler;
     private compile;
-    execute(source: Source): Target;
+    execute(source: Source): MappingResult<Target>;
 }
 //# sourceMappingURL=Mapper.d.ts.map
