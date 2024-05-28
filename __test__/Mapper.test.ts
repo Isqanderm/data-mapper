@@ -1,4 +1,4 @@
-import { Mapper } from "../src";
+import { Mapper, MappingConfiguration } from "../src";
 
 class Address {
   constructor(
@@ -193,13 +193,17 @@ describe("Mapper", () => {
     );
 
     const user: User = {
-      name: "John Doe",
+      name: "John",
     };
     const { result: userDTO } = userMapper.execute(user);
 
-    expect(userDTO.firstName).toBe(user.name);
-    expect(userDTO.lastName).toBe(null);
-    expect(userDTO.profile.years).toBe(31);
+    expect(userDTO).toStrictEqual({
+      firstName: "John",
+      lastName: null,
+      profile: {
+        years: 31,
+      },
+    });
   });
 
   it("should correctly map using a nested mapper with default values", () => {
@@ -232,8 +236,103 @@ describe("Mapper", () => {
     const user = new User("John Doe", new Address("Anytown"));
     const { result: userDTO } = userMapper.execute(user);
 
-    expect(userDTO.fullName).toEqual(user.name);
-    expect(userDTO.address.cityName).toEqual(user.address.city);
-    expect(userDTO.address.streetName).toEqual("AnyStreet");
+    expect(userDTO).toStrictEqual({
+      fullName: "John Doe",
+      address: {
+        cityName: "Anytown",
+        streetName: "AnyStreet",
+      },
+    });
+  });
+
+  it("should correctly map from array and nested object", () => {
+    class Employee {
+      constructor(
+        public name: string,
+        public email: string,
+        public age: number,
+        public array: { number: number }[],
+        public address: {
+          city: string;
+          street: string;
+          houseNumber: number;
+        },
+        public apartment: {
+          number: number;
+          floor: number;
+        },
+      ) {}
+    }
+
+    interface EmployeeDTO {
+      fullName?: string;
+      emailAddress?: string;
+      isAdult?: boolean;
+      address: {
+        city: string;
+        street: string;
+        houseNumber: number;
+        full: {
+          apartment: number;
+          floor: string;
+        };
+      };
+      array: number;
+    }
+
+    const mappingConfig: MappingConfiguration<Employee, EmployeeDTO> = {
+      fullName: "name",
+      emailAddress: "email",
+      isAdult: (source) => source.age >= 18,
+      address: {
+        city: "address.city",
+        street: "address.street",
+        houseNumber: "address.houseNumber",
+        full: {
+          apartment: "apartment.number",
+          floor: "apartment.floor",
+        },
+      },
+      // @ts-ignore
+      array: "array[0].number",
+    };
+    const employeeMapper = new Mapper<Employee, EmployeeDTO>(mappingConfig);
+
+    const employee = new Employee(
+      "John Doe",
+      "john.doe@example.com",
+      30,
+      [{ number: 1 }, { number: 2 }],
+      {
+        city: "Moscow",
+        street: "Red square",
+        houseNumber: 22,
+      },
+      {
+        floor: 10,
+        number: 40,
+      },
+    );
+
+    const employeeDTO = employeeMapper.execute(employee);
+
+    expect(employeeDTO).toStrictEqual({
+      errors: [],
+      result: {
+        address: {
+          city: "Moscow",
+          street: "Red square",
+          houseNumber: 22,
+          full: {
+            apartment: 40,
+            floor: 10,
+          },
+        },
+        array: 1,
+        emailAddress: "john.doe@example.com",
+        fullName: "John Doe",
+        isAdult: true,
+      },
+    });
   });
 });

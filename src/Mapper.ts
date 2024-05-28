@@ -10,11 +10,10 @@ export class Mapper<Source, Target> {
         source: Source,
         target: {},
         __errors: string[],
-        fnMap: { [key: string]: any },
-        defaultValues?: DefaultValues<Target>,
+        cache: { [key: string]: any },
       ) => MappingResult<Target>)
     | undefined;
-  private readonly fnMap: { [key: string]: any } = {};
+  private readonly cache: { [key: string]: any } = {};
 
   constructor(
     private readonly mappingConfig: MappingConfiguration<Source, Target>,
@@ -27,12 +26,8 @@ export class Mapper<Source, Target> {
   private getValueByPath(configValue: string): string {
     return configValue
       .split(".")
-      .map((part) => `['${part}']`)
-      .join("");
-  }
-
-  private get defValues() {
-    return this.defaultValues ? JSON.stringify(this.defaultValues) : "{}";
+      .map((part) => `${part}`)
+      .join("?.");
   }
 
   private createCompiler(
@@ -40,51 +35,70 @@ export class Mapper<Source, Target> {
       string,
       Mapper<any, any> | string | Function | unknown,
     ],
-    fnMap: { [key: string]: any },
-    parentTarget?: string, // "['foo']['bar']"
+    cache: { [key: string]: any },
+    parentTarget: string = "", // "foo.bar"
+    relativeToMapper: boolean = false,
   ) {
-    const targetPath = `${parentTarget || ''}['${targetKey}']`;
+    const targetPath = [parentTarget, targetKey].filter(Boolean).join(".");
     if (typeof configValue === "function") {
-      fnMap[targetKey] = configValue;
+      cache[`${targetPath}__handler`] = configValue;
       return `try {
-            var value = (fnMap['${targetKey}'])(source);
-            target${targetPath} = value !== undefined ? value : defaultValues['${targetKey}'];
+            target.${targetPath} = (cache['${targetPath}__handler'])(source${parentTarget ? `.${parentTarget}` : ""});
           } catch(error) {
-            __errors.push("Mapping error at field '${targetPath}': " + error.message);
-          }
-        `;
+            __errors.push("Mapping error at field by function '${targetPath}': " + error.message);
+          }`;
     } else if (configValue instanceof Mapper) {
-      const transformFunc = configValue.getCompiledFn(configValue.mappingConfig, targetPath);
-      fnMap[targetKey] = configValue.fnMap || {};
+      const transformFunc = configValue.getCompiledFnBody(
+        configValue.mappingConfig,
+        targetPath,
+        true,
+      );
+      cache[`${targetPath}__defValues`] = configValue.defaultValues;
+      Object.assign(cache, configValue.cache);
       return `try {
-            target${targetPath} = {};
-            (${transformFunc})(source['${targetKey}'], target, __errors, fnMap['${targetKey}']);
+            target.${targetPath} = {};
+            ${transformFunc}
           } catch(error) {
             __errors.push("Mapping error at Mapper '${targetPath}': " + error.message);
-          }
-        `;
+          }`;
     } else if (typeof configValue === "string") {
-      const path = this.getValueByPath(configValue);
+      const configPath = this.getValueByPath(configValue);
+      const path = [parentTarget, configPath].filter(Boolean).join("?.");
+
       return `try {
-            var value = source${path};
-            target${targetPath} = value !== undefined ? value : defaultValues['${targetKey}'];
+            target.${targetPath} = source.${relativeToMapper ? path : configPath} || cache['${parentTarget}__defValues']?.${targetKey};
           } catch(error) {
             __errors.push("Mapping error at field '${targetPath}' from source field '${configValue}': " + error.message);
-          }
-        `;
+          }`;
     } else if (typeof configValue === "object" && configValue !== null) {
-      const nestedMapping = this.getCompiledFn(
+      const nestedMapping = this.getCompiledFnBody(
         configValue as MappingConfiguration<any, any>,
         targetPath,
       );
+      cache[`${targetPath}__defValues`] = this.defaultValues
+        ? // @ts-ignore
+          this.defaultValues[targetKey]
+        : undefined;
+      Object.assign(cache, this.cache);
       return `try {
-            target${targetPath} = {};
-            (${nestedMapping})(source, target, __errors, fnMap['${targetKey}'] = fnMap['${targetKey}'] || {}, defaultValues['${targetKey}'] || {});
+            target.${targetPath} = {};
+            ${nestedMapping}
           } catch(error) {
             __errors.push("Mapping error at nested field '${targetPath}': " + error.message);
-          }
-        `;
+          }`;
     }
+  }
+
+  private getCompiledFnBody(
+    mappingConfig: MappingConfiguration<Source, Target>,
+    parentTarget?: string,
+    relativeToMapper?: boolean,
+  ): string {
+    return Object.entries(mappingConfig)
+      .map((item) =>
+        this.createCompiler(item, this.cache, parentTarget, relativeToMapper),
+      )
+      .join("\n");
   }
 
   private getCompiledFn(
@@ -94,24 +108,17 @@ export class Mapper<Source, Target> {
     source: Source,
     target: {},
     __errors: string[],
-    fnMap: { [key: string]: any },
-    defaultValues?: DefaultValues<Target>,
+    cache: { [key: string]: any },
   ) => MappingResult<Target> {
-    const body = Object.entries(mappingConfig)
-      .map((item) => this.createCompiler(item, this.fnMap, parentTarget))
-      .join("\n");
+    const body = this.getCompiledFnBody(mappingConfig, parentTarget);
 
-    const func = new Function(
-      `source, target, __errors, fnMap, defaultValues`,
-      `var __errors = __errors || []; var defaultValues = defaultValues || ${this.defValues}; ${body}`,
-    );
+    const func = new Function(`source, target, __errors, cache`, `${body}`);
 
     return func as (
       source: Source,
       target: {},
       __errors: string[],
-      fnMap: { [key: string]: any },
-      defaultValues?: DefaultValues<Target>,
+      cache: { [key: string]: any },
     ) => MappingResult<Target>;
   }
 
@@ -124,9 +131,11 @@ export class Mapper<Source, Target> {
       this.compile();
     }
 
+    this.cache["__defValues"] = this.defaultValues;
+
     const errors: string[] = [];
     const target = {};
-    this.transformFunction!(source, target, errors, this.fnMap);
+    this.transformFunction!(source, target, errors, this.cache);
     return { errors, result: target as Target };
   }
 }
