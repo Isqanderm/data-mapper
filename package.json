@@ -1,6 +1,6 @@
 {
   "name": "om-data-mapper",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "description": "Data mapper",
   "private": false,
   "main": "build/index.js",

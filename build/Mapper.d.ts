@@ -1,12 +1,15 @@
-import { DefaultValues, MappingConfiguration, MappingResult } from "./interface";
+import { MappingConfiguration, MappingResult } from "./interface";
 export declare class Mapper<Source, Target> {
-    private readonly transformFunction;
+    private readonly mappingConfig;
     private readonly defaultValues?;
-    constructor(mappingConfig: MappingConfiguration<Source, Target>, defaultValues?: DefaultValues<Target>);
+    private transformFunction;
+    private readonly cache;
+    constructor(mappingConfig: MappingConfiguration<Source, Target>, defaultValues?: Partial<import("./interface").Nullable<import("./interface").ExcludeMapperProperties<Target>>> | undefined);
     private getValueByPath;
-    private get defValues();
     private createCompiler;
-    private compile;
+    private getCompiledFnBody;
+    private getCompiledFn;
+    compile(): void;
     execute(source: Source): MappingResult<Target>;
 }
 //# sourceMappingURL=Mapper.d.ts.map
