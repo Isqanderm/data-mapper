@@ -39,14 +39,15 @@ const mappingConfig: MappingConfiguration<Employee, EmployeeDTO> = {
   isAdult: (source) => source.age >= 18,
   address: {
     city: "address.city",
-    street: "address.city",
+    street: "address.street",
     houseNumber: "address.houseNumber",
     full: {
       apartment: "address.apartment",
       floor: "address.floor",
     },
   },
-  array: "array.0.number",
+  // @ts-ignore
+  array: "array[0].number",
 };
 const employeeMapper = new Mapper<Employee, EmployeeDTO>(mappingConfig);
 

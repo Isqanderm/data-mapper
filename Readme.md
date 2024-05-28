@@ -76,40 +76,6 @@ const mapper = new UserMapper<User, TargetUser>({
 const target = mapper.execute(sourceObject);
 ```
 
-### Limitations
-
-When using functions in the mapping configuration, consider the following limitations:
-
-Use Pure Functions: Functions used in the mapping configuration should be pure functions, meaning they should not have side effects and should return the same value for the same set of inputs.
-
-Avoid Using Context (this): Functions should not depend on the this context. They should be defined as regular functions rather than methods of objects.
-
-Serialization Safety: When using functions, they are compiled into string form and then back into functions. This can lead to serialization issues if the function depends on variables or objects outside its scope. Avoid using closures that depend on external variables.
-
-Avoid Complex Constructs: Avoid using complex constructs such as recursion or global objects within mapping functions.
-
-Example of using a function in the mapping configuration:
-
-```typescript
-const mapper = new UserMapper<User, TargetUser>({
-  name: 'firstName',
-  fullName: (user) => `${user.firstName} ${user.lastName}`
-});
-```
-
-Example of an inappropriate function (not recommended):
-
-```typescript
-const externalVariable = 'some value';
-
-const mapper = new UserMapper<User, TargetUser>({
-  name: 'firstName',
-  fullName: (user) => `${user.firstName} ${externalVariable}`
-});
-```
-
-In this example, the fullName function depends on the external variable externalVariable, which can lead to errors during compilation and execution of the mapping.
-
 ## License
 
 `om-data-mapper` is distributed under the MIT license. See the LICENSE file in the root directory of the project for more information.

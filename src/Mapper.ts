@@ -5,93 +5,137 @@ import {
 } from "./interface";
 
 export class Mapper<Source, Target> {
-  private readonly transformFunction: (source: Source) => MappingResult<Target>;
-  private readonly defaultValues?: DefaultValues<Target>;
+  private transformFunction:
+    | ((
+        source: Source,
+        target: {},
+        __errors: string[],
+        cache: { [key: string]: any },
+      ) => MappingResult<Target>)
+    | undefined;
+  private readonly cache: { [key: string]: any } = {};
 
   constructor(
-    mappingConfig: MappingConfiguration<Source, Target>,
-    defaultValues?: DefaultValues<Target>,
+    private readonly mappingConfig: MappingConfiguration<Source, Target>,
+    private readonly defaultValues?: DefaultValues<Target>,
   ) {
     this.execute = this.execute.bind(this);
     this.createCompiler = this.createCompiler.bind(this);
-
-    this.defaultValues = defaultValues;
-    this.transformFunction = this.compile(mappingConfig);
   }
 
   private getValueByPath(configValue: string): string {
     return configValue
       .split(".")
-      .map((part) => `['${part}']`)
-      .join("");
+      .map((part) => `${part}`)
+      .join("?.");
   }
 
-  private get defValues() {
-    return this.defaultValues ? JSON.stringify(this.defaultValues) : "{}";
-  }
-
-  private createCompiler([targetKey, configValue]: [
-    string,
-    Mapper<any, any> | string | Function | unknown,
-  ]) {
+  private createCompiler(
+    [targetKey, configValue]: [
+      string,
+      Mapper<any, any> | string | Function | unknown,
+    ],
+    cache: { [key: string]: any },
+    parentTarget: string = "", // "foo.bar"
+    relativeToMapper: boolean = false,
+  ) {
+    const targetPath = [parentTarget, targetKey].filter(Boolean).join(".");
     if (typeof configValue === "function") {
-      const funcBody = configValue.toString();
+      cache[`${targetPath}__handler`] = configValue;
       return `try {
-            var value = (${funcBody})(source);
-            target['${targetKey}'] = value !== undefined ? value : defaultValues['${targetKey}'];
+            target.${targetPath} = (cache['${targetPath}__handler'])(source${parentTarget ? `.${parentTarget}` : ""});
           } catch(error) {
-            __errors.push("Mapping error at field '${targetKey}': " + error.message);
-          }
-        `;
+            __errors.push("Mapping error at field by function '${targetPath}': " + error.message);
+          }`;
     } else if (configValue instanceof Mapper) {
-      const transformFunc = configValue.transformFunction.toString();
+      const transformFunc = configValue.getCompiledFnBody(
+        configValue.mappingConfig,
+        targetPath,
+        true,
+      );
+      cache[`${targetPath}__defValues`] = configValue.defaultValues;
+      Object.assign(cache, configValue.cache);
       return `try {
-            target['${targetKey}'] = ${transformFunc}(source['${targetKey}'], __errors).result;
+            target.${targetPath} = {};
+            ${transformFunc}
           } catch(error) {
-            __errors.push("Mapping error at field '${targetKey}': " + error.message);
-          }
-        `;
+            __errors.push("Mapping error at Mapper '${targetPath}': " + error.message);
+          }`;
     } else if (typeof configValue === "string") {
-      const path = this.getValueByPath(configValue);
+      const configPath = this.getValueByPath(configValue);
+      const path = [parentTarget, configPath].filter(Boolean).join("?.");
+
       return `try {
-            var value = source${path};
-            target['${targetKey}'] = value !== undefined ? value : defaultValues['${targetKey}'];
+            target.${targetPath} = source.${relativeToMapper ? path : configPath} || cache['${parentTarget}__defValues']?.${targetKey};
           } catch(error) {
-            __errors.push("Mapping error at field '${targetKey}' from source field '${configValue}': " + error.message);
-          }
-        `;
+            __errors.push("Mapping error at field '${targetPath}' from source field '${configValue}': " + error.message);
+          }`;
     } else if (typeof configValue === "object" && configValue !== null) {
-      const nestedMapping = this.compile(
+      const nestedMapping = this.getCompiledFnBody(
         configValue as MappingConfiguration<any, any>,
-      ).toString();
+        targetPath,
+      );
+      cache[`${targetPath}__defValues`] = this.defaultValues
+        ? // @ts-ignore
+          this.defaultValues[targetKey]
+        : undefined;
+      Object.assign(cache, this.cache);
       return `try {
-            target['${targetKey}'] = (${nestedMapping})(source, __errors, defaultValues['${targetKey}'] || {}).result;
+            target.${targetPath} = {};
+            ${nestedMapping}
           } catch(error) {
-            __errors.push("Mapping error at nested field '${targetKey}': " + error.message);
-          }
-        `;
+            __errors.push("Mapping error at nested field '${targetPath}': " + error.message);
+          }`;
     }
   }
 
-  private compile(
+  private getCompiledFnBody(
     mappingConfig: MappingConfiguration<Source, Target>,
+    parentTarget?: string,
+    relativeToMapper?: boolean,
+  ): string {
+    return Object.entries(mappingConfig)
+      .map((item) =>
+        this.createCompiler(item, this.cache, parentTarget, relativeToMapper),
+      )
+      .join("\n");
+  }
+
+  private getCompiledFn(
+    mappingConfig: MappingConfiguration<Source, Target>,
+    parentTarget?: string,
   ): (
     source: Source,
-    defaultValues?: DefaultValues<Target>,
+    target: {},
+    __errors: string[],
+    cache: { [key: string]: any },
   ) => MappingResult<Target> {
-    const body = Object.entries(mappingConfig)
-      .map(this.createCompiler)
-      .join("\n");
+    const body = this.getCompiledFnBody(mappingConfig, parentTarget);
 
-    const func = new Function(
-      `source, __errors, defaultValues=${this.defValues}`,
-      `var target = {}; var __errors = __errors || []; ${body} return {result: target, errors: __errors};`,
-    );
+    const func = new Function(`source, target, __errors, cache`, `${body}`);
 
-    return func as (source: Source) => MappingResult<Target>;
+    return func as (
+      source: Source,
+      target: {},
+      __errors: string[],
+      cache: { [key: string]: any },
+    ) => MappingResult<Target>;
+  }
+
+  compile() {
+    this.transformFunction = this.getCompiledFn(this.mappingConfig);
   }
 
   execute(source: Source): MappingResult<Target> {
-    return this.transformFunction(source);
+    if (!this.transformFunction) {
+      this.compile();
+    }
+
+    this.cache["__defValues"] = this.defaultValues;
+
+    const errors: string[] = [];
+    const target = {};
+    this.transformFunction!(source, target, errors, this.cache);
+    return { errors, result: target as Target };
   }
 }
