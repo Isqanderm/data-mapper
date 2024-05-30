@@ -5,7 +5,7 @@ export declare class Mapper<Source, Target> {
     private transformFunction;
     private readonly cache;
     constructor(mappingConfig: MappingConfiguration<Source, Target>, defaultValues?: Partial<import("./interface").Nullable<import("./interface").ExcludeMapperProperties<Target>>> | undefined);
-    private getValueByPath;
+    private static renderTemplateForKeySelect;
     private createCompiler;
     private getCompiledFnBody;
     private getCompiledFn;

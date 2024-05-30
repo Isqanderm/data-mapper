@@ -21,8 +21,10 @@ export type DeepPath<Source, K extends keyof Source> = K extends string
     ? IsArray<Source[K]> extends true
       ?
           | K
-          | `${K}.${number}`
-          | `${K}.${number}.${DeepPath<ExtractArrayType<Source[K]>, keyof ExtractArrayType<Source[K]>>}`
+          | `${K}.[]`
+          | `${K}.[${number}]`
+          | `${K}.[${number}].${DeepPath<ExtractArrayType<Source[K]>, keyof ExtractArrayType<Source[K]>>}`
+          | `${K}.[].${DeepPath<ExtractArrayType<Source[K]>, keyof ExtractArrayType<Source[K]>>}`
       : K | `${K}.${DeepPath<Source[K], keyof Source[K]>}`
     : K
   : never;

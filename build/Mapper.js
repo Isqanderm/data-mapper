@@ -17,6 +17,7 @@ var __read = (this && this.__read) || function (o, n) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Mapper = void 0;
+var utils_1 = require("./utils");
 var Mapper = /** @class */ (function () {
     function Mapper(mappingConfig, defaultValues) {
         this.mappingConfig = mappingConfig;
@@ -25,11 +26,39 @@ var Mapper = /** @class */ (function () {
         this.execute = this.execute.bind(this);
         this.createCompiler = this.createCompiler.bind(this);
     }
-    Mapper.prototype.getValueByPath = function (configValue) {
-        return configValue
-            .split(".")
-            .map(function (part) { return "".concat(part); })
-            .join("?.");
+    Mapper.renderTemplateForKeySelect = function (_a) {
+        var pathConfig = _a.pathConfig, parentTarget = _a.parentTarget, relativeToMapper = _a.relativeToMapper, targetPath = _a.targetPath, targetKey = _a.targetKey, configValue = _a.configValue, _b = _a.nested, nested = _b === void 0 ? false : _b;
+        var _c = __read(pathConfig), keyPath = _c[0], restPaths = _c.slice(1);
+        var path = [parentTarget, keyPath.path].filter(Boolean).join("?.");
+        var sourcePath = relativeToMapper ? path : keyPath.path;
+        if (restPaths.length > 0 && nested) {
+            var nestedAction = Mapper.renderTemplateForKeySelect({
+                pathConfig: restPaths,
+                parentTarget: "item",
+                relativeToMapper: false,
+                targetPath: "item",
+                targetKey: "",
+                configValue: configValue,
+                nested: true,
+            });
+            return "try {\n        return item.".concat(sourcePath, ".map((item) => { ").concat(nestedAction, " });\n      } catch(error) {\n        __errors.push(\"Mapping error at field '").concat(targetPath, "' from source field '").concat(configValue, "': \" + error.message);\n      }");
+        }
+        if (restPaths.length > 0) {
+            var nestedAction = Mapper.renderTemplateForKeySelect({
+                pathConfig: restPaths,
+                parentTarget: "item",
+                relativeToMapper: false,
+                targetPath: "item",
+                targetKey: "",
+                configValue: configValue,
+                nested: true,
+            });
+            return "try {\n        target.".concat(targetPath, " = source.").concat(sourcePath, ".map((item) => {\n          ").concat(nestedAction, "\n        }) || cache['").concat(parentTarget, "__defValues']?.").concat(targetKey, ";\n      } catch(error) {\n        __errors.push(\"Mapping error at field '").concat(targetPath, "' from source field '").concat(configValue, "': \" + error.message);\n      }");
+        }
+        if (nested) {
+            return "try {\n        return item.".concat(sourcePath, ";\n      } catch(error) {\n        __errors.push(\"Mapping error at field '").concat(targetPath, "' from source field '").concat(configValue, "': \" + error.message);\n      }");
+        }
+        return "try {\n      target.".concat(targetPath, " = source.").concat(sourcePath, " || cache['").concat(parentTarget, "__defValues']?.").concat(targetKey, ";\n    } catch(error) {\n      __errors.push(\"Mapping error at field '").concat(targetPath, "' from source field '").concat(configValue, "': \" + error.message);\n    }");
     };
     Mapper.prototype.createCompiler = function (_a, cache, parentTarget, // "foo.bar"
     relativeToMapper) {
@@ -48,9 +77,16 @@ var Mapper = /** @class */ (function () {
             return "try {\n            target.".concat(targetPath, " = {};\n            ").concat(transformFunc, "\n          } catch(error) {\n            __errors.push(\"Mapping error at Mapper '").concat(targetPath, "': \" + error.message);\n          }");
         }
         else if (typeof configValue === "string") {
-            var configPath = this.getValueByPath(configValue);
-            var path = [parentTarget, configPath].filter(Boolean).join("?.");
-            return "try {\n            target.".concat(targetPath, " = source.").concat(relativeToMapper ? path : configPath, " || cache['").concat(parentTarget, "__defValues']?.").concat(targetKey, ";\n          } catch(error) {\n            __errors.push(\"Mapping error at field '").concat(targetPath, "' from source field '").concat(configValue, "': \" + error.message);\n          }");
+            var pathConfig = (0, utils_1.getValueByPath)(configValue);
+            return Mapper.renderTemplateForKeySelect({
+                pathConfig: pathConfig,
+                parentTarget: parentTarget,
+                relativeToMapper: relativeToMapper,
+                targetPath: targetPath,
+                targetKey: targetKey,
+                configValue: configValue,
+                nested: false,
+            });
         }
         else if (typeof configValue === "object" && configValue !== null) {
             var nestedMapping = this.getCompiledFnBody(configValue, targetPath);

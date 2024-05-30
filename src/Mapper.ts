@@ -3,6 +3,7 @@ import {
   MappingConfiguration,
   MappingResult,
 } from "./interface";
+import { getValueByPath, PathObject } from "./utils";
 
 export class Mapper<Source, Target> {
   private transformFunction:
@@ -23,11 +24,78 @@ export class Mapper<Source, Target> {
     this.createCompiler = this.createCompiler.bind(this);
   }
 
-  private getValueByPath(configValue: string): string {
-    return configValue
-      .split(".")
-      .map((part) => `${part}`)
-      .join("?.");
+  private static renderTemplateForKeySelect({
+    pathConfig,
+    parentTarget,
+    relativeToMapper,
+    targetPath,
+    targetKey,
+    configValue,
+    nested = false,
+  }: {
+    pathConfig: PathObject[];
+    parentTarget?: string;
+    relativeToMapper: boolean;
+    targetPath: string;
+    targetKey: string;
+    configValue: string;
+    nested: boolean;
+  }): string {
+    const [keyPath, ...restPaths] = pathConfig;
+    const path = [parentTarget, keyPath.path].filter(Boolean).join("?.");
+    const sourcePath = relativeToMapper ? path : keyPath.path;
+
+    if (restPaths.length > 0 && nested) {
+      const nestedAction = Mapper.renderTemplateForKeySelect({
+        pathConfig: restPaths,
+        parentTarget: "item",
+        relativeToMapper: false,
+        targetPath: "item",
+        targetKey: "",
+        configValue,
+        nested: true,
+      });
+
+      return `try {
+        return item.${sourcePath}.map((item) => { ${nestedAction} });
+      } catch(error) {
+        __errors.push("Mapping error at field '${targetPath}' from source field '${configValue}': " + error.message);
+      }`;
+    }
+
+    if (restPaths.length > 0) {
+      const nestedAction = Mapper.renderTemplateForKeySelect({
+        pathConfig: restPaths,
+        parentTarget: "item",
+        relativeToMapper: false,
+        targetPath: "item",
+        targetKey: "",
+        configValue,
+        nested: true,
+      });
+
+      return `try {
+        target.${targetPath} = source.${sourcePath}.map((item) => {
+          ${nestedAction}
+        }) || cache['${parentTarget}__defValues']?.${targetKey};
+      } catch(error) {
+        __errors.push("Mapping error at field '${targetPath}' from source field '${configValue}': " + error.message);
+      }`;
+    }
+
+    if (nested) {
+      return `try {
+        return item.${sourcePath};
+      } catch(error) {
+        __errors.push("Mapping error at field '${targetPath}' from source field '${configValue}': " + error.message);
+      }`;
+    }
+
+    return `try {
+      target.${targetPath} = source.${sourcePath} || cache['${parentTarget}__defValues']?.${targetKey};
+    } catch(error) {
+      __errors.push("Mapping error at field '${targetPath}' from source field '${configValue}': " + error.message);
+    }`;
   }
 
   private createCompiler(
@@ -62,14 +130,17 @@ export class Mapper<Source, Target> {
             __errors.push("Mapping error at Mapper '${targetPath}': " + error.message);
           }`;
     } else if (typeof configValue === "string") {
-      const configPath = this.getValueByPath(configValue);
-      const path = [parentTarget, configPath].filter(Boolean).join("?.");
+      const pathConfig = getValueByPath(configValue);
 
-      return `try {
-            target.${targetPath} = source.${relativeToMapper ? path : configPath} || cache['${parentTarget}__defValues']?.${targetKey};
-          } catch(error) {
-            __errors.push("Mapping error at field '${targetPath}' from source field '${configValue}': " + error.message);
-          }`;
+      return Mapper.renderTemplateForKeySelect({
+        pathConfig,
+        parentTarget,
+        relativeToMapper,
+        targetPath,
+        targetKey,
+        configValue,
+        nested: false,
+      });
     } else if (typeof configValue === "object" && configValue !== null) {
       const nestedMapping = this.getCompiledFnBody(
         configValue as MappingConfiguration<any, any>,
@@ -111,7 +182,6 @@ export class Mapper<Source, Target> {
     cache: { [key: string]: any },
   ) => MappingResult<Target> {
     const body = this.getCompiledFnBody(mappingConfig, parentTarget);
-
     const func = new Function(`source, target, __errors, cache`, `${body}`);
 
     return func as (

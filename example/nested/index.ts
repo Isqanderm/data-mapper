@@ -6,7 +6,7 @@ class Employee {
     public name: string,
     public email: string,
     public age: number,
-    public array: { number: number }[],
+    public array: { numbers: { number: number }[] }[],
     public address: {
       city: string;
       street: string;
@@ -30,7 +30,7 @@ interface EmployeeDTO {
       floor: string;
     };
   };
-  array: number;
+  array: number[];
 }
 
 const mappingConfig: MappingConfiguration<Employee, EmployeeDTO> = {
@@ -46,8 +46,7 @@ const mappingConfig: MappingConfiguration<Employee, EmployeeDTO> = {
       floor: "address.floor",
     },
   },
-  // @ts-ignore
-  array: "array[0].number",
+  array: "array.[].numbers.[0].number",
 };
 const employeeMapper = new Mapper<Employee, EmployeeDTO>(mappingConfig);
 
@@ -55,7 +54,7 @@ const employee = new Employee(
   "John Doe",
   "john.doe@example.com",
   30,
-  [{ number: 1 }, { number: 2 }],
+  [{ numbers: [{ number: 1 }] }, { numbers: [{ number: 2 }] }],
   {
     city: "Moscow",
     street: "Red square",
@@ -68,4 +67,3 @@ const employee = new Employee(
 const employeeDTO = employeeMapper.execute(employee);
 
 console.log(employeeDTO);
-// { fullName: 'John Doe', emailAddress: 'john.doe@example.com', isAdult: true }
