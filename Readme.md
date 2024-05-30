@@ -76,6 +76,41 @@ const mapper = new UserMapper<User, TargetUser>({
 const target = mapper.execute(sourceObject);
 ```
 
+Array Selectors
+om-data-mapper supports array selectors for iterating over arrays and selecting specific elements by index.
+
+[] - Iterates over an array.
+[0] - Selects the element at the specified index.
+Example: Iterating Over an Array
+
+```typescript
+const mapper = new DataMapper<Source, Target>({
+  items: 'array.[]'
+});
+
+const source = {
+  array: [1, 2, 3]
+};
+
+const target = mapper.execute(source);
+// target.items will be [1, 2, 3]
+```
+
+Example: Selecting an Element by Index
+
+```typescript
+const mapper = new DataMapper<Source, Target>({
+  firstItem: 'array.[0]'
+});
+
+const source = {
+  array: [1, 2, 3]
+};
+
+const target = mapper.execute(source);
+// target.firstItem will be 1
+```
+
 ## License
 
 `om-data-mapper` is distributed under the MIT license. See the LICENSE file in the root directory of the project for more information.
