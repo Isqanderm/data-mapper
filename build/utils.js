@@ -34,7 +34,7 @@ function getValueByPath(path) {
                 pathObject.path = chunk.part;
             }
             else {
-                pathObject.path += ".".concat(chunk.part);
+                pathObject.path += "?.".concat(chunk.part);
             }
         }
         else if ((chunk === null || chunk === void 0 ? void 0 : chunk.type) === "index") {

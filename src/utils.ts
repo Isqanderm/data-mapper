@@ -35,7 +35,7 @@ export function getValueByPath(path: string): PathObject[] {
       if (!pathObject.path) {
         pathObject.path = chunk.part;
       } else {
-        pathObject.path += `.${chunk.part}`;
+        pathObject.path += `?.${chunk.part}`;
       }
     } else if (chunk?.type === "index") {
       pathObject.path += chunk.part;

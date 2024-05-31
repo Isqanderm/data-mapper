@@ -76,11 +76,13 @@ const mapper = new UserMapper<User, TargetUser>({
 const target = mapper.execute(sourceObject);
 ```
 
-Array Selectors
-om-data-mapper supports array selectors for iterating over arrays and selecting specific elements by index.
+### Array Selectors
+`om-data-mapper` supports array selectors for iterating over arrays and selecting specific elements by index.
 
 [] - Iterates over an array.
+
 [0] - Selects the element at the specified index.
+
 Example: Iterating Over an Array
 
 ```typescript
