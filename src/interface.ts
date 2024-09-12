@@ -42,3 +42,7 @@ export interface MappingResult<T> {
   result: T;
   errors: string[];
 }
+
+export interface MapperConfig {
+  useUnsafe: boolean;
+}

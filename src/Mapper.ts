@@ -1,5 +1,5 @@
 import {
-  DefaultValues,
+  DefaultValues, MapperConfig,
   MappingConfiguration,
   MappingResult,
 } from "./interface";
@@ -19,6 +19,7 @@ export class Mapper<Source, Target> {
   constructor(
     private readonly mappingConfig: MappingConfiguration<Source, Target>,
     private readonly defaultValues?: DefaultValues<Target>,
+    private readonly config?: MapperConfig
   ) {
     this.execute = this.execute.bind(this);
     this.createCompiler = this.createCompiler.bind(this);
@@ -32,6 +33,7 @@ export class Mapper<Source, Target> {
     targetKey,
     configValue,
     nested = false,
+    config,
   }: {
     pathConfig: PathObject[];
     parentTarget?: string;
@@ -40,6 +42,7 @@ export class Mapper<Source, Target> {
     targetKey: string;
     configValue: string;
     nested: boolean;
+    config?: MapperConfig,
   }): string {
     const [keyPath, ...restPaths] = pathConfig;
     const path = [parentTarget, keyPath.path].filter(Boolean).join("?.");
@@ -54,10 +57,19 @@ export class Mapper<Source, Target> {
         targetKey: "",
         configValue,
         nested: true,
+        config,
       });
 
-      return `try {
+      const body = `
         return item.${sourcePath}.map((item) => { ${nestedAction} });
+      `;
+
+      if (config?.useUnsafe) {
+        return body;
+      }
+
+      return `try {
+        ${body}
       } catch(error) {
         __errors.push("Mapping error at field '${targetPath}' from source field '${configValue}': " + error.message);
       }`;
@@ -72,27 +84,52 @@ export class Mapper<Source, Target> {
         targetKey: "",
         configValue,
         nested: true,
+        config,
       });
 
-      return `try {
+      const body = `
         target.${targetPath} = source.${sourcePath}.map((item) => {
           ${nestedAction}
         }) || cache['${parentTarget}__defValues']?.${targetKey};
+      `
+
+      if (config?.useUnsafe) {
+        return body;
+      }
+
+      return `try {
+        ${body}
       } catch(error) {
         __errors.push("Mapping error at field '${targetPath}' from source field '${configValue}': " + error.message);
       }`;
     }
 
     if (nested) {
-      return `try {
+      const body = `
         return item.${sourcePath};
+      `;
+
+      if (config?.useUnsafe) {
+        return body
+      }
+
+      return `try {
+        ${body}
       } catch(error) {
         __errors.push("Mapping error at field '${targetPath}' from source field '${configValue}': " + error.message);
       }`;
     }
 
-    return `try {
+    const body = `
       target.${targetPath} = source.${sourcePath} || cache['${parentTarget}__defValues']?.${targetKey};
+    `;
+
+    if (config?.useUnsafe) {
+      return body;
+    }
+
+    return `try {
+      ${body}
     } catch(error) {
       __errors.push("Mapping error at field '${targetPath}' from source field '${configValue}': " + error.message);
     }`;
@@ -110,11 +147,21 @@ export class Mapper<Source, Target> {
     const targetPath = [parentTarget, targetKey].filter(Boolean).join(".");
     if (typeof configValue === "function") {
       cache[`${targetPath}__handler`] = configValue;
-      return `try {
-            target.${targetPath} = (cache['${targetPath}__handler'])(source${parentTarget ? `.${parentTarget}` : ""});
-          } catch(error) {
-            __errors.push("Mapping error at field by function '${targetPath}': " + error.message);
-          }`;
+      const body = `
+        target.${targetPath} = (cache['${targetPath}__handler'])(source${parentTarget ? `.${parentTarget}` : ""});
+      `;
+
+      if (this.config?.useUnsafe) {
+        return body;
+      }
+
+      return `
+        try {
+          ${body}
+        } catch(error) {
+          __errors.push("Mapping error at field by function '${targetPath}': " + error.message);
+        }
+      `;
     } else if (configValue instanceof Mapper) {
       const transformFunc = configValue.getCompiledFnBody(
         configValue.mappingConfig,
@@ -123,12 +170,23 @@ export class Mapper<Source, Target> {
       );
       cache[`${targetPath}__defValues`] = configValue.defaultValues;
       Object.assign(cache, configValue.cache);
-      return `try {
-            target.${targetPath} = {};
-            ${transformFunc}
-          } catch(error) {
-            __errors.push("Mapping error at Mapper '${targetPath}': " + error.message);
-          }`;
+
+      const body = `
+        target.${targetPath} = {};
+        ${transformFunc}
+      `;
+
+      if (this.config?.useUnsafe) {
+        return body;
+      }
+
+      return `
+        try {
+          ${body}
+        } catch(error) {
+          __errors.push("Mapping error at Mapper '${targetPath}': " + error.message);
+        }
+      `;
     } else if (typeof configValue === "string") {
       const pathConfig = getValueByPath(configValue);
 
@@ -140,6 +198,7 @@ export class Mapper<Source, Target> {
         targetKey,
         configValue,
         nested: false,
+        config: this.config,
       });
     } else if (typeof configValue === "object" && configValue !== null) {
       const nestedMapping = this.getCompiledFnBody(
@@ -151,12 +210,23 @@ export class Mapper<Source, Target> {
           this.defaultValues[targetKey]
         : undefined;
       Object.assign(cache, this.cache);
-      return `try {
-            target.${targetPath} = {};
-            ${nestedMapping}
-          } catch(error) {
-            __errors.push("Mapping error at nested field '${targetPath}': " + error.message);
-          }`;
+
+      const body = `
+        target.${targetPath} = {};
+        ${nestedMapping}
+      `;
+
+      if (this.config?.useUnsafe) {
+        return body;
+      }
+
+      return `
+        try {
+          ${body}
+        } catch(error) {
+          __errors.push("Mapping error at nested field '${targetPath}': " + error.message);
+        }
+      `;
     }
   }
 

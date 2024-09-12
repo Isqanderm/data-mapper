@@ -46,7 +46,7 @@ interface Target {
 const countryMapper = new Mapper<Country, CountryDTO>({
   countryName: "name",
   countryCode: "code",
-});
+}, {}, { useUnsafe: true } );
 
 const addressMapper = new Mapper<Address, AddressDTO>({
   streetName: "street",
@@ -58,7 +58,7 @@ const addressMapper = new Mapper<Address, AddressDTO>({
     }
     return `${source.city}, ${source.street}, ${source.country.name}`;
   },
-});
+}, {} , { useUnsafe: true });
 
 const mappingConfig: MappingConfiguration<Source, Target> = {
   userId: "id",
@@ -99,9 +99,9 @@ const sourceDataWithError: Source = {
   },
 };
 
-const mapper = new Mapper<Source, Target>(mappingConfig);
+const mapper = new Mapper<Source, Target>(mappingConfig, {}, { useUnsafe: true });
 
-function alternativeMapper(source: Source): Target {
+function vanillaMapper(source: Source): Target {
   const location = source.address;
   const country = location.country;
 
@@ -112,7 +112,41 @@ function alternativeMapper(source: Source): Target {
       countryName: country?.name,
       countryCode: country?.code,
     },
-    fullAddress: `${location.city}, ${location.street}, ${country?.name}`,
+    fullAddress: `${location.city}, ${location.street}, ${location.country?.name}`,
+  };
+
+  return {
+    userId: source.id,
+    fullName: source.name,
+    age: source.details.age,
+    address,
+  };
+}
+
+const fullAddress = (source: any) => {
+  if (!source.city || !source.street || !source.country?.name) {
+    throw new Error("Incomplete address data");
+  }
+  return `${source.city}, ${source.street}, ${source.country.name}`;
+}
+
+function alternativeMapper(source: Source): Target {
+  const location = source.address;
+  const country = location.country;
+
+  let fullAddressResult = "";
+  try {
+    fullAddressResult = fullAddress(location)
+  } catch (e) {}
+
+  const address: AddressDTO = {
+    streetName: location.street,
+    cityName: location.city,
+    country: {
+      countryName: country?.name,
+      countryCode: country?.code,
+    },
+    fullAddress: fullAddressResult,
   };
 
   return {
@@ -134,7 +168,7 @@ suite
     mapper.execute(sourceDataWithError);
   })
   .add("Vanilla mapper with valid data", function () {
-    alternativeMapper(sourceData)
+    vanillaMapper(sourceData)
   })
   .add("Vanilla mapper with invalid data", function () {
     alternativeMapper(sourceDataWithError)

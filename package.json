@@ -1,6 +1,6 @@
 {
   "name": "om-data-mapper",
-  "version": "1.5.1",
+  "version": "1.6.0",
   "description": "Data mapper",
   "private": false,
   "main": "build/index.js",
@@ -24,7 +24,6 @@
   ],
   "files": [
     "build",
-    "src",
     "README.md",
     "LICENSE"
   ],

@@ -113,6 +113,16 @@ const target = mapper.execute(source);
 // target.firstItem will be 1
 ```
 
+## UnSafe Mode
+
+You can can pass config to mapper `{ unsafe: true }` then all try/catch will be removed from compile mapper function
+
+```typescript
+new Mapper(mappingConfig, defaultValues, { unsafe: true });
+```
+
+this will greatly improve performance, but errors inside the conversion will not be intercepted.
+
 ## License
 
 `om-data-mapper` is distributed under the MIT license. See the LICENSE file in the root directory of the project for more information.
