@@ -35,12 +35,12 @@ class UserDTO {
   address?: AddressDTO;
 }
 
-const countryMapper = new Mapper<Country, CountryDTO>({
+const countryMapper = Mapper.create<Country, CountryDTO>({
   countryName: "name",
   countryCode: "code"
 });
 
-const addressMapper = new Mapper<Address, AddressDTO>({
+const addressMapper = Mapper.create<Address, AddressDTO>({
   streetName: "street",
   cityName: "city",
   country: countryMapper,
@@ -52,7 +52,7 @@ const addressMapper = new Mapper<Address, AddressDTO>({
   }
 });
 
-const userMapper = new Mapper<User, UserDTO>({
+const userMapper = Mapper.create<User, UserDTO>({
   fullName: "name",
   isAdult: (source) => {
     if (source.age === undefined) {

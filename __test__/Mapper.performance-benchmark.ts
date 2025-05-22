@@ -34,7 +34,7 @@ const sourceData: Source = {
   },
 };
 
-const mapper = new Mapper<Source, Target>(mappingConfig);
+const mapper = Mapper.create<Source, Target>(mappingConfig);
 
 function alternativeMapper(source: Source): Target {
   return {

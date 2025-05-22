@@ -13,15 +13,13 @@ class EmployeeDTO {
   fullName?: string;
   emailAddress?: string;
   isAdult?: boolean;
-}
+};
 
-const mappingConfig: MappingConfiguration<Employee, EmployeeDTO> = {
+const employeeMapper = Mapper.create<Employee, EmployeeDTO>({
   fullName: "person.fullName",
   emailAddress: "email",
   isAdult: (source) => source.age >= 18,
-};
-
-const employeeMapper = new Mapper<Employee, EmployeeDTO>(mappingConfig);
+});
 
 const employee = new Employee(
   { fullName: "John Doe" },

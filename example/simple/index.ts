@@ -1,30 +1,43 @@
-import { MappingConfiguration } from "../../src/interface";
 import { Mapper } from "../../src";
 
-class Employee {
-  constructor(
-    public name: string,
-    public email: string,
-    public age: number,
-  ) {}
+type Employee = {
+  name: string,
+  email: string,
+  age: number,
+  jobId: number,
 }
 
-class EmployeeDTO {
-  fullName?: string;
-  emailAddress?: string;
-  isAdult?: boolean;
+type EmployeeDTO = {
+  fullName: string;
+  name: string;
+  emailAddress: string;
+  isAdult: boolean;
 }
 
-const mappingConfig: MappingConfiguration<Employee, EmployeeDTO> = {
+const employeeMapper = Mapper.create<Employee, EmployeeDTO>({
   fullName: "name",
   emailAddress: "email",
+  name: 'name',
   isAdult: (source) => source.age >= 18,
+});
+
+const employee: Employee = {
+  name: 'John Doe',
+  email: 'john.doe@example.com',
+  age: 30,
+  jobId: 1,
 };
-
-const employeeMapper = new Mapper<Employee, EmployeeDTO>(mappingConfig);
-
-const employee = new Employee("John Doe", "john.doe@example.com", 30);
 const employeeDTO = employeeMapper.execute(employee);
 
 console.log(employeeDTO);
-// { fullName: 'John Doe', emailAddress: 'john.doe@example.com', isAdult: true }
+
+// {
+//   errors: [],
+//   result: {
+//     fullName: 'John Doe',
+//     emailAddress: 'john.doe@example.com',
+//     name: 'John Doe',
+//     isAdult: true
+//   }
+// }
+

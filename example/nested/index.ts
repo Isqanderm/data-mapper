@@ -1,4 +1,3 @@
-import { MappingConfiguration } from "../../src/interface";
 import { Mapper } from "../../src";
 
 class Employee {
@@ -27,13 +26,13 @@ interface EmployeeDTO {
     houseNumber: number;
     full: {
       apartment: number;
-      floor: string;
+      floor: number;
     };
   };
   array: number[];
-}
+};
 
-const mappingConfig: MappingConfiguration<Employee, EmployeeDTO> = {
+const employeeMapper = Mapper.create<Employee, EmployeeDTO>({
   fullName: "name",
   emailAddress: "email",
   isAdult: (source) => source.age >= 18,
@@ -47,8 +46,7 @@ const mappingConfig: MappingConfiguration<Employee, EmployeeDTO> = {
     },
   },
   array: "array.[].numbers.[0].number",
-};
-const employeeMapper = new Mapper<Employee, EmployeeDTO>(mappingConfig);
+});
 
 const employee = new Employee(
   "John Doe",

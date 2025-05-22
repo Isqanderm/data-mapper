@@ -32,7 +32,7 @@ interface UserNestedDTO {
 
 describe("Mapper", () => {
   it("maps simple properties correctly", () => {
-    const userMapper = new Mapper<User, UserDTO>({
+    const userMapper = Mapper.create<User, UserDTO>({
       fullName: "name",
       address: "address",
     });
@@ -44,7 +44,7 @@ describe("Mapper", () => {
   });
 
   it("maps nested properties correctly using dot notation", () => {
-    const userMapper = new Mapper<User, UserNestedDTO>({
+    const userMapper = Mapper.create<User, UserNestedDTO>({
       fullName: "name",
       streetName: "address.street",
       cityName: "address.city",
@@ -58,7 +58,7 @@ describe("Mapper", () => {
   });
 
   it("handles transformation functions correctly", () => {
-    const userMapper = new Mapper<User, UserDTO>({
+    const userMapper = Mapper.create<User, UserDTO>({
       fullName: "name",
       address: (user) => ({
         streetName: user.address.street.toUpperCase(),
@@ -74,11 +74,11 @@ describe("Mapper", () => {
   });
 
   it("should correctly map using a nested mapper", () => {
-    const addressMapper = new Mapper<Address, AddressDTO>({
+    const addressMapper = Mapper.create<Address, AddressDTO>({
       cityName: "city",
       streetName: "street",
     });
-    const userMapper = new Mapper<User, UserDTO>({
+    const userMapper = Mapper.create<User, UserDTO>({
       fullName: "name",
       address: addressMapper,
     });
@@ -129,17 +129,17 @@ describe("Mapper", () => {
         contactInfo: ContactInfoDTO;
       }
 
-      const addressMapper = new Mapper<Address, AddressDTO>({
+      const addressMapper = Mapper.create<Address, AddressDTO>({
         city: "city",
         street: "street",
       });
 
-      const contactInfoMapper = new Mapper<ContactInfo, ContactInfoDTO>({
+      const contactInfoMapper = Mapper.create<ContactInfo, ContactInfoDTO>({
         email: "email",
         address: addressMapper,
       });
 
-      const personMapper = new Mapper<Person, PersonDTO>({
+      const personMapper = Mapper.create<Person, PersonDTO>({
         name: "name",
         contactInfo: contactInfoMapper,
       });
@@ -181,7 +181,7 @@ describe("Mapper", () => {
       };
     }
 
-    const userMapper = new Mapper<User, UserDTO>(
+    const userMapper = Mapper.create<User, UserDTO>(
       {
         firstName: "name",
         lastName: "lastName",
@@ -221,14 +221,14 @@ describe("Mapper", () => {
       ) {}
     }
 
-    const addressMapper = new Mapper<Address, AddressDTO>(
+    const addressMapper = Mapper.create<Address, AddressDTO>(
       {
         cityName: "city",
         streetName: "street",
       },
       { streetName: "AnyStreet" },
     );
-    const userMapper = new Mapper<User, UserDTO>({
+    const userMapper = Mapper.create<User, UserDTO>({
       fullName: "name",
       address: addressMapper,
     });
@@ -296,7 +296,7 @@ describe("Mapper", () => {
       // @ts-ignore
       array: "array[0].number",
     };
-    const employeeMapper = new Mapper<Employee, EmployeeDTO>(mappingConfig);
+    const employeeMapper = Mapper.create<Employee, EmployeeDTO>(mappingConfig);
 
     const employee = new Employee(
       "John Doe",

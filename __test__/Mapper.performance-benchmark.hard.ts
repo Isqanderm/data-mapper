@@ -43,12 +43,12 @@ interface Target {
   address: AddressDTO;
 }
 
-const countryMapper = new Mapper<Country, CountryDTO>({
+const countryMapper = Mapper.create<Country, CountryDTO>({
   countryName: "name",
   countryCode: "code",
 }, {}, { useUnsafe: true } );
 
-const addressMapper = new Mapper<Address, AddressDTO>({
+const addressMapper = Mapper.create<Address, AddressDTO>({
   streetName: "street",
   cityName: "city",
   country: countryMapper,
@@ -99,7 +99,7 @@ const sourceDataWithError: Source = {
   },
 };
 
-const mapper = new Mapper<Source, Target>(mappingConfig, {}, { useUnsafe: true });
+const mapper = Mapper.create<Source, Target>(mappingConfig, {}, { useUnsafe: true });
 
 function vanillaMapper(source: Source): Target {
   const location = source.address;

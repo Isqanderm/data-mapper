@@ -4,7 +4,7 @@ export function parsePath(path: string) {
   return path
     .split(".")
     .reduce<
-      { part: string; type: "array" | "index" | "key" }[]
+      { part: string; type: "array" | "index" | "key" | 'args_index' }[]
     >((accum, next) => {
       if (next.startsWith("[") && next.endsWith("]")) {
         if (next.length === 2) {
@@ -12,6 +12,8 @@ export function parsePath(path: string) {
         } else {
           accum.push({ part: next, type: "index" });
         }
+      } else if (next.startsWith('$')) {
+        accum.push({ part: next.slice(1), type: "args_index" });
       } else {
         accum.push({ part: next, type: "key" });
       }
@@ -39,6 +41,8 @@ export function getValueByPath(path: string): PathObject[] {
       }
     } else if (chunk?.type === "index") {
       pathObject.path += chunk.part;
+    } else if (chunk?.type === "args_index") {
+      pathObject.path += `[${chunk.part}]`;
     } else if (chunk?.type === "array") {
       result.push(pathObject);
       pathObject = { path: "" };

@@ -16,13 +16,21 @@ export class Mapper<Source, Target> {
     | undefined;
   private readonly cache: { [key: string]: any } = {};
 
-  constructor(
+  private constructor(
     private readonly mappingConfig: MappingConfiguration<Source, Target>,
     private readonly defaultValues?: DefaultValues<Target>,
     private readonly config?: MapperConfig
   ) {
     this.execute = this.execute.bind(this);
     this.createCompiler = this.createCompiler.bind(this);
+  }
+
+  public static create<Source, Target>(
+    mappingConfig: MappingConfiguration<Source, Target>,
+    defaultValues?: DefaultValues<Target>,
+    config?: MapperConfig
+  ) {
+    return new Mapper<Source, Target>(mappingConfig, defaultValues, config);
   }
 
   private static renderTemplateForKeySelect({
@@ -61,7 +69,7 @@ export class Mapper<Source, Target> {
       });
 
       const body = `
-        return item.${sourcePath}.map((item) => { ${nestedAction} });
+        return item?.${sourcePath}?.map((item) => { ${nestedAction} });
       `;
 
       if (config?.useUnsafe) {
@@ -88,7 +96,7 @@ export class Mapper<Source, Target> {
       });
 
       const body = `
-        target.${targetPath} = source.${sourcePath}.map((item) => {
+        target.${targetPath} = source?.${sourcePath}?.map((item) => {
           ${nestedAction}
         }) || cache['${parentTarget}__defValues']?.${targetKey};
       `
@@ -121,7 +129,7 @@ export class Mapper<Source, Target> {
     }
 
     const body = `
-      target.${targetPath} = source.${sourcePath} || cache['${parentTarget}__defValues']?.${targetKey};
+      target.${targetPath} = source?.${sourcePath} || cache['${parentTarget}__defValues']?.${targetKey};
     `;
 
     if (config?.useUnsafe) {
@@ -202,7 +210,7 @@ export class Mapper<Source, Target> {
       });
     } else if (typeof configValue === "object" && configValue !== null) {
       const nestedMapping = this.getCompiledFnBody(
-        configValue as MappingConfiguration<any, any>,
+        configValue as any,
         targetPath,
       );
       cache[`${targetPath}__defValues`] = this.defaultValues

@@ -10,7 +10,7 @@ class Target {
   problematicField?: string;
 }
 
-const mapper = new Mapper<Source, Target>({
+const mapper = Mapper.create<Source, Target>({
   validField: "validField",
   problematicField: (source) => {
     if (typeof source.problematicField !== "string") {

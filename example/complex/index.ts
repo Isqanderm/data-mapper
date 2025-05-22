@@ -21,7 +21,7 @@ class UserDTO {
   address?: AddressDTO;
 }
 
-const addressMapper = new Mapper<Address, AddressDTO>({
+const addressMapper = Mapper.create<Address, AddressDTO>({
   streetName: "street",
   cityName: "city",
   fullAddress: function (object) {
@@ -29,7 +29,7 @@ const addressMapper = new Mapper<Address, AddressDTO>({
   },
 });
 
-const userMapper = new Mapper<User, UserDTO>({
+const userMapper = Mapper.create<User, UserDTO>({
   fullName: "name",
   address: addressMapper,
 });
