@@ -7,11 +7,13 @@ export type ExcludeMapperProperties<T> = {
   [K in keyof T as T[K] extends Mapper<any, any> ? never : K]: T[K]
 };
 
-/** Делаем все поля nullable */
-export type Nullable<T> = { [K in keyof T]: T[K] | null };
-
 /** Значения по умолчанию для Target, частичные и допускают null */
-export type DefaultValues<T> = Partial<Nullable<ExcludeMapperProperties<T>>>;
+export type DefaultValues<T> = {
+  [K in keyof ExcludeMapperProperties<T>]?:
+  T[K] extends object
+    ? DefaultValues<T[K]> | null
+    : T[K] | null;
+};
 
 /** Извлекаем тип элемента массива */
 export type ExtractArrayType<T> = T extends readonly (infer U)[] ? U : T;

@@ -1,22 +1,22 @@
 import { Mapper } from "../../src";
 
-class Address {
+type Address = {
   street?: string;
   city?: string;
 }
 
-class AddressDTO {
+type AddressDTO = {
   streetName?: string;
   cityName?: string;
   fullAddress?: string;
 }
 
-class User {
+type User = {
   name?: string;
   address?: Address;
 }
 
-class UserDTO {
+type UserDTO = {
   fullName?: string;
   address?: AddressDTO;
 }

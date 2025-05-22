@@ -21,7 +21,7 @@ npm i --save om-data-mapper
 Simple mapping allows you to easily transform one object into another by copying or transforming its properties.
 
 ```ts
-const mapper = new UserMapper<User, TargeetUser>({
+const mapper = UserMapper.create<User, TargeetUser>({
   name: 'firstName',
   fullName: (user) => `${user.firstName} ${user.lastName}`
 });
@@ -34,10 +34,10 @@ const target = mapper.execute(sourceObject);
 Deep mapping supports the mapping of nested objects and allows the construction of complex data structures.
 
 ```ts
-const addressMapper = new AddressMapper<Address, TargetAddress>({
+const addressMapper = AddressMapper.create<Address, TargetAddress>({
   fullAddress: (address) => `${address.city}, ${address.street}, ${address.appartment}`
 })
-const mapper = new UserMapper<User, TargetUser>({
+const mapper = UserMapper.create<User, TargetUser>({
   name: 'firstName',
   addressStreet: 'address.street',
   addressCity: 'address.city',
@@ -54,7 +54,7 @@ Mapping with composition allows combining multiple mappers to create complex dat
 const addressMapper = new AddressMapper<Address, TargetAddress>({
   fullAddress: (address) => `${address.city}, ${address.street}, ${address.appartment}`
 })
-const mapper = new UserMapper<User, TargetUser>({
+const mapper = UserMapper.create<User, TargetUser>({
   name: 'firstName',
   address: addressMapper,
 });
@@ -67,7 +67,7 @@ const target = mapper.execute(sourceObject);
 Mapping with composition allows combining multiple mappers to create complex data transformations.
 
 ```typescript
-const mapper = new UserMapper<User, TargetUser>({
+const mapper = UserMapper.create<User, TargetUser>({
   name: 'firstName',
   address: {
     city: 'address.city',
@@ -88,7 +88,7 @@ const target = mapper.execute(sourceObject);
 Example: Iterating Over an Array
 
 ```typescript
-const mapper = new DataMapper<Source, Target>({
+const mapper = DataMapper.create<Source, Target>({
   items: 'array.[]'
 });
 
@@ -103,7 +103,7 @@ const target = mapper.execute(source);
 Example: Selecting an Element by Index
 
 ```typescript
-const mapper = new DataMapper<Source, Target>({
+const mapper = DataMapper.create<Source, Target>({
   firstItem: 'array.[0]'
 });
 
@@ -115,12 +115,74 @@ const target = mapper.execute(source);
 // target.firstItem will be 1
 ```
 
-## UnSafe Mode
-
-You can can pass config to mapper `{ unsafe: true }` then all try/catch will be removed from compile mapper function
+## Multiple Parameters
+You can define mappers that accept a tuple of source values, enabling lookups or cross-data transformations. Use $0, $1, etc., to refer to each element:
 
 ```typescript
-new Mapper(mappingConfig, defaultValues, { unsafe: true });
+import { Mapper } from 'om-data-mapper';
+
+type Employee = {
+  name: string;
+  email: string;
+  age: number;
+  jobId: number;
+};
+
+type JobType = {
+  id: number;
+  name: string;
+};
+
+type EmployeeDTO = {
+  fullName: string;
+  emailAddress: string;
+  isAdult: boolean;
+  job: JobType;
+  jobName: string;
+};
+
+const employeeMapper = Mapper.create<[Employee, JobType[]], EmployeeDTO>({
+  fullName: '$0.name',
+  emailAddress: '$0.email',
+  isAdult: ([emp]) => emp.age >= 18,
+  job: ([emp, jobs]) => jobs.find((j) => j.id === emp.jobId)!,
+  jobName: '$1.[0].name',
+});
+
+const jobs: JobType[] = [
+  { id: 1, name: 'Electronic' },
+  { id: 2, name: 'Janitor' },
+  { id: 3, name: 'Driver' },
+];
+
+const employee: Employee = {
+  name: 'John Doe',
+  email: 'john.doe@example.com',
+  age: 30,
+  jobId: 1,
+};
+
+const dto = employeeMapper.execute([employee, jobs]);
+
+console.log(dto);
+/*
+{
+  fullName: 'John Doe',
+  emailAddress: 'john.doe@example.com',
+  isAdult: true,
+  job: { id: 1, name: 'Electronic' },
+  jobName: 'Electronic'
+}
+*/
+
+```
+
+## UnSafe Mode
+
+You can can pass config to mapper `{ unSafe: true }` then all try/catch will be removed from compile mapper function
+
+```typescript
+new Mapper(mappingConfig, defaultValues, { unSafe: true });
 ```
 
 this will greatly improve performance, but errors inside the conversion will not be intercepted.

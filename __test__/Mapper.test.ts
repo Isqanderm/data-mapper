@@ -34,13 +34,20 @@ describe("Mapper", () => {
   it("maps simple properties correctly", () => {
     const userMapper = Mapper.create<User, UserDTO>({
       fullName: "name",
-      address: "address",
+      address: {
+        cityName: "address.city",
+        streetName: "address.street",
+      },
     });
 
     const user = new User("John Doe", new Address("123 Main St", "Anytown"));
     const { result: userDTO } = userMapper.execute(user);
 
     expect(userDTO.fullName).toBe(user.name);
+    expect(userDTO.address).toEqual({
+      cityName: user.address.city,
+      streetName: user.address.street,
+    });
   });
 
   it("maps nested properties correctly using dot notation", () => {
@@ -175,9 +182,9 @@ describe("Mapper", () => {
 
     interface UserDTO {
       firstName: string;
-      lastName: string;
+      lastName?: string;
       profile: {
-        years: number;
+        years?: number;
       };
     }
 
