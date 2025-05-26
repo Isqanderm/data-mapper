@@ -1,55 +1,74 @@
 export type PathObject = { path: string };
 
-export function parsePath(path: string) {
-  return path
-    .split(".")
-    .reduce<
-      { part: string; type: "array" | "index" | "key" | 'args_index' }[]
-    >((accum, next) => {
-      if (next.startsWith("[") && next.endsWith("]")) {
-        if (next.length === 2) {
-          accum.push({ part: next, type: "array" });
-        } else {
-          accum.push({ part: next, type: "index" });
-        }
-      } else if (next.startsWith('$')) {
-        accum.push({ part: next.slice(1), type: "args_index" });
-      } else {
-        accum.push({ part: next, type: "key" });
-      }
+type PathChunk = { type: 'key' | 'index' | 'array' | 'args_index'; part: string };
 
-      return accum;
-    }, []);
+/**
+ * Разбирает строковый путь в последовательность токенов:
+ * — ключи (word),
+ * — wildcard-массивы ([]),
+ * — числовые индексы ([0]),
+ * — аргументные индексы ($0).
+ */
+export function parsePath(path: string): PathChunk[] {
+  const tokenRegex = /(\[\]|\[\d+\]|\$\d+|[a-zA-Z$_][\w$]*)/g;
+  const parts = path.match(tokenRegex) || [];
+  return parts.map(part => {
+    if (part === '[]') {
+      return { type: 'array', part };
+    }
+    if (/^\[\d+\]$/.test(part)) {
+      return { type: 'index', part: part.slice(1, -1) };
+    }
+    if (/^\$\d+$/.test(part)) {
+      return { type: 'args_index', part: part.slice(1) };
+    }
+    return { type: 'key', part };
+  });
 }
 
-// foo.bar.[].baz.foo.[3].number
-// foo.bar
-//        map(baz.foo[3].number)
+/**
+ * Преобразует строковый путь в массив PathObject,
+ * разделяя по wildcard-массиву '[]'.
+ * Для ключей и индексов добавляет '?.' после первого сегмента.
+ */
 export function getValueByPath(path: string): PathObject[] {
   const chunks = parsePath(path);
   const result: PathObject[] = [];
-  let pathObject = { path: "" };
+  let currentPath = '';
 
-  while (chunks.length) {
-    const chunk = chunks.shift();
+  const pushCurrent = (): void => {
+    if (currentPath) {
+      result.push({ path: currentPath });
+      currentPath = '';
+    }
+  };
 
-    if (chunk?.type === "key") {
-      if (!pathObject.path) {
-        pathObject.path = chunk.part;
-      } else {
-        pathObject.path += `?.${chunk.part}`;
-      }
-    } else if (chunk?.type === "index") {
-      pathObject.path += chunk.part;
-    } else if (chunk?.type === "args_index") {
-      pathObject.path += `[${chunk.part}]`;
-    } else if (chunk?.type === "array") {
-      result.push(pathObject);
-      pathObject = { path: "" };
+  for (const chunk of chunks) {
+    switch (chunk.type) {
+      case 'array':
+        // wildcard: завершить текущий сегмент
+        pushCurrent();
+        break;
+
+      case 'key':
+        // первый ключ без '?.', последующие — с опциональным связыванием
+        currentPath = currentPath
+          ? `${currentPath}?.${chunk.part}`
+          : chunk.part;
+        break;
+
+      case 'index':
+      case 'args_index':
+        // числовой или аргументный индекс: первый раз без '?.', далее — с
+        currentPath = currentPath
+          ? `${currentPath}?.[${chunk.part}]`
+          : `[${chunk.part}]`;
+        break;
     }
   }
 
-  result.push(pathObject);
+  // добавить остаток пути
+  pushCurrent();
 
   return result;
 }

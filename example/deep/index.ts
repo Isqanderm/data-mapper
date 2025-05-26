@@ -13,7 +13,7 @@ class EmployeeDTO {
   fullName?: string;
   emailAddress?: string;
   isAdult?: boolean;
-};
+}
 
 const employeeMapper = Mapper.create<Employee, EmployeeDTO>({
   fullName: "person.fullName",
