@@ -1,16 +1,16 @@
 import { Mapper } from "../../src";
 
 type Employee = {
-  name: string;
-  email: string;
-  age: number;
-  jobs: JobType[];
-};
+  name: string,
+  email: string,
+  age: number,
+  jobId: number,
+}
 
 type JobType = {
   id: number;
   name: string;
-};
+}
 
 type EmployeeDTO = {
   fullName: string;
@@ -20,36 +20,36 @@ type EmployeeDTO = {
   jobName: string;
 };
 
-const employeeMapper = Mapper.create<Employee, EmployeeDTO>({
-  fullName: "name",
-  emailAddress: "email",
-  isAdult: (source) => source.age >= 18,
-  job: (source) => source.jobs[0],
-  jobName: "jobs.[0].name",
+const employeeMapper = Mapper.create<[Employee, JobType[]], EmployeeDTO>({
+  fullName: "$0.name",
+  emailAddress: "$0.email",
+  isAdult: ([source]) => source.age >= 18,
+  job: ([source, jobs]) => jobs.find((job) => job.id === source.jobId)!,
+  jobName: "$1.[0].name",
 });
 
 const jobs: JobType[] = [
   {
     id: 1,
-    name: "Electronic",
+    name: "Electronic"
   },
   {
     id: 2,
-    name: "Janitor",
+    name: "Janitor"
   },
   {
     id: 3,
-    name: "Driver",
-  },
-];
+    name: "Driver"
+  }
+]
 
 const employee: Employee = {
-  name: "John Doe",
-  email: "john.doe@example.com",
+  name: 'John Doe',
+  email: 'john.doe@example.com',
   age: 30,
-  jobs,
+  jobId: 1,
 };
-const employeeDTO = employeeMapper.execute(employee);
+const employeeDTO = employeeMapper.execute([employee, jobs]);
 
 console.log(employeeDTO);
 

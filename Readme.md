@@ -179,10 +179,10 @@ console.log(dto);
 
 ## UnSafe Mode
 
-You can can pass config to mapper `{ unSafe: true }` then all try/catch will be removed from compile mapper function
+You can can pass config to mapper `{ useUnsafe: true }` then all try/catch will be removed from compile mapper function
 
 ```typescript
-new Mapper(mappingConfig, defaultValues, { unSafe: true });
+new Mapper(mappingConfig, defaultValues, { useUnsafe: true });
 ```
 
 this will greatly improve performance, but errors inside the conversion will not be intercepted.

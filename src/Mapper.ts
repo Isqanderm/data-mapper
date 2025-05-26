@@ -1,5 +1,6 @@
 import {
-  DefaultValues, MapperConfig,
+  DefaultValues,
+  MapperConfig,
   MappingConfiguration,
   MappingResult,
 } from "./interface";
@@ -19,7 +20,7 @@ export class Mapper<Source, Target> {
   private constructor(
     private readonly mappingConfig: MappingConfiguration<Source, Target>,
     private readonly defaultValues?: DefaultValues<Target>,
-    private readonly config?: MapperConfig
+    private readonly config?: MapperConfig,
   ) {
     this.execute = this.execute.bind(this);
     this.createCompiler = this.createCompiler.bind(this);
@@ -28,7 +29,7 @@ export class Mapper<Source, Target> {
   public static create<Source, Target>(
     mappingConfig: MappingConfiguration<Source, Target>,
     defaultValues?: DefaultValues<Target>,
-    config?: MapperConfig
+    config?: MapperConfig,
   ) {
     return new Mapper<Source, Target>(mappingConfig, defaultValues, config);
   }
@@ -50,7 +51,7 @@ export class Mapper<Source, Target> {
     targetKey: string;
     configValue: string;
     nested: boolean;
-    config?: MapperConfig,
+    config?: MapperConfig;
   }): string {
     const [keyPath, ...restPaths] = pathConfig;
     const path = [parentTarget, keyPath.path].filter(Boolean).join("?.");
@@ -99,7 +100,7 @@ export class Mapper<Source, Target> {
         target.${targetPath} = source?.${sourcePath}?.map((item) => {
           ${nestedAction}
         }) || cache['${parentTarget}__defValues']?.${targetKey};
-      `
+      `;
 
       if (config?.useUnsafe) {
         return body;
@@ -114,11 +115,11 @@ export class Mapper<Source, Target> {
 
     if (nested) {
       const body = `
-        return item.${sourcePath};
+        return item${sourcePath ? `.${sourcePath}` : ""};
       `;
 
       if (config?.useUnsafe) {
-        return body
+        return body;
       }
 
       return `try {
@@ -129,7 +130,7 @@ export class Mapper<Source, Target> {
     }
 
     const body = `
-      target.${targetPath} = source?.${sourcePath} || cache['${parentTarget}__defValues']?.${targetKey};
+      target.${targetPath} = source${sourcePath ? `?.${sourcePath}` : ""} || cache['${parentTarget}__defValues']?.${targetKey};
     `;
 
     if (config?.useUnsafe) {
@@ -149,17 +150,19 @@ export class Mapper<Source, Target> {
       Mapper<any, any> | string | Function | unknown,
     ],
     cache: { [key: string]: any },
-    parentTarget: string = "", // "foo.bar"
+    parentTarget: string = "",
     relativeToMapper: boolean = false,
+    config?: MapperConfig,
   ) {
     const targetPath = [parentTarget, targetKey].filter(Boolean).join(".");
+
     if (typeof configValue === "function") {
       cache[`${targetPath}__handler`] = configValue;
       const body = `
-        target.${targetPath} = (cache['${targetPath}__handler'])(source${parentTarget ? `.${parentTarget}` : ""});
+        target.${targetPath} = source${parentTarget ? `?.${parentTarget}` : ""} ? (cache['${targetPath}__handler'])(source${parentTarget ? `?.${parentTarget}` : ""}) : cache['${parentTarget}__defValues']?.${targetKey}
       `;
 
-      if (this.config?.useUnsafe) {
+      if (config?.useUnsafe) {
         return body;
       }
 
@@ -175,8 +178,10 @@ export class Mapper<Source, Target> {
         configValue.mappingConfig,
         targetPath,
         true,
+        config,
       );
-      cache[`${targetPath}__defValues`] = configValue.defaultValues;
+      cache[`${targetPath}__defValues`] =
+        (this.defaultValues as any)?.[targetKey] || configValue.defaultValues;
       Object.assign(cache, configValue.cache);
 
       const body = `
@@ -184,7 +189,7 @@ export class Mapper<Source, Target> {
         ${transformFunc}
       `;
 
-      if (this.config?.useUnsafe) {
+      if (config?.useUnsafe) {
         return body;
       }
 
@@ -206,17 +211,18 @@ export class Mapper<Source, Target> {
         targetKey,
         configValue,
         nested: false,
-        config: this.config,
+        config,
       });
     } else if (typeof configValue === "object" && configValue !== null) {
       const nestedMapping = this.getCompiledFnBody(
         configValue as any,
         targetPath,
+        undefined,
+        config,
       );
-      cache[`${targetPath}__defValues`] = this.defaultValues
-        ? // @ts-ignore
-          this.defaultValues[targetKey]
-        : undefined;
+      cache[`${targetPath}__defValues`] = (this.defaultValues as any)?.[
+        targetKey
+      ];
       Object.assign(cache, this.cache);
 
       const body = `
@@ -224,7 +230,7 @@ export class Mapper<Source, Target> {
         ${nestedMapping}
       `;
 
-      if (this.config?.useUnsafe) {
+      if (config?.useUnsafe) {
         return body;
       }
 
@@ -242,10 +248,17 @@ export class Mapper<Source, Target> {
     mappingConfig: MappingConfiguration<Source, Target>,
     parentTarget?: string,
     relativeToMapper?: boolean,
+    config?: MapperConfig,
   ): string {
     return Object.entries(mappingConfig)
       .map((item) =>
-        this.createCompiler(item, this.cache, parentTarget, relativeToMapper),
+        this.createCompiler(
+          item,
+          this.cache,
+          parentTarget,
+          relativeToMapper,
+          config,
+        ),
       )
       .join("\n");
   }
@@ -259,7 +272,12 @@ export class Mapper<Source, Target> {
     __errors: string[],
     cache: { [key: string]: any },
   ) => MappingResult<Target> {
-    const body = this.getCompiledFnBody(mappingConfig, parentTarget);
+    const body = this.getCompiledFnBody(
+      mappingConfig,
+      parentTarget,
+      undefined,
+      this.config,
+    );
     const func = new Function(`source, target, __errors, cache`, `${body}`);
 
     return func as (
