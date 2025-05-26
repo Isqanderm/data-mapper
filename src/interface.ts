@@ -105,9 +105,6 @@ export type ValidDeepPaths<S, T> = {
 /** Числовые ключи кортежа */
 type NumericIndex<Args extends readonly any[]> = Extract<keyof Args, `${number}`>;
 
-/** Тип элемента кортежа */
-type ArgElement<Args extends readonly any[], I extends NumericIndex<Args>> = ExtractArrayType<Args[I]>;
-
 /** Пути для tuple: wildcard и индексы */
 export type ArgPath<Args extends readonly any[]> = {
   [I in NumericIndex<Args>]:
@@ -134,18 +131,27 @@ export type ValidArgPaths<Args extends readonly any[], T> = {
 
 export type MappingConfiguration<Source, Target> =
   Source extends readonly any[]
-    ? { [K in keyof Target]:
+    ? {
+      [K in keyof Target]:
       | Transformer<Source, Target[K]>
-      | Mapper<any, Target[K]>
+      | Mapper<Source, Target[K]>
       | ValidArgPaths<Source, Target[K]>
-      | (Target[K] extends object ? MappingConfiguration<Source, Target[K]> : never)
+      | (Target[K] extends object
+      ? MappingConfiguration<Source, Target[K]>
+      : never);
     }
-    : { [K in keyof Target]:
+    : {
+      [K in keyof Target]:
       | Transformer<Source, Target[K]>
-      | Mapper<any, Target[K]>
+      | (K extends keyof Source
+      ? Mapper<Source[K], Target[K]>
+      | Mapper<NonNullable<Source[K]>, NonNullable<Target[K]>>
+      : never)
       | ValidKeys<Source, Target[K]>
       | ValidDeepPaths<Source, Target[K]>
-      | (Target[K] extends object ? MappingConfiguration<Source, Target[K]> : never)
+      | (Target[K] extends object
+      ? MappingConfiguration<Source, Target[K]>
+      : never);
     };
 
 // === 7) Результаты ===
