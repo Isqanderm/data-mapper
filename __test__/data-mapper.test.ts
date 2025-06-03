@@ -32,6 +32,30 @@ describe("om-data-mapper", () => {
       expect(result.fullName).toBe("Jane Smith");
     });
 
+    it("combines fields via a transformer function into a full name  in deep field", () => {
+      type Source = { firstName: string; lastName: string };
+      type Target = {
+        user: {
+          fullName: string;
+        };
+      };
+
+      const mapper = Mapper.create<Source, Target>({
+        user: {
+          fullName: ({ firstName, lastName }) => `${firstName} ${lastName}`,
+        },
+      });
+
+      const sourceData: Source = { firstName: "Jane", lastName: "Smith" };
+      const { result } = mapper.execute(sourceData);
+
+      expect(result).toEqual({
+        user: {
+          fullName: "Jane Smith",
+        },
+      });
+    });
+
     it("extracts deep nested value using dot-path notation", () => {
       type Source = { config: { maxUsers: number } };
       type Target = { maxUsers: number };
