@@ -158,9 +158,16 @@ export class Mapper<Source, Target> {
 
     if (typeof configValue === "function") {
       cache[`${targetPath}__handler`] = configValue;
-      const body = `
-        target.${targetPath} = source${parentTarget ? `?.${parentTarget}` : ""} ? (cache['${targetPath}__handler'])(source${parentTarget ? `?.${parentTarget}` : ""}) : cache['${parentTarget}__defValues']?.${targetKey}
-      `;
+      let body;
+      if (relativeToMapper) {
+        body = `
+          target.${targetPath} = source${parentTarget ? `?.${parentTarget}` : ""} ? (cache['${targetPath}__handler'])(source${parentTarget ? `?.${parentTarget}` : ""}) : cache['${parentTarget}__defValues']?.${targetKey}
+        `;
+      } else {
+        body = `
+          target.${targetPath} = source ? (cache['${targetPath}__handler'])(source) : cache['${parentTarget}__defValues']?.${targetKey}
+        `;
+      }
 
       if (config?.useUnsafe) {
         return body;
