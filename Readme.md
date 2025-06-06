@@ -13,7 +13,9 @@ npm i --save om-data-mapper
 ```
 
 ## Performance
-[![Benchmark Chart](https://raw.githubusercontent.com/Isqanderm/data-mapper/926ad2ffff95ab1f200873bef6203294341e3233/benchmarks/benckmarks.png)](https://github.com/Isqanderm/data-mapper/blob/926ad2ffff95ab1f200873bef6203294341e3233/benchmarks/benckmarks.png)
+Performance of om-data-mapper is almost identical to a native, hand-written “vanilla” mapper—demonstrating near-native speeds even in “safe” mode. Enabling Unsafe Mode (useUnsafe: true) removes all try/catch overhead and pushes performance even higher.
+
+[![Benchmark Chart](https://raw.githubusercontent.com/Isqanderm/data-mapper/664a797c6f7d6d923a17df5ae47f33f360adfc2f/benchmarks/benckmarks.png)](https://raw.githubusercontent.com/Isqanderm/data-mapper/664a797c6f7d6d923a17df5ae47f33f360adfc2f/benchmarks/benckmarks.png)
 
 ## Features
 
