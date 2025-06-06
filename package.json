@@ -1,6 +1,6 @@
 {
   "name": "om-data-mapper",
-  "version": "2.0.3",
+  "version": "2.0.4",
   "description": "High-performance TypeScript/JavaScript data mapper with JIT compilation for ultra-fast object transformations",
   "private": false,
   "main": "build/index.js",
@@ -17,8 +17,11 @@
     "url": "git+https://github.com/Isqanderm/data-mapper.git"
   },
   "keywords": [
-    "data-mapper",
-    "high-performance",
+    "data mapping",
+    "mapping",
+    "mapper",
+    "transform",
+    "high performance",
     "jit",
     "fast",
     "mapping",
