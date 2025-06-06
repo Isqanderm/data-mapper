@@ -13,7 +13,7 @@ npm i --save om-data-mapper
 ```
 
 ## Performance
-[![Benchmarks compare](https://github.com/Isqanderm/data-mapper/benchmarks/compare/benchmark.html)]
+[![Benchmarks compare](https://github.com/Isqanderm/data-mapper/benchmarks/benchmark.png)]
 
 ## Features
 

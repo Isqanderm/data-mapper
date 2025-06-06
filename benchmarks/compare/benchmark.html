@@ -21,7 +21,6 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-<h1>Benchmark: Mapper#execute vs Mapper#execute#unsafe vs Vanilla mapper</h1>
 <div id="chart-container">
     <canvas id="benchmarkChart"></canvas>
 </div>
@@ -32,6 +31,12 @@
   }
 
   const data = [
+    {
+      "name": "Vanilla mapper",
+      "hz": 990465430.3401371,
+      "rme": 1.4610596243452478,
+      "sampleCount": 96
+    },
     {
       "name": "OmDataMapper#execute",
       "hz": 923209987.7259275,
@@ -61,12 +66,6 @@
       "hz": 131666.42534097852,
       "rme": 4.014952285590102,
       "sampleCount": 95
-    },
-    {
-      "name": "Vanilla mapper",
-      "hz": 990465430.3401371,
-      "rme": 1.4610596243452478,
-      "sampleCount": 96
     }
   ];
 
