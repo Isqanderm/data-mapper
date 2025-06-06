@@ -12,6 +12,9 @@ Install `om-data-mapper` using npm:
 npm i --save om-data-mapper
 ```
 
+## Performance
+[![Benchmarks compare](https://github.com/Isqanderm/data-mapper/benchmarks/compare/benchmark.html)]
+
 ## Features
 
 `om-data-mapper` offers the following features:

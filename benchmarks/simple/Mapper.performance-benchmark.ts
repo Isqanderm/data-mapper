@@ -1,6 +1,5 @@
 import { Suite } from "benchmark";
-import { MappingConfiguration } from "../src/interface";
-import { Mapper } from "../src/Mapper";
+import { Mapper } from "../../src";
 
 interface Source {
   id: number;
@@ -18,13 +17,6 @@ interface Target {
   location: string;
 }
 
-const mappingConfig: MappingConfiguration<Source, Target> = {
-  userId: "id",
-  fullName: "name",
-  age: "details.age",
-  location: "details.address",
-};
-
 const sourceData: Source = {
   id: 1,
   name: "John Doe",
@@ -34,9 +26,14 @@ const sourceData: Source = {
   },
 };
 
-const mapper = Mapper.create<Source, Target>(mappingConfig);
+const mapper = Mapper.create<Source, Target>({
+  userId: "id",
+  fullName: "name",
+  age: "details.age",
+  location: "details.address",
+});
 
-function alternativeMapper(source: Source): Target {
+function vanillaMapper(source: Source): Target {
   return {
     userId: source.id,
     fullName: source.name,
@@ -45,20 +42,25 @@ function alternativeMapper(source: Source): Target {
   };
 }
 
-// Создание тестового набора
 const suite = new Suite();
 
 suite
   .add("Mapper#execute", function () {
     mapper.execute(sourceData);
   })
-  .add('Vanilla mapper', function () {
-    alternativeMapper(sourceData);
+  .add("Vanilla mapper", function () {
+    vanillaMapper(sourceData);
   })
   .on("cycle", function (event: any) {
     console.log(String(event.target));
   })
   .on("complete", function (this: any) {
-    console.log("Fastest is " + this.filter("fastest").map("name"));
+    const results = this.map((bench: any) => ({
+      name: bench.name,
+      hz: bench.hz,
+      rme: bench.stats.rme,
+      sampleCount: bench.stats.sample.length,
+    }));
+    console.log(JSON.stringify(results, null, 2));
   })
   .run({ async: true });
