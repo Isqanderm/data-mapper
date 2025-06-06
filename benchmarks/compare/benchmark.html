@@ -1,0 +1,133 @@
+<!-- index.html -->
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8" />
+    <title>Benchmark Comparison</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+        }
+        #chart-container {
+            width: 80%;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+<div id="chart-container">
+    <canvas id="benchmarkChart"></canvas>
+</div>
+
+<script>
+  function formatNumber(num) {
+    return Math.round(num).toLocaleString();
+  }
+
+  const data = [
+    {
+      "name": "Vanilla mapper",
+      "hz": 990465430.3401371,
+      "rme": 1.4610596243452478,
+      "sampleCount": 96
+    },
+    {
+      "name": "OmDataMapper#execute",
+      "hz": 923209987.7259275,
+      "rme": 2.60028519999105,
+      "sampleCount": 95
+    },
+    {
+      "name": "@cookbook/mapper-js",
+      "hz": 101011.9751284148,
+      "rme": 5.741735381038488,
+      "sampleCount": 85
+    },
+    {
+      "name": "AutoMapper (automapper-ts)",
+      "hz": 1114002.8087246013,
+      "rme": 4.243253978536496,
+      "sampleCount": 85
+    },
+    {
+      "name": "object-mapper",
+      "hz": 670065.1036459727,
+      "rme": 1.2638687593433509,
+      "sampleCount": 90
+    },
+    {
+      "name": "morphism",
+      "hz": 131666.42534097852,
+      "rme": 4.014952285590102,
+      "sampleCount": 95
+    }
+  ];
+
+  const labels = data.map((item) => item.name);
+  const hzValues = data.map((item) => item.hz);
+
+  const ctx = document.getElementById("benchmarkChart").getContext("2d");
+  new Chart(ctx, {
+    type: "bar",
+    data: {
+      labels: labels,
+      datasets: [
+        {
+          label: "Ops/sec (hz)",
+          data: hzValues,
+          backgroundColor: "rgba(75, 192, 192, 0.5)",
+          borderColor: "rgba(75, 192, 192, 1)",
+          borderWidth: 1,
+        },
+      ],
+    },
+    options: {
+      scales: {
+        y: {
+          type: "logarithmic",       // ← change to logarithmic
+          beginAtZero: true,
+          ticks: {
+            callback: function (value) {
+              // only show positive tick labels on log scale
+              return value > 0 ? formatNumber(value) : "";
+            },
+          },
+          title: {
+            display: true,
+            text: "Operations per Second (log scale)",
+          },
+        },
+        x: {
+          title: {
+            display: true,
+            text: "Benchmark Name",
+          },
+        },
+      },
+      plugins: {
+        tooltip: {
+          callbacks: {
+            label: function (context) {
+              const idx = context.dataIndex;
+              const rme = data[idx].rme;
+              const hz = context.parsed.y;
+              return ` ${formatNumber(hz)} ±${rme.toFixed(2)}%`;
+            },
+          },
+        },
+        legend: {
+          display: false,
+        },
+      },
+    },
+  });
+</script>
+
+</body>
+</html>

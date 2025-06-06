@@ -1,36 +1,35 @@
 import { Suite } from "benchmark";
-import mapper from "@cookbook/mapper-js";
-import { Mapper } from "../src/Mapper";
+import { Mapper } from "../../src";
 
-class Country {
+interface Country {
   name?: string;
   code?: string;
 }
 
-class CountryDTO {
+interface CountryDTO {
   countryName?: string;
   countryCode?: string;
 }
 
-class Address {
+interface Address {
   street?: string;
   city?: string;
   country?: Country;
 }
 
-class AddressDTO {
+interface AddressDTO {
   streetName?: string;
   cityName?: string;
   country?: CountryDTO;
   fullAddress?: string;
 }
 
-class User {
+interface User {
   name?: string;
   address?: Address;
 }
 
-class UserDTO {
+interface UserDTO {
   fullName?: string;
   address?: AddressDTO;
 }
@@ -44,9 +43,8 @@ const addressMapper = Mapper.create<Address, AddressDTO>({
   streetName: "street",
   cityName: "city",
   country: countryMapper,
-  fullAddress: function (object) {
-    return `${object.city}, ${object.street}, ${object.country?.name}`;
-  },
+  fullAddress: (object) =>
+    `${object.city}, ${object.street}, ${object.country?.name}`,
 });
 
 const userMapper = Mapper.create<User, UserDTO>({
@@ -77,18 +75,6 @@ function mapUser(source: User): UserDTO {
   };
 }
 
-const mappingJs = mapper((map) => ({
-  'fullName': map('name').value,
-  'address.streetName': map('address.street').value,
-  'address.cityName': map('address.city').value,
-  'address.fullAddress': map('address')
-    // @ts-ignore
-    .transform(({ city, street, country }: Address): string => `${city}, ${street}, ${country?.name}`)
-    .value,
-  'address.country.countryName': map('address.country.name').value,
-  'address.country.countryCode': map('address.country.code').value,
-}));
-
 const user: User = {
   name: "John Doe",
   address: {
@@ -107,10 +93,6 @@ suite
   .add("UserMapper#execute", function () {
     userMapper.execute(user);
   })
-  .add("@cookbook/mapper-js", function () {
-    // @ts-ignore
-    mappingJs(user);
-  })
   .add("Vanilla mapper", function () {
     mapUser(user);
   })
@@ -118,6 +100,12 @@ suite
     console.log(String(event.target));
   })
   .on("complete", function (this: any) {
-    console.log("Fastest is " + this.filter("fastest").map("name"));
+    const results = this.map((bench: any) => ({
+      name: bench.name,
+      hz: bench.hz,
+      rme: bench.stats.rme,
+      sampleCount: bench.stats.sample.length,
+    }));
+    console.log(JSON.stringify(results, null, 2));
   })
   .run({ async: true });
