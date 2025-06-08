@@ -42,7 +42,6 @@
     "@babel/core": "^7.23.9",
     "@babel/preset-env": "^7.23.9",
     "@babel/preset-typescript": "^7.23.3",
-    "@cookbook/mapper-js": "^1.1.1",
     "@types/benchmark": "^2.1.5",
     "@types/jest": "^29.5.12",
     "@types/object-mapper": "^6.2.2",
@@ -55,6 +54,8 @@
   },
   "dependencies": {
     "automapper-ts": "^1.9.0",
+    "class-transformer": "^0.5.1",
+    "@cookbook/mapper-js": "^1.1.1",
     "morphism": "^1.12.3",
     "object-mapper": "^6.2.0"
   }

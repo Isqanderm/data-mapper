@@ -56,7 +56,7 @@ const target = mapper.execute(sourceObject);
 Mapping with composition allows combining multiple mappers to create complex data transformations.
 
 ```ts
-const addressMapper = new AddressMapper<Address, TargetAddress>({
+const addressMapper = AddressMapper.create<Address, TargetAddress>({
   fullAddress: (address) => `${address.city}, ${address.street}, ${address.appartment}`
 })
 const mapper = UserMapper.create<User, TargetUser>({
@@ -187,7 +187,7 @@ console.log(dto);
 You can can pass config to mapper `{ useUnsafe: true }` then all try/catch will be removed from compile mapper function
 
 ```typescript
-new Mapper(mappingConfig, defaultValues, { useUnsafe: true });
+Mapper.create(mappingConfig, defaultValues, { useUnsafe: true });
 ```
 
 this will greatly improve performance, but errors inside the conversion will not be intercepted.

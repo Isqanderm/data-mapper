@@ -5,6 +5,7 @@ import mapperJs from "@cookbook/mapper-js"; // @cookbook/mapper-js
 import "automapper-ts"; // Loedeman’s AutoMapper (global `automapper`)
 import objectMapper from "object-mapper"; // object-mapper
 import createTransformer from "morphism"; // morphism
+import { plainToClass, Transform } from "class-transformer";
 
 // 1) Define Source and Target interfaces
 interface Source {
@@ -32,6 +33,20 @@ const sourceData: Source = {
     address: "123 Main St",
   },
 };
+
+class TargetCT {
+  @Transform(({ obj }) => obj.id, { toClassOnly: true })
+  userId: number | undefined;
+
+  @Transform(({ obj }) => obj.name, { toClassOnly: true })
+  fullName: string | undefined;
+
+  @Transform(({ obj }) => obj.details.age, { toClassOnly: true })
+  age: number | undefined;
+
+  @Transform(({ obj }) => obj.details.address, { toClassOnly: true })
+  location: string | undefined;
+}
 
 // ----------------------
 // 3) OmDataMapper setup
@@ -101,27 +116,12 @@ function vanillaMapper(source: Source): Target {
 // -------------------------------------------
 const suite = new Suite();
 
-console.log(omMapper.execute(sourceData).result);
-// @ts-ignore: mappingJs may not have perfect typings
-// console.log(mappingJs(sourceData));
-console.log(automapper.map("Source", "Target", sourceData));
-// console.log(objectMapper.merge(sourceData, objMapSpec));
-// console.log(
-//   createTransformer(
-//     {
-//       userId: "id",
-//       fullName: "name",
-//       age: "details.age",
-//       location: "details.address",
-//     },
-//     sourceData,
-//   ),
-// );
-// console.log(vanillaMapper(sourceData));
-
 suite
   .add("OmDataMapper#execute", function () {
     omMapper.execute(sourceData);
+  })
+  .add("class-transformer", function () {
+    plainToClass(TargetCT, sourceData);
   })
   .add("@cookbook/mapper-js", function () {
     // @ts-ignore: mappingJs may not have perfect typings
