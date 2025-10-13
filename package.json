@@ -17,7 +17,8 @@
     "prepublishOnly": "npm run clean && npm run test && npm run build",
     "release": "semantic-release",
     "test": "vitest run --coverage",
-    "test:jest": "jest",
+    "test:all": "npm run test:jest && npm run test",
+    "test:jest": "jest --coverage",
     "test:watch": "vitest",
     "test:watch:jest": "jest --watch"
   },
