@@ -184,11 +184,14 @@ Create a `.github/CODEOWNERS` file to automatically request reviews from specifi
 
 Add the following topics to improve discoverability:
 
+**Primary Topics:**
 - `typescript`
 - `javascript`
 - `mapper`
 - `data-mapping`
 - `object-mapper`
+
+**Feature Topics:**
 - `performance`
 - `jit-compiler`
 - `type-safe`
@@ -196,6 +199,18 @@ Add the following topics to improve discoverability:
 - `dto`
 - `serialization`
 - `high-performance`
+
+**Use Case Topics:**
+- `api`
+- `backend`
+- `frontend`
+- `nodejs`
+
+**To add these topics:**
+1. Go to the repository main page
+2. Click the gear icon (⚙️) next to "About" section
+3. Add topics in the "Topics" field
+4. Click "Save changes"
 
 **Benefits:**
 - Improved discoverability in GitHub search
