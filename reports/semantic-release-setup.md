@@ -20,17 +20,44 @@ Create a git tag for the current version so semantic-release knows where to star
 
 ## Fix: Create Initial Version Tag
 
-### Step 1: Create the Tag
+### Step 1: Create the Tag on Main Branch
 
-Run the following commands to create a tag for the current version:
+The tag should be created on the commit in the `main` branch that corresponds to version 2.0.5.
+
+**Option A: Tag the existing 2.0.5 commit on main (Recommended)**
 
 ```bash
-# Create an annotated tag for the current version
-git tag -a v2.0.5 -m "chore(release): tag existing version 2.0.5"
+# Fetch latest from remote
+git fetch origin
+
+# Create tag on the commit that released 2.0.5
+# Commit 659ae4a is "[release][2.0.5] update Readme.md"
+git tag -a v2.0.5 659ae4a -m "chore(release): tag existing version 2.0.5"
 
 # Push the tag to GitHub
 git push origin v2.0.5
 ```
+
+**Option B: Tag after merging refactoring branch to main**
+
+If you want to include all the new setup work in the tagged version:
+
+```bash
+# Switch to main branch
+git checkout main
+
+# Merge refactoring branch
+git merge refactoring
+
+# Create tag on the merge commit
+git tag -a v2.0.5 -m "chore(release): tag version 2.0.5 with repository setup"
+
+# Push main and tag
+git push origin main
+git push origin v2.0.5
+```
+
+**Recommended Approach:** Use Option A to tag the existing 2.0.5 commit, then merge refactoring to main. The next semantic-release will create v2.0.6 or higher based on the new commits.
 
 ### Step 2: Verify the Tag
 
