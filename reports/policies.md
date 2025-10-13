@@ -226,6 +226,8 @@ Add the following topics to improve discoverability:
 1. **Codecov**
    - Already configured via CI workflow
    - Provides coverage reports and trends
+   - **Required:** Add `CODECOV_TOKEN` to repository secrets
+   - Get token from [codecov.io](https://codecov.io/)
 
 2. **Dependabot**
    - Already configured via `.github/dependabot.yml`
@@ -234,6 +236,7 @@ Add the following topics to improve discoverability:
 3. **GitHub Actions**
    - CI/CD workflows already configured
    - Automated testing, linting, and releases
+   - **Required:** Add `NPM_TOKEN` to repository secrets for publishing
 
 ### Notification Settings
 

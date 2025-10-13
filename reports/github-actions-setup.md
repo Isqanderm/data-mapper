@@ -45,11 +45,13 @@ Scroll down to the **Workflow permissions** section and configure:
 
 ---
 
-## Step 2: Add NPM Token (For Publishing)
+## Step 2: Add Required Tokens
+
+### A. NPM Token (For Publishing)
 
 If you want to publish to npm automatically, you need to add an NPM token.
 
-### Generate NPM Token
+#### Generate NPM Token
 
 1. Log in to [npmjs.com](https://www.npmjs.com/)
 2. Click your profile icon → **Access Tokens**
@@ -57,7 +59,7 @@ If you want to publish to npm automatically, you need to add an NPM token.
 4. Select **Automation** type (recommended for CI/CD)
 5. Copy the generated token (you won't see it again!)
 
-### Add Token to GitHub Secrets
+#### Add NPM Token to GitHub Secrets
 
 1. Go to your repository on GitHub
 2. Click **Settings** → **Secrets and variables** → **Actions**
@@ -66,10 +68,36 @@ If you want to publish to npm automatically, you need to add an NPM token.
 5. Value: Paste your npm token
 6. Click **Add secret**
 
-### Why This Is Needed
+#### Why This Is Needed
 
 - Semantic-release uses this token to publish new versions to npm
 - Without it, the release will succeed on GitHub but won't publish to npm
+
+### B. Codecov Token (For Coverage Reports)
+
+To upload coverage reports to Codecov, you need to add a Codecov token.
+
+#### Generate Codecov Token
+
+1. Log in to [codecov.io](https://codecov.io/) with your GitHub account
+2. Navigate to your repository (or add it if not already added)
+3. Go to **Settings** → **General**
+4. Copy the **Repository Upload Token**
+
+#### Add Codecov Token to GitHub Secrets
+
+1. Go to your repository on GitHub
+2. Click **Settings** → **Secrets and variables** → **Actions**
+3. Click **New repository secret**
+4. Name: `CODECOV_TOKEN`
+5. Value: Paste your Codecov token
+6. Click **Add secret**
+
+#### Why This Is Needed
+
+- The CI workflow uses this token to upload coverage reports to Codecov
+- Codecov v5 requires authentication for better security
+- Without it, coverage reports won't be uploaded
 
 ---
 
@@ -263,6 +291,7 @@ Before pushing to main, verify:
 - [ ] Workflow permissions set to "Read and write permissions"
 - [ ] "Allow GitHub Actions to create and approve pull requests" is checked
 - [ ] NPM_TOKEN secret is added (if publishing to npm)
+- [ ] CODECOV_TOKEN secret is added (for coverage reports)
 - [ ] Release workflow has proper permissions in YAML
 - [ ] Commits follow Conventional Commits format
 - [ ] All tests pass locally
@@ -279,6 +308,7 @@ Before pushing to main, verify:
 
 2. **Secrets → Actions:**
    - ✅ NPM_TOKEN (for npm publishing)
+   - ✅ CODECOV_TOKEN (for coverage reports)
 
 **Workflow Features:**
 
@@ -287,6 +317,7 @@ Before pushing to main, verify:
 - ✅ GitHub releases
 - ✅ npm publishing
 - ✅ Git tag creation
+- ✅ Coverage reports to Codecov
 
 **Next Steps:**
 
