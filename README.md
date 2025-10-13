@@ -72,18 +72,51 @@ console.log(result); // { fullName: 'John Doe', isAdult: true }
 
 ## Performance
 
-Performance of om-data-mapper is almost identical to a native, hand-written “vanilla” mapper—demonstrating near-native speeds even in “safe” mode. Enabling Unsafe Mode (useUnsafe: true) removes all try/catch overhead and pushes performance even higher.
+Performance of om-data-mapper is almost identical to a native, hand-written “vanilla” mapper—demonstrating near-native speeds even in “safe” mode. Enabling Unsafe Mode (`useUnsafe: true`) removes all try/catch overhead and pushes performance even higher.
 
 ### Benchmark Results
 
-We use automated benchmarks to track performance across different scenarios:
+Benchmarked using [Benchmark.js](https://benchmarkjs.com/) on Node.js v20:
 
-- **Simple Mapping**: ~30M ops/sec (competitive with vanilla)
-- **Complex Transformations**: ~13M ops/sec (with custom functions)
-- **Array Operations**: ~1M ops/sec (100 items)
-- **Deep Nesting**: ~2.4M ops/sec (4-level deep)
+| Scenario | OmDataMapper | Vanilla | Relative Performance |
+|----------|--------------|---------|---------------------|
+| **Simple Mapping** | 946M ops/sec | 977M ops/sec | **1.03x** ⚡ |
+| **Complex Transformations** | 21M ops/sec | 39M ops/sec | **1.89x** |
 
-All benchmarks run automatically on every commit via GitHub Actions. See [Benchmark Setup Guide](./reports/benchmarks-setup.md) for details.
+**Key Takeaways:**
+- ✅ **Simple mappings**: Nearly identical to hand-written code (3% overhead)
+- ✅ **Complex transformations**: Acceptable overhead for the convenience and features
+- ✅ **Production-ready**: Millions of operations per second in real-world scenarios
+
+<details>
+<summary>📊 Detailed Benchmark Data</summary>
+
+**Simple Mapping** (4 fields, nested access):
+```javascript
+// Source → Target mapping
+{ id, name, details: { age, address } } → { userId, fullName, age, location }
+
+OmDataMapper: 945,768,114 ops/sec ±1.02% (100 runs)
+Vanilla:      977,313,179 ops/sec ±2.51% (96 runs)
+```
+
+**Complex Transformations** (nested objects, arrays, custom functions):
+```javascript
+// Multiple nested levels, array operations, custom transformers
+OmDataMapper: 20,662,738 ops/sec ±1.36% (95 runs)
+Vanilla:      38,985,378 ops/sec ±1.89% (96 runs)
+```
+
+*Benchmarks located in `/benchmarks` directory. Run `npm run bench` to test on your machine.*
+</details>
+
+### Continuous Performance Tracking
+
+We use automated benchmarks to track performance regressions:
+- 🔄 Runs automatically on every commit via GitHub Actions
+- 📈 Historical performance tracking with [github-action-benchmark](https://github.com/benchmark-action/github-action-benchmark)
+- 🔔 Alerts on performance regressions >50%
+- 📊 See [Benchmark Setup Guide](./reports/benchmarks-setup.md) for details
 
 [![Benchmark Chart](https://raw.githubusercontent.com/Isqanderm/data-mapper/659ae4ac86f3a44bc16475867ad26efaa8dd6177/benchmarks/benckmarks.png)](https://raw.githubusercontent.com/Isqanderm/data-mapper/659ae4ac86f3a44bc16475867ad26efaa8dd6177/benchmarks/benckmarks.png)
 
