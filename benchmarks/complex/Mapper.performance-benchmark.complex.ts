@@ -1,5 +1,5 @@
-import { Suite } from "benchmark";
-import { Mapper } from "../../src";
+import { Suite } from 'benchmark';
+import { Mapper } from '../../src';
 
 interface Country {
   name?: string;
@@ -35,20 +35,19 @@ interface UserDTO {
 }
 
 const countryMapper = Mapper.create<Country, CountryDTO>({
-  countryName: "name",
-  countryCode: "code",
+  countryName: 'name',
+  countryCode: 'code',
 });
 
 const addressMapper = Mapper.create<Address, AddressDTO>({
-  streetName: "street",
-  cityName: "city",
+  streetName: 'street',
+  cityName: 'city',
   country: countryMapper,
-  fullAddress: (object) =>
-    `${object.city}, ${object.street}, ${object.country?.name}`,
+  fullAddress: (object) => `${object.city}, ${object.street}, ${object.country?.name}`,
 });
 
 const userMapper = Mapper.create<User, UserDTO>({
-  fullName: "name",
+  fullName: 'name',
   address: addressMapper,
 });
 
@@ -76,13 +75,13 @@ function mapUser(source: User): UserDTO {
 }
 
 const user: User = {
-  name: "John Doe",
+  name: 'John Doe',
   address: {
-    street: "Main St",
-    city: "Metropolis",
+    street: 'Main St',
+    city: 'Metropolis',
     country: {
-      name: "USA",
-      code: "US",
+      name: 'USA',
+      code: 'US',
     },
   },
 };
@@ -90,16 +89,16 @@ const user: User = {
 const suite = new Suite();
 
 suite
-  .add("UserMapper#execute", function () {
+  .add('UserMapper#execute', function () {
     userMapper.execute(user);
   })
-  .add("Vanilla mapper", function () {
+  .add('Vanilla mapper', function () {
     mapUser(user);
   })
-  .on("cycle", function (event: any) {
+  .on('cycle', function (event: any) {
     console.log(String(event.target));
   })
-  .on("complete", function (this: any) {
+  .on('complete', function (this: any) {
     const results = this.map((bench: any) => ({
       name: bench.name,
       hz: bench.hz,

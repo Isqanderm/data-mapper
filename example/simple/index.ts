@@ -1,22 +1,22 @@
-import { Mapper } from "../../src";
+import { Mapper } from '../../src';
 
 type Employee = {
-  name: string,
-  email: string,
-  age: number,
-  jobId: number,
-}
+  name: string;
+  email: string;
+  age: number;
+  jobId: number;
+};
 
 type EmployeeDTO = {
   fullName: string;
   name: string;
   emailAddress: string;
   isAdult: boolean;
-}
+};
 
 const employeeMapper = Mapper.create<Employee, EmployeeDTO>({
-  fullName: "name",
-  emailAddress: "email",
+  fullName: 'name',
+  emailAddress: 'email',
   name: 'name',
   isAdult: (source) => source.age >= 18,
 });
@@ -40,4 +40,3 @@ console.log(employeeDTO);
 //     isAdult: true
 //   }
 // }
-

@@ -1,5 +1,5 @@
-import { MappingConfiguration } from "../../src/interface";
-import { Mapper } from "../../src";
+import { MappingConfiguration } from '../../src/interface';
+import { Mapper } from '../../src';
 
 class Employee {
   constructor(
@@ -16,16 +16,12 @@ class EmployeeDTO {
 }
 
 const employeeMapper = Mapper.create<Employee, EmployeeDTO>({
-  fullName: "person.fullName",
-  emailAddress: "email",
+  fullName: 'person.fullName',
+  emailAddress: 'email',
   isAdult: (source) => source.age >= 18,
 });
 
-const employee = new Employee(
-  { fullName: "John Doe" },
-  "john.doe@example.com",
-  30,
-);
+const employee = new Employee({ fullName: 'John Doe' }, 'john.doe@example.com', 30);
 const employeeDTO = employeeMapper.execute(employee);
 
 console.log(employeeDTO);

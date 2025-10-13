@@ -1,4 +1,4 @@
-import { Mapper } from "../../src";
+import { Mapper } from '../../src';
 
 type Employee = {
   name: string;
@@ -21,31 +21,31 @@ type EmployeeDTO = {
 };
 
 const employeeMapper = Mapper.create<Employee, EmployeeDTO>({
-  fullName: "name",
-  emailAddress: "email",
+  fullName: 'name',
+  emailAddress: 'email',
   isAdult: (source) => source.age >= 18,
   job: (source) => source.jobs[0],
-  jobName: "jobs.[0].name",
+  jobName: 'jobs.[0].name',
 });
 
 const jobs: JobType[] = [
   {
     id: 1,
-    name: "Electronic",
+    name: 'Electronic',
   },
   {
     id: 2,
-    name: "Janitor",
+    name: 'Janitor',
   },
   {
     id: 3,
-    name: "Driver",
+    name: 'Driver',
   },
 ];
 
 const employee: Employee = {
-  name: "John Doe",
-  email: "john.doe@example.com",
+  name: 'John Doe',
+  email: 'john.doe@example.com',
   age: 30,
   jobs,
 };

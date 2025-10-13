@@ -1,24 +1,22 @@
-import { getValueByPath, parsePath, PathObject } from "../src/utils";
+import { getValueByPath, parsePath, PathObject } from '../src/utils';
 
 describe('parsePath()', () => {
   it('parses a single key', () => {
-    expect(parsePath('foo')).toEqual([
-      { type: 'key', part: 'foo' }
-    ]);
+    expect(parsePath('foo')).toEqual([{ type: 'key', part: 'foo' }]);
   });
 
   it('parses nested keys separated by dots', () => {
     expect(parsePath('user.name.first')).toEqual([
       { type: 'key', part: 'user' },
       { type: 'key', part: 'name' },
-      { type: 'key', part: 'first' }
+      { type: 'key', part: 'first' },
     ]);
   });
 
   it('parses wildcard array selectors', () => {
     expect(parsePath('items.[]')).toEqual([
       { type: 'key', part: 'items' },
-      { type: 'array', part: '[]' }
+      { type: 'array', part: '[]' },
     ]);
   });
 
@@ -26,14 +24,14 @@ describe('parsePath()', () => {
     expect(parsePath('list.[3].name')).toEqual([
       { type: 'key', part: 'list' },
       { type: 'index', part: '3' },
-      { type: 'key', part: 'name' }
+      { type: 'key', part: 'name' },
     ]);
   });
 
   it('parses argument indices', () => {
     expect(parsePath('$0.[2]')).toEqual([
       { type: 'args_index', part: '0' },
-      { type: 'index', part: '2' }
+      { type: 'index', part: '2' },
     ]);
   });
 
@@ -41,7 +39,7 @@ describe('parsePath()', () => {
     expect(parsePath('data.items.[]')).toEqual([
       { type: 'key', part: 'data' },
       { type: 'key', part: 'items' },
-      { type: 'array', part: '[]' }
+      { type: 'array', part: '[]' },
     ]);
   });
 });
@@ -72,9 +70,6 @@ describe('getValueByPath()', () => {
   });
 
   it('processes complex mixed path patterns', () => {
-    expect(mapPaths('data.items.[].[3].field')).toEqual([
-      'data?.items',
-      '[3]?.field'
-    ]);
+    expect(mapPaths('data.items.[].[3].field')).toEqual(['data?.items', '[3]?.field']);
   });
 });

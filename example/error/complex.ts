@@ -1,4 +1,4 @@
-import { Mapper, MappingConfiguration } from "../../src";
+import { Mapper, MappingConfiguration } from '../../src';
 
 class Country {
   name?: string;
@@ -36,71 +36,71 @@ class UserDTO {
 }
 
 const countryMapper = Mapper.create<Country, CountryDTO>({
-  countryName: "name",
-  countryCode: "code"
+  countryName: 'name',
+  countryCode: 'code',
 });
 
 const addressMapper = Mapper.create<Address, AddressDTO>({
-  streetName: "street",
-  cityName: "city",
+  streetName: 'street',
+  cityName: 'city',
   country: countryMapper,
   fullAddress: (source) => {
     if (!source.city || !source.street || !source.country?.name) {
-      throw new Error("Incomplete address data");
+      throw new Error('Incomplete address data');
     }
     return `${source.city}, ${source.street}, ${source.country.name}`;
-  }
+  },
 });
 
 const userMapper = Mapper.create<User, UserDTO>({
-  fullName: "name",
+  fullName: 'name',
   isAdult: (source) => {
     if (source.age === undefined) {
-      throw new Error("Age is required");
+      throw new Error('Age is required');
     }
     return source.age >= 18;
   },
-  address: addressMapper
+  address: addressMapper,
 });
 
 const source: User = {
-  name: "John Doe",
+  name: 'John Doe',
   age: 25,
   address: {
-    street: "Main St",
-    city: "Metropolis",
+    street: 'Main St',
+    city: 'Metropolis',
     country: {
-      name: "USA",
-      code: "US"
-    }
-  }
+      name: 'USA',
+      code: 'US',
+    },
+  },
 };
 
 const sourceWithError: User = {
-  name: "Jane Doe",
+  name: 'Jane Doe',
   age: 0,
   address: {
-    street: "Main St",
-    city: "",
+    street: 'Main St',
+    city: '',
     country: {
-      name: "",
-      code: "US"
-    }
-  }
+      name: '',
+      code: 'US',
+    },
+  },
 };
 
 try {
   const target = userMapper.execute(source);
-  console.log("Mapped user:", target);
+  console.log('Mapped user:', target);
 } catch (error) {
   const e = error as Error;
-  console.error("An error occurred during mapping:", e.message);
+  console.error('An error occurred during mapping:', e.message);
 }
 
 try {
   const targetWithError = userMapper.execute(sourceWithError);
-  console.log("Mapped user with error:", targetWithError);
+  console.log('Mapped user with error:', targetWithError);
 } catch (error) {
   const e = error as Error;
-  console.error("An error occurred during mapping:", e.message);
+  console.error('An error occurred during mapping:', e.message);
 }

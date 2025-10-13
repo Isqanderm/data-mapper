@@ -1,113 +1,113 @@
 <!-- index.html -->
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ru">
-<head>
+  <head>
     <meta charset="UTF-8" />
     <title>Benchmark Comparison</title>
     <style>
-        body {
-            font-family: sans-serif;
-            padding: 20px;
-        }
-        h1 {
-            text-align: center;
-        }
-        #chart-container {
-            width: 80%;
-            max-width: 800px;
-            margin: 0 auto;
-        }
+      body {
+        font-family: sans-serif;
+        padding: 20px;
+      }
+      h1 {
+        text-align: center;
+      }
+      #chart-container {
+        width: 80%;
+        max-width: 800px;
+        margin: 0 auto;
+      }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-</head>
-<body>
-<h1>Benchmark: Mapper#execute vs Mapper#execute#unsafe vs Vanilla mapper</h1>
-<div id="chart-container">
-    <canvas id="benchmarkChart"></canvas>
-</div>
+  </head>
+  <body>
+    <h1>Benchmark: Mapper#execute vs Mapper#execute#unsafe vs Vanilla mapper</h1>
+    <div id="chart-container">
+      <canvas id="benchmarkChart"></canvas>
+    </div>
 
-<script>
-  function formatNumber(num) {
-    return Math.round(num).toLocaleString();
-  }
+    <script>
+      function formatNumber(num) {
+        return Math.round(num).toLocaleString();
+      }
 
-  const data = [
-    {
-      "name": "Mapper#execute",
-      "hz": 957533519.0947441,
-      "rme": 0.45869452985900244,
-      "sampleCount": 99
-    },
-    {
-      "name": "Mapper#execute#unsafe",
-      "hz": 961542745.6509604,
-      "rme": 0.37255384724098606,
-      "sampleCount": 99
-    },
-    {
-      "name": "Vanilla mapper",
-      "hz": 1001637797.6350412,
-      "rme": 0.9147294267432512,
-      "sampleCount": 96
-    }
-  ];
-
-  const labels = data.map((item) => item.name);
-  const hzValues = data.map((item) => item.hz);
-
-  const ctx = document.getElementById("benchmarkChart").getContext("2d");
-  new Chart(ctx, {
-    type: "bar",
-    data: {
-      labels: labels,
-      datasets: [
+      const data = [
         {
-          label: "Ops/sec (hz)",
-          data: hzValues,
-          backgroundColor: "rgba(75, 192, 192, 0.5)",
-          borderColor: "rgba(75, 192, 192, 1)",
-          borderWidth: 1,
+          name: 'Mapper#execute',
+          hz: 957533519.0947441,
+          rme: 0.45869452985900244,
+          sampleCount: 99,
         },
-      ],
-    },
-    options: {
-      scales: {
-        y: {
-          beginAtZero: true,
-          ticks: {
-            callback: function (value) {
-              return formatNumber(value);
+        {
+          name: 'Mapper#execute#unsafe',
+          hz: 961542745.6509604,
+          rme: 0.37255384724098606,
+          sampleCount: 99,
+        },
+        {
+          name: 'Vanilla mapper',
+          hz: 1001637797.6350412,
+          rme: 0.9147294267432512,
+          sampleCount: 96,
+        },
+      ];
+
+      const labels = data.map((item) => item.name);
+      const hzValues = data.map((item) => item.hz);
+
+      const ctx = document.getElementById('benchmarkChart').getContext('2d');
+      new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [
+            {
+              label: 'Ops/sec (hz)',
+              data: hzValues,
+              backgroundColor: 'rgba(75, 192, 192, 0.5)',
+              borderColor: 'rgba(75, 192, 192, 1)',
+              borderWidth: 1,
+            },
+          ],
+        },
+        options: {
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: {
+                callback: function (value) {
+                  return formatNumber(value);
+                },
+              },
+              title: {
+                display: true,
+                text: 'Operations per Second',
+              },
+            },
+            x: {
+              title: {
+                display: true,
+                text: 'Benchmark Name',
+              },
             },
           },
-          title: {
-            display: true,
-            text: "Operations per Second",
-          },
-        },
-        x: {
-          title: {
-            display: true,
-            text: "Benchmark Name",
-          },
-        },
-      },
-      plugins: {
-        tooltip: {
-          callbacks: {
-            label: function (context) {
-              const idx = context.dataIndex;
-              const rme = data[idx].rme;
-              const hz = context.parsed.y;
-              return ` ${formatNumber(hz)} ±${rme.toFixed(2)}%`;
+          plugins: {
+            tooltip: {
+              callbacks: {
+                label: function (context) {
+                  const idx = context.dataIndex;
+                  const rme = data[idx].rme;
+                  const hz = context.parsed.y;
+                  return ` ${formatNumber(hz)} ±${rme.toFixed(2)}%`;
+                },
+              },
+            },
+            legend: {
+              display: false,
             },
           },
         },
-        legend: {
-          display: false,
-        },
-      },
-    },
-  });
-</script>
-</body>
+      });
+    </script>
+  </body>
 </html>

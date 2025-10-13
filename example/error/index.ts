@@ -1,4 +1,4 @@
-import { Mapper } from "../../src";
+import { Mapper } from '../../src';
 
 class Source {
   validField?: string;
@@ -11,10 +11,10 @@ class Target {
 }
 
 const mapper = Mapper.create<Source, Target>({
-  validField: "validField",
+  validField: 'validField',
   problematicField: (source) => {
-    if (typeof source.problematicField !== "string") {
-      throw new Error("problematicField must be a string");
+    if (typeof source.problematicField !== 'string') {
+      throw new Error('problematicField must be a string');
     }
 
     return source.problematicField;
@@ -22,7 +22,7 @@ const mapper = Mapper.create<Source, Target>({
 });
 
 const source = new Source();
-source.validField = "Some valid data";
+source.validField = 'Some valid data';
 source.problematicField = 123; // it`s Number, not String
 
 try {
@@ -30,5 +30,5 @@ try {
   console.log(target);
 } catch (error) {
   const e = error as Error;
-  console.error("An error occurred during mapping:", e.message);
+  console.error('An error occurred during mapping:', e.message);
 }
