@@ -1,0 +1,56 @@
+{
+  "name": "om-data-mapper",
+  "version": "2.0.5",
+  "description": "High-performance TypeScript/JavaScript data mapper with JIT compilation for ultra-fast object transformations",
+  "private": false,
+  "main": "build/index.js",
+  "scripts": {
+    "build": "tsc",
+    "build:watch": "tsc --watch",
+    "clean": "rm -rf build",
+    "prepublishOnly": "npm run clean && npm run test && npm run build",
+    "test": "jest",
+    "test:watch": "jest --watch"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Isqanderm/data-mapper.git"
+  },
+  "keywords": [
+    "data mapping",
+    "mapping",
+    "mapper",
+    "transform",
+    "high performance",
+    "jit",
+    "fast",
+    "mapping",
+    "typescript",
+    "javascript",
+    "performance",
+    "benchmark"
+  ],
+  "files": [
+    "build",
+    "README.md",
+    "LICENSE"
+  ],
+  "author": "Isqanderm <aleksandr.melnik.personal@gmail.com> (https://www.linkedin.com/in/isqander-melnik)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Isqanderm/data-mapper/issues"
+  },
+  "homepage": "https://github.com/Isqanderm/data-mapper#readme",
+  "devDependencies": {
+    "@babel/core": "^7.23.9",
+    "@babel/preset-env": "^7.23.9",
+    "@babel/preset-typescript": "^7.23.3",
+    "@types/benchmark": "^2.1.5",
+    "@types/jest": "^29.5.12",
+    "babel-jest": "^29.7.0",
+    "jest": "^29.7.0",
+    "prettier": "3.5.3",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.3"
+  }
+}
