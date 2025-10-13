@@ -1,6 +1,6 @@
 {
   "name": "om-data-mapper",
-  "version": "2.0.7",
+  "version": "3.0.0",
   "description": "High-performance TypeScript/JavaScript data mapper with JIT compilation for ultra-fast object transformations",
   "private": false,
   "main": "build/index.js",
