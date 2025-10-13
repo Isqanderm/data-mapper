@@ -17,7 +17,55 @@
 Install `om-data-mapper` using npm:
 
 ```bash
-npm i --save om-data-mapper
+npm install om-data-mapper
+```
+
+Or using yarn:
+
+```bash
+yarn add om-data-mapper
+```
+
+Or using pnpm:
+
+```bash
+pnpm add om-data-mapper
+```
+
+## Quick Start
+
+Get started with `om-data-mapper` in just a few lines:
+
+```typescript
+import { Mapper } from 'om-data-mapper';
+
+// Define your source and target types
+type User = {
+  firstName: string;
+  lastName: string;
+  age: number;
+};
+
+type UserDTO = {
+  fullName: string;
+  isAdult: boolean;
+};
+
+// Create a mapper
+const userMapper = Mapper.create<User, UserDTO>({
+  fullName: (user) => `${user.firstName} ${user.lastName}`,
+  isAdult: (user) => user.age >= 18,
+});
+
+// Execute the mapping
+const user: User = {
+  firstName: 'John',
+  lastName: 'Doe',
+  age: 30,
+};
+
+const { result, errors } = userMapper.execute(user);
+console.log(result); // { fullName: 'John Doe', isAdult: true }
 ```
 
 ## Performance
@@ -204,6 +252,30 @@ Mapper.create(mappingConfig, defaultValues, { useUnsafe: true });
 
 this will greatly improve performance, but errors inside the conversion will not be intercepted.
 
+## API Documentation
+
+For more detailed examples and advanced usage patterns, check out the [examples directory](./example) in this repository:
+
+- [Simple Mapping](./example/simple) - Basic property mapping
+- [Deep Mapping](./example/deep) - Nested object mapping
+- [Complex Mapping](./example/complex) - Advanced transformations
+- [Array Mapping](./example/array) - Working with arrays
+- [Nested Config](./example/nested) - Nested configuration patterns
+- [Error Handling](./example/error) - Error handling examples
+
+## Contributing
+
+We welcome contributions! Please see our [Contributing Guide](./CONTRIBUTING.md) for details on:
+
+- Setting up the development environment
+- Running tests and linting
+- Submitting pull requests
+- Code of conduct
+
+## Security
+
+If you discover a security vulnerability, please follow our [Security Policy](./SECURITY.md) for responsible disclosure.
+
 ## License
 
-`om-data-mapper` is distributed under the MIT license. See the LICENSE file in the root directory of the project for more information.
+`om-data-mapper` is distributed under the MIT license. See the [LICENSE](./LICENSE) file in the root directory of the project for more information.
