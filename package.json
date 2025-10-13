@@ -4,6 +4,8 @@
   "description": "High-performance TypeScript/JavaScript data mapper with JIT compilation for ultra-fast object transformations",
   "private": false,
   "main": "build/index.js",
+  "types": "build/index.d.ts",
+  "sideEffects": false,
   "scripts": {
     "build": "tsc",
     "build:watch": "tsc --watch",
