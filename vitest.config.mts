@@ -4,7 +4,8 @@ export default defineConfig({
   test: {
     globals: true,
     environment: 'node',
-    include: ['tests/**/*.test.ts', 'bench/**/*.bench.ts'],
+    include: ['tests/**/*.test.ts'],
+    exclude: ['bench/**/*.bench.ts'],
     coverage: {
       provider: 'v8',
       reportsDirectory: 'coverage',
@@ -19,6 +20,8 @@ export default defineConfig({
       },
     },
     benchmark: {
+      include: ['bench/**/*.bench.ts'],
+      exclude: ['tests/**/*.test.ts'],
       outputFile: {
         json: './bench-results.json',
       },
