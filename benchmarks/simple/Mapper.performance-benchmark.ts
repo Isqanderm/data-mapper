@@ -1,5 +1,5 @@
-import { Suite } from "benchmark";
-import { Mapper } from "../../src";
+import { Suite } from 'benchmark';
+import { Mapper } from '../../src';
 
 interface Source {
   id: number;
@@ -19,18 +19,18 @@ interface Target {
 
 const sourceData: Source = {
   id: 1,
-  name: "John Doe",
+  name: 'John Doe',
   details: {
     age: 30,
-    address: "123 Main St",
+    address: '123 Main St',
   },
 };
 
 const mapper = Mapper.create<Source, Target>({
-  userId: "id",
-  fullName: "name",
-  age: "details.age",
-  location: "details.address",
+  userId: 'id',
+  fullName: 'name',
+  age: 'details.age',
+  location: 'details.address',
 });
 
 function vanillaMapper(source: Source): Target {
@@ -45,16 +45,16 @@ function vanillaMapper(source: Source): Target {
 const suite = new Suite();
 
 suite
-  .add("Mapper#execute", function () {
+  .add('Mapper#execute', function () {
     mapper.execute(sourceData);
   })
-  .add("Vanilla mapper", function () {
+  .add('Vanilla mapper', function () {
     vanillaMapper(sourceData);
   })
-  .on("cycle", function (event: any) {
+  .on('cycle', function (event: any) {
     console.log(String(event.target));
   })
-  .on("complete", function (this: any) {
+  .on('complete', function (this: any) {
     const results = this.map((bench: any) => ({
       name: bench.name,
       hz: bench.hz,

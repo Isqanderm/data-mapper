@@ -12,7 +12,7 @@ type PathChunk = { type: 'key' | 'index' | 'array' | 'args_index'; part: string 
 export function parsePath(path: string): PathChunk[] {
   const tokenRegex = /(\[\]|\[\d+\]|\$\d+|[a-zA-Z$_][\w$]*)/g;
   const parts = path.match(tokenRegex) || [];
-  return parts.map(part => {
+  return parts.map((part) => {
     if (part === '[]') {
       return { type: 'array', part };
     }
@@ -52,17 +52,13 @@ export function getValueByPath(path: string): PathObject[] {
 
       case 'key':
         // первый ключ без '?.', последующие — с опциональным связыванием
-        currentPath = currentPath
-          ? `${currentPath}?.${chunk.part}`
-          : chunk.part;
+        currentPath = currentPath ? `${currentPath}?.${chunk.part}` : chunk.part;
         break;
 
       case 'index':
       case 'args_index':
         // числовой или аргументный индекс: первый раз без '?.', далее — с
-        currentPath = currentPath
-          ? `${currentPath}?.[${chunk.part}]`
-          : `[${chunk.part}]`;
+        currentPath = currentPath ? `${currentPath}?.[${chunk.part}]` : `[${chunk.part}]`;
         break;
     }
   }

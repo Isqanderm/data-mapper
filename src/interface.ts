@@ -1,4 +1,4 @@
-import type { Mapper } from "./index";
+import type { Mapper } from './index';
 
 // === 1) Базовые утилиты ===
 
@@ -43,10 +43,7 @@ export type DeepPath<S> = S extends object
 // === 3) PathValue: вычисление типа по строковому пути ===
 
 /** Разбор для объекта */
-type PathValueFromObject<
-  S,
-  P extends string,
-> = P extends `${infer Key}.[].${infer Rest}`
+type PathValueFromObject<S, P extends string> = P extends `${infer Key}.[].${infer Rest}`
   ? Key extends ObjKey<S>
     ? PathValueFromObject<ExtractArrayType<NonNullable<S[Key]>>, Rest>[]
     : never
@@ -111,10 +108,7 @@ export type ValidObjPaths<S, T> = {
 // === 5) Поддержка tuple-источника ===
 
 /** Числовые ключи кортежа */
-export type NumericIndex<Args extends readonly any[]> = Extract<
-  keyof Args,
-  `${number}`
->;
+export type NumericIndex<Args extends readonly any[]> = Extract<keyof Args, `${number}`>;
 
 /** Пути для tuple: wildcard и индексы */
 export type ArgPath<Args extends readonly any[]> = {
@@ -143,23 +137,17 @@ export type MappingConfiguration<Source, Target> = Source extends readonly any[]
         | Transformer<Source, Target[K]>
         | Mapper<Source, Target[K]>
         | ValidArgPaths<Source, Target[K]>
-        | (Target[K] extends object
-            ? MappingConfiguration<Source, Target[K]>
-            : never);
+        | (Target[K] extends object ? MappingConfiguration<Source, Target[K]> : never);
     }
   : {
       [K in keyof Target]:
         | Transformer<Source, Target[K]>
         | (K extends keyof Source
-            ?
-                | Mapper<Source[K], Target[K]>
-                | Mapper<NonNullable<Source[K]>, NonNullable<Target[K]>>
+            ? Mapper<Source[K], Target[K]> | Mapper<NonNullable<Source[K]>, NonNullable<Target[K]>>
             : never)
         | ValidKeys<Source, Target[K]>
         | ValidObjPaths<Source, Target[K]>
-        | (Target[K] extends object
-            ? MappingConfiguration<Source, Target[K]>
-            : never);
+        | (Target[K] extends object ? MappingConfiguration<Source, Target[K]> : never);
     };
 
 // === 7) Результаты и конфиг ===

@@ -21,12 +21,15 @@ npm i --save om-data-mapper
 ```
 
 ## Performance
+
 Performance of om-data-mapper is almost identical to a native, hand-written “vanilla” mapper—demonstrating near-native speeds even in “safe” mode. Enabling Unsafe Mode (useUnsafe: true) removes all try/catch overhead and pushes performance even higher.
 
 [![Benchmark Chart](https://raw.githubusercontent.com/Isqanderm/data-mapper/659ae4ac86f3a44bc16475867ad26efaa8dd6177/benchmarks/benckmarks.png)](https://raw.githubusercontent.com/Isqanderm/data-mapper/659ae4ac86f3a44bc16475867ad26efaa8dd6177/benchmarks/benckmarks.png)
 
 ## Features
-****
+
+---
+
 `om-data-mapper` offers the following features:
 
 ### Simple Mapping
@@ -36,7 +39,7 @@ Simple mapping allows you to easily transform one object into another by copying
 ```ts
 const mapper = UserMapper.create<User, TargeetUser>({
   name: 'firstName',
-  fullName: (user) => `${user.firstName} ${user.lastName}`
+  fullName: (user) => `${user.firstName} ${user.lastName}`,
 });
 
 const target = mapper.execute(sourceObject);
@@ -48,8 +51,8 @@ Deep mapping supports the mapping of nested objects and allows the construction 
 
 ```ts
 const addressMapper = AddressMapper.create<Address, TargetAddress>({
-  fullAddress: (address) => `${address.city}, ${address.street}, ${address.appartment}`
-})
+  fullAddress: (address) => `${address.city}, ${address.street}, ${address.appartment}`,
+});
 const mapper = UserMapper.create<User, TargetUser>({
   name: 'firstName',
   addressStreet: 'address.street',
@@ -65,8 +68,8 @@ Mapping with composition allows combining multiple mappers to create complex dat
 
 ```ts
 const addressMapper = AddressMapper.create<Address, TargetAddress>({
-  fullAddress: (address) => `${address.city}, ${address.street}, ${address.appartment}`
-})
+  fullAddress: (address) => `${address.city}, ${address.street}, ${address.appartment}`,
+});
 const mapper = UserMapper.create<User, TargetUser>({
   name: 'firstName',
   address: addressMapper,
@@ -92,6 +95,7 @@ const target = mapper.execute(sourceObject);
 ```
 
 ### Array Selectors
+
 `om-data-mapper` supports array selectors for iterating over arrays and selecting specific elements by index.
 
 [] - Iterates over an array.
@@ -102,11 +106,11 @@ Example: Iterating Over an Array
 
 ```typescript
 const mapper = DataMapper.create<Source, Target>({
-  items: 'array.[]'
+  items: 'array.[]',
 });
 
 const source = {
-  array: [1, 2, 3]
+  array: [1, 2, 3],
 };
 
 const target = mapper.execute(source);
@@ -117,11 +121,11 @@ Example: Selecting an Element by Index
 
 ```typescript
 const mapper = DataMapper.create<Source, Target>({
-  firstItem: 'array.[0]'
+  firstItem: 'array.[0]',
 });
 
 const source = {
-  array: [1, 2, 3]
+  array: [1, 2, 3],
 };
 
 const target = mapper.execute(source);
@@ -129,6 +133,7 @@ const target = mapper.execute(source);
 ```
 
 ## Multiple Parameters
+
 You can define mappers that accept a tuple of source values, enabling lookups or cross-data transformations. Use $0, $1, etc., to refer to each element:
 
 ```typescript
@@ -187,7 +192,6 @@ console.log(dto);
   jobName: 'Electronic'
 }
 */
-
 ```
 
 ## UnSafe Mode

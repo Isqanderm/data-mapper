@@ -1,4 +1,4 @@
-import { Mapper } from "../../src";
+import { Mapper } from '../../src';
 
 class Employee {
   constructor(
@@ -30,32 +30,32 @@ interface EmployeeDTO {
     };
   };
   array: number[];
-};
+}
 
 const employeeMapper = Mapper.create<Employee, EmployeeDTO>({
-  fullName: "name",
-  emailAddress: "email",
+  fullName: 'name',
+  emailAddress: 'email',
   isAdult: (source) => source.age >= 18,
   address: {
-    city: "address.city",
-    street: "address.street",
-    houseNumber: "address.houseNumber",
+    city: 'address.city',
+    street: 'address.street',
+    houseNumber: 'address.houseNumber',
     full: {
-      apartment: "address.apartment",
-      floor: "address.floor",
+      apartment: 'address.apartment',
+      floor: 'address.floor',
     },
   },
-  array: "array.[].numbers.[0].number",
+  array: 'array.[].numbers.[0].number',
 });
 
 const employee = new Employee(
-  "John Doe",
-  "john.doe@example.com",
+  'John Doe',
+  'john.doe@example.com',
   30,
   [{ numbers: [{ number: 1 }] }, { numbers: [{ number: 2 }] }],
   {
-    city: "Moscow",
-    street: "Red square",
+    city: 'Moscow',
+    street: 'Red square',
     houseNumber: 22,
     floor: 10,
     apartment: 40,

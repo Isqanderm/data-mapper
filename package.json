@@ -8,6 +8,8 @@
     "build": "tsc",
     "build:watch": "tsc --watch",
     "clean": "rm -rf build",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
     "prepublishOnly": "npm run clean && npm run test && npm run build",
     "test": "jest",
     "test:watch": "jest --watch"

@@ -1,5 +1,5 @@
-import { Suite } from "benchmark";
-import { MappingConfiguration, Mapper } from "../../src";
+import { Suite } from 'benchmark';
+import { MappingConfiguration, Mapper } from '../../src';
 
 interface Source {
   id: number;
@@ -18,18 +18,18 @@ interface Target {
 }
 
 const mappingConfig: MappingConfiguration<Source, Target> = {
-  userId: "id",
-  fullName: "name",
-  age: "details.age",
-  location: "details.address",
+  userId: 'id',
+  fullName: 'name',
+  age: 'details.age',
+  location: 'details.address',
 };
 
 const sourceData: Source = {
   id: 1,
-  name: "John Doe",
+  name: 'John Doe',
   details: {
     age: 30,
-    address: "123 Main St",
+    address: '123 Main St',
   },
 };
 
@@ -49,16 +49,16 @@ function alternativeMapper(source: Source): Target {
 const suite = new Suite();
 
 suite
-  .add("Mapper#execute", function () {
+  .add('Mapper#execute', function () {
     mapper.execute(sourceData);
   })
-  .add("Vanilla mapper", function () {
+  .add('Vanilla mapper', function () {
     alternativeMapper(sourceData);
   })
-  .on("cycle", function (event: any) {
+  .on('cycle', function (event: any) {
     console.log(String(event.target));
   })
-  .on("complete", function (this: any) {
+  .on('complete', function (this: any) {
     const results = this.map((bench: any) => ({
       name: bench.name,
       hz: bench.hz,

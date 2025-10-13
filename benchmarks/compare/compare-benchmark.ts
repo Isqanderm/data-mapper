@@ -1,11 +1,11 @@
 // bench.ts
-import { Suite } from "benchmark";
-import { Mapper } from "../../src"; // OmDataMapper
-import mapperJs from "@cookbook/mapper-js"; // @cookbook/mapper-js
-import "automapper-ts"; // Loedeman’s AutoMapper (global `automapper`)
-import objectMapper from "object-mapper"; // object-mapper
-import createTransformer from "morphism"; // morphism
-import { plainToClass, Transform } from "class-transformer";
+import { Suite } from 'benchmark';
+import { Mapper } from '../../src'; // OmDataMapper
+import mapperJs from '@cookbook/mapper-js'; // @cookbook/mapper-js
+import 'automapper-ts'; // Loedeman’s AutoMapper (global `automapper`)
+import objectMapper from 'object-mapper'; // object-mapper
+import createTransformer from 'morphism'; // morphism
+import { plainToClass, Transform } from 'class-transformer';
 
 // 1) Define Source and Target interfaces
 interface Source {
@@ -27,10 +27,10 @@ interface Target {
 // 2) Sample source data
 const sourceData: Source = {
   id: 1,
-  name: "John Doe",
+  name: 'John Doe',
   details: {
     age: 30,
-    address: "123 Main St",
+    address: '123 Main St',
   },
 };
 
@@ -52,20 +52,20 @@ class TargetCT {
 // 3) OmDataMapper setup
 // ----------------------
 const omMapper = Mapper.create<Source, Target>({
-  userId: "id",
-  fullName: "name",
-  age: "details.age",
-  location: "details.address",
+  userId: 'id',
+  fullName: 'name',
+  age: 'details.age',
+  location: 'details.address',
 });
 
 // --------------------------
 // 4) @cookbook/mapper-js setup
 // --------------------------
 const mappingJs = mapperJs((map) => ({
-  userId: map("id").value,
-  fullName: map("name").value,
-  age: map("details.age").value,
-  location: map("details.address").value,
+  userId: map('id').value,
+  fullName: map('name').value,
+  age: map('details.age').value,
+  location: map('details.address').value,
 }));
 
 // ----------------------------------------------
@@ -73,20 +73,20 @@ const mappingJs = mapperJs((map) => ({
 // ----------------------------------------------
 // The `opts` parameter is typed as `any` to avoid TS7006.
 automapper
-  .createMap("Source", "Target")
-  .forMember("userId", (opts: any) => opts.mapFrom("id"))
-  .forMember("fullName", (opts: any) => opts.mapFrom("name"))
-  .forMember("age", (opts: any) => opts.mapFrom("details.age"))
-  .forMember("location", (opts: any) => opts.mapFrom("details.address"));
+  .createMap('Source', 'Target')
+  .forMember('userId', (opts: any) => opts.mapFrom('id'))
+  .forMember('fullName', (opts: any) => opts.mapFrom('name'))
+  .forMember('age', (opts: any) => opts.mapFrom('details.age'))
+  .forMember('location', (opts: any) => opts.mapFrom('details.address'));
 
 // -----------------------------
 // 6) object-mapper setup
 // -----------------------------
 const objMapSpec: Record<string, string> = {
-  id: "userId",
-  name: "fullName",
-  "details.age": "age",
-  "details.address": "location",
+  id: 'userId',
+  name: 'fullName',
+  'details.age': 'age',
+  'details.address': 'location',
 };
 
 // -----------------------------
@@ -117,40 +117,40 @@ function vanillaMapper(source: Source): Target {
 const suite = new Suite();
 
 suite
-  .add("OmDataMapper#execute", function () {
+  .add('OmDataMapper#execute', function () {
     omMapper.execute(sourceData);
   })
-  .add("class-transformer", function () {
+  .add('class-transformer', function () {
     plainToClass(TargetCT, sourceData);
   })
-  .add("@cookbook/mapper-js", function () {
+  .add('@cookbook/mapper-js', function () {
     // @ts-ignore: mappingJs may not have perfect typings
     mappingJs(sourceData);
   })
-  .add("AutoMapper (automapper-ts)", function () {
-    automapper.map("Source", "Target", sourceData);
+  .add('AutoMapper (automapper-ts)', function () {
+    automapper.map('Source', 'Target', sourceData);
   })
-  .add("object-mapper", function () {
+  .add('object-mapper', function () {
     objectMapper.merge(sourceData, objMapSpec);
   })
-  .add("morphism", function () {
+  .add('morphism', function () {
     createTransformer(
       {
-        userId: "id",
-        fullName: "name",
-        age: "details.age",
-        location: "details.address",
+        userId: 'id',
+        fullName: 'name',
+        age: 'details.age',
+        location: 'details.address',
       },
       sourceData,
     );
   })
-  .add("Vanilla mapper", function () {
+  .add('Vanilla mapper', function () {
     vanillaMapper(sourceData);
   })
-  .on("cycle", function (event: any) {
+  .on('cycle', function (event: any) {
     console.log(String(event.target));
   })
-  .on("complete", function (this: any) {
+  .on('complete', function (this: any) {
     // Collect name, hz, rme, sampleCount for each test
     const results = this.map((bench: any) => ({
       name: bench.name,
