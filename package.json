@@ -17,7 +17,9 @@
     "prepublishOnly": "npm run clean && npm run test && npm run build",
     "release": "semantic-release",
     "test": "vitest run --coverage",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "bench": "vitest bench --run",
+    "bench:watch": "vitest bench"
   },
   "repository": {
     "type": "git",
@@ -60,6 +62,7 @@
     "eslint": "^9.37.0",
     "prettier": "3.5.3",
     "semantic-release": "^24.2.9",
+    "tinybench": "^5.0.1",
     "ts-node": "^10.9.2",
     "typescript": "^5.3.3",
     "vitest": "^3.2.4"

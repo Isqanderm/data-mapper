@@ -74,6 +74,17 @@ console.log(result); // { fullName: 'John Doe', isAdult: true }
 
 Performance of om-data-mapper is almost identical to a native, hand-written “vanilla” mapper—demonstrating near-native speeds even in “safe” mode. Enabling Unsafe Mode (useUnsafe: true) removes all try/catch overhead and pushes performance even higher.
 
+### Benchmark Results
+
+We use automated benchmarks to track performance across different scenarios:
+
+- **Simple Mapping**: ~30M ops/sec (competitive with vanilla)
+- **Complex Transformations**: ~13M ops/sec (with custom functions)
+- **Array Operations**: ~1M ops/sec (100 items)
+- **Deep Nesting**: ~2.4M ops/sec (4-level deep)
+
+All benchmarks run automatically on every commit via GitHub Actions. See [Benchmark Setup Guide](./reports/benchmarks-setup.md) for details.
+
 [![Benchmark Chart](https://raw.githubusercontent.com/Isqanderm/data-mapper/659ae4ac86f3a44bc16475867ad26efaa8dd6177/benchmarks/benckmarks.png)](https://raw.githubusercontent.com/Isqanderm/data-mapper/659ae4ac86f3a44bc16475867ad26efaa8dd6177/benchmarks/benckmarks.png)
 
 ## Features
