@@ -2,77 +2,49 @@
 
 ## Overview
 
-The repository uses **two testing frameworks** in parallel:
-
-1. **Vitest** (Primary) - Modern, fast testing framework for new tests
-2. **Jest** (Legacy) - Maintained for backward compatibility with existing tests
+The repository uses **Vitest** as the sole testing framework - a modern, fast, and Vite-powered testing solution.
 
 ## Test Structure
 
 ```
 data-mapper/
-├── __test__/              # Jest tests (legacy)
-│   ├── data-mapper.test.ts
-│   └── utils.test.ts
-├── tests/                 # Vitest tests (new)
-│   └── smoke.test.ts
+├── tests/                 # All Vitest tests
+│   ├── data-mapper.test.ts  # Main mapper functionality tests (17 tests)
+│   ├── utils.test.ts        # Utility functions tests (12 tests)
+│   └── smoke.test.ts        # Basic smoke tests (3 tests)
 └── src/                   # Source code
     ├── Mapper.ts
     ├── utils.ts
     └── index.ts
 ```
 
+**Total: 32 tests with 95.1% code coverage**
+
 ## Running Tests
 
-### Primary Test Command (Vitest)
+### Run All Tests
 
 ```bash
 npm test
 ```
 
-This runs Vitest with coverage reporting. Used by CI/CD pipeline.
+This runs all Vitest tests with coverage reporting. Used by CI/CD pipeline.
 
 **Output:**
-- Runs tests in `tests/` directory
+- Runs all tests in `tests/` directory
 - Generates coverage report with v8 provider
 - Coverage thresholds: 50% lines, 50% functions, 30% branches, 50% statements
-
-### Jest Tests (Legacy)
-
-```bash
-npm run test:jest
-```
-
-This runs Jest tests for backward compatibility.
-
-**Output:**
-- Runs tests in `__test__/` directory
-- Generates coverage report with v8 provider
-- Higher coverage (~97%) due to comprehensive existing tests
-
-### Run All Tests
-
-```bash
-npm run test:all
-```
-
-This runs both Jest and Vitest tests sequentially.
+- **Current coverage: 95.1% statements, 71.42% branches, 100% functions**
 
 ### Watch Mode
 
-**Vitest watch mode:**
 ```bash
 npm run test:watch
 ```
 
-**Jest watch mode:**
-```bash
-npm run test:watch:jest
-```
+Runs Vitest in watch mode for development. Tests automatically re-run when files change.
 
 ## Configuration
-
-### Vitest Configuration
 
 **File:** `vitest.config.mts`
 
@@ -101,70 +73,32 @@ export default defineConfig({
 **Key Features:**
 - ✅ Node.js environment
 - ✅ Global test functions (describe, it, expect)
-- ✅ Only runs tests in `tests/` directory
-- ✅ v8 coverage provider
+- ✅ Runs all tests in `tests/` directory
+- ✅ v8 coverage provider (fast and accurate)
 - ✅ Coverage thresholds enforced
+- ✅ LCOV reports for Codecov integration
 
-### Jest Configuration
-
-**File:** `jest.config.ts`
-
-```typescript
-const config: Config = {
-  clearMocks: true,
-  collectCoverage: true,
-  coverageDirectory: 'coverage',
-  coverageProvider: 'v8',
-  testMatch: [
-    '**/__test__/**/*.[jt]s?(x)',
-    '**/__tests__/**/*.[jt]s?(x)',
-  ],
-  testPathIgnorePatterns: [
-    '/node_modules/',
-    '/tests/', // Ignore Vitest tests
-  ],
-};
-```
-
-**Key Features:**
-- ✅ Only runs tests in `__test__/` and `__tests__/` directories
-- ✅ Ignores `tests/` directory (Vitest tests)
-- ✅ v8 coverage provider
-- ✅ Automatic mock clearing
-
-## Why Two Testing Frameworks?
-
-### Vitest (Primary)
+## Why Vitest?
 
 **Advantages:**
-- ⚡ Faster execution (uses Vite)
-- 🔥 Hot module replacement in watch mode
-- 📦 Better ESM support
-- 🎯 Modern API compatible with Jest
-- 🚀 Better TypeScript support
+- ⚡ **Faster execution** - Uses Vite for lightning-fast test runs
+- 🔥 **Hot module replacement** - Instant feedback in watch mode
+- 📦 **Better ESM support** - Native ES modules support
+- 🎯 **Jest-compatible API** - Easy migration from Jest
+- 🚀 **Better TypeScript support** - First-class TypeScript integration
+- 🔧 **Unified tooling** - Same config as Vite (if using Vite for build)
+- 📊 **Built-in coverage** - No additional setup needed
 
-**Use for:**
-- New tests
+**Perfect for:**
+- Unit tests
 - Integration tests
 - Smoke tests
-- Quick validation tests
-
-### Jest (Legacy)
-
-**Advantages:**
-- 📚 Comprehensive existing test suite
-- 🔒 Stable and well-tested
-- 📖 Extensive documentation
-- 🌍 Large community
-
-**Use for:**
-- Maintaining existing tests
-- Backward compatibility
-- Complex mocking scenarios
+- TDD/BDD workflows
+- Modern TypeScript projects
 
 ## Writing Tests
 
-### Vitest Test Example
+### Test Example
 
 **File:** `tests/example.test.ts`
 
@@ -188,30 +122,7 @@ describe('Feature Name', () => {
 });
 ```
 
-### Jest Test Example
-
-**File:** `__test__/example.test.ts`
-
-```typescript
-import { Mapper } from '../src';
-
-describe('Feature Name', () => {
-  it('should do something', () => {
-    // Arrange
-    const mapper = Mapper.create({
-      name: 'firstName',
-    });
-
-    // Act
-    const { result } = mapper.execute({ firstName: 'John' });
-
-    // Assert
-    expect(result).toEqual({ name: 'John' });
-  });
-});
-```
-
-**Note:** Jest tests don't need to import `describe`, `it`, `expect` - they're global.
+**Note:** Always import `describe`, `it`, `expect` from `vitest` at the top of your test files.
 
 ## Coverage Reports
 
@@ -235,11 +146,11 @@ open coverage/index.html
 
 ### Coverage Thresholds
 
-**Vitest thresholds:**
-- Lines: 50%
-- Functions: 50%
-- Branches: 30%
-- Statements: 50%
+**Current thresholds:**
+- Lines: 50% (currently at 95.1% ✅)
+- Functions: 50% (currently at 100% ✅)
+- Branches: 30% (currently at 71.42% ✅)
+- Statements: 50% (currently at 95.1% ✅)
 
 **To increase thresholds**, edit `vitest.config.mts`:
 
@@ -282,17 +193,6 @@ This ensures:
 
 ## Troubleshooting
 
-### Error: "Vitest cannot be imported in a CommonJS module"
-
-**Symptom:**
-```
-Vitest cannot be imported in a CommonJS module using require()
-```
-
-**Cause:** Jest is trying to run Vitest tests.
-
-**Solution:** Already fixed! Jest now ignores `tests/` directory.
-
 ### Error: "Cannot find module 'vitest'"
 
 **Symptom:**
@@ -308,30 +208,29 @@ npm install
 ### Tests not running
 
 **Check:**
-1. Test files are in correct directories:
-   - Vitest: `tests/**/*.test.ts`
-   - Jest: `__test__/**/*.test.ts`
+1. Test files are in `tests/` directory
 2. Test files have correct naming: `*.test.ts` or `*.spec.ts`
 3. Dependencies are installed: `npm install`
+4. Test files import from `vitest`: `import { describe, it, expect } from 'vitest'`
 
 ### Coverage not generated
 
 **Check:**
-1. Run with coverage flag: `npm test` (Vitest) or `npm run test:jest` (Jest)
+1. Run with coverage: `npm test`
 2. Check `coverage/` directory exists
-3. Verify coverage configuration in `vitest.config.mts` or `jest.config.ts`
+3. Verify coverage configuration in `vitest.config.mts`
+4. Ensure source files are in `src/` directory
+
+### Tests fail with TypeScript errors
+
+**Solution:**
+1. Ensure TypeScript is installed: `npm install -D typescript`
+2. Check `tsconfig.json` is properly configured
+3. Verify imports are correct
 
 ## Best Practices
 
-### 1. Use Vitest for New Tests
-
-Write new tests using Vitest for better performance and modern features.
-
-### 2. Maintain Jest Tests
-
-Keep existing Jest tests for backward compatibility. Don't migrate unless necessary.
-
-### 3. Follow AAA Pattern
+### 1. Follow AAA Pattern
 
 ```typescript
 it('should do something', () => {
@@ -346,7 +245,7 @@ it('should do something', () => {
 });
 ```
 
-### 4. Write Descriptive Test Names
+### 2. Write Descriptive Test Names
 
 ```typescript
 // ❌ Bad
@@ -356,7 +255,7 @@ it('test 1', () => { /* ... */ });
 it('should map firstName to name property', () => { /* ... */ });
 ```
 
-### 5. Test Edge Cases
+### 3. Test Edge Cases
 
 ```typescript
 describe('Mapper', () => {
@@ -367,7 +266,7 @@ describe('Mapper', () => {
 });
 ```
 
-### 6. Keep Tests Isolated
+### 4. Keep Tests Isolated
 
 Each test should be independent and not rely on other tests.
 
@@ -384,56 +283,37 @@ it('test 1', () => {
 });
 ```
 
-## Migration Guide (Jest → Vitest)
-
-If you want to migrate a Jest test to Vitest:
-
-1. **Move the file:**
-   ```bash
-   mv __test__/example.test.ts tests/example.test.ts
-   ```
-
-2. **Add imports:**
-   ```typescript
-   import { describe, it, expect } from 'vitest';
-   ```
-
-3. **Update mocks (if any):**
-   ```typescript
-   // Jest
-   jest.mock('./module');
-   
-   // Vitest
-   vi.mock('./module');
-   ```
-
-4. **Run tests:**
-   ```bash
-   npm test
-   ```
-
 ## Summary
 
 **Test Commands:**
-- `npm test` - Run Vitest tests with coverage (primary)
-- `npm run test:jest` - Run Jest tests with coverage (legacy)
-- `npm run test:all` - Run both Jest and Vitest tests
-- `npm run test:watch` - Vitest watch mode
-- `npm run test:watch:jest` - Jest watch mode
+- `npm test` - Run all tests with coverage
+- `npm run test:watch` - Run tests in watch mode
 
-**Test Directories:**
-- `tests/` - Vitest tests (new)
-- `__test__/` - Jest tests (legacy)
+**Test Directory:**
+- `tests/` - All Vitest tests (32 tests total)
+
+**Test Files:**
+- `tests/data-mapper.test.ts` - Main mapper functionality (17 tests)
+- `tests/utils.test.ts` - Utility functions (12 tests)
+- `tests/smoke.test.ts` - Basic smoke tests (3 tests)
 
 **Coverage:**
-- Vitest: 50% thresholds
-- Jest: ~97% coverage (existing tests)
-- Reports: `coverage/` directory
+- Current: 95.1% statements, 71.42% branches, 100% functions
+- Thresholds: 50% lines, 50% functions, 30% branches, 50% statements
+- Reports: `coverage/` directory (lcov.info, HTML reports)
 
 **CI/CD:**
 - Uses Vitest for automated testing
 - Uploads coverage to Codecov
 - Runs on every push and PR
+- Fast execution with Vite-powered testing
+
+**Key Features:**
+- ⚡ Fast test execution
+- 🔥 Hot module replacement in watch mode
+- 📊 Built-in coverage reporting
+- 🎯 Jest-compatible API
+- 🚀 TypeScript first-class support
 
 ---
 

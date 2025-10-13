@@ -1,3 +1,4 @@
+import { describe, it, expect } from 'vitest';
 import { getValueByPath, parsePath, PathObject } from '../src/utils';
 
 describe('parsePath()', () => {
@@ -73,3 +74,4 @@ describe('getValueByPath()', () => {
     expect(mapPaths('data.items.[].[3].field')).toEqual(['data?.items', '[3]?.field']);
   });
 });
+
