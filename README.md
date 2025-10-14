@@ -298,6 +298,79 @@ Mapper.create(mappingConfig, defaultValues, { useUnsafe: true });
 
 this will greatly improve performance, but errors inside the conversion will not be intercepted.
 
+## class-transformer Compatibility Layer
+
+🎉 **NEW:** om-data-mapper now includes a **full API compatibility layer** for [class-transformer](https://github.com/typestack/class-transformer) using modern **TC39 Stage 3 decorators**!
+
+### Drop-in Replacement
+
+Simply replace your class-transformer imports:
+
+```typescript
+// Before (class-transformer)
+import { plainToClass, Expose, Type } from 'class-transformer';
+
+// After (om-data-mapper)
+import { plainToClass, Expose, Type } from 'om-data-mapper/class-transformer-compat';
+```
+
+### Example
+
+```typescript
+import { plainToClass, Expose, Type, Transform } from 'om-data-mapper/class-transformer-compat';
+
+class Address {
+  @Expose()
+  street: string;
+
+  @Expose()
+  city: string;
+}
+
+class User {
+  @Expose()
+  id: number;
+
+  @Expose()
+  @Transform(({ value }) => value.toUpperCase())
+  name: string;
+
+  @Expose()
+  @Type(() => Address)
+  address: Address;
+
+  @Exclude()
+  password: string;
+}
+
+const plain = {
+  id: 1,
+  name: 'john',
+  address: { street: '123 Main St', city: 'New York' },
+  password: 'secret'
+};
+
+const user = plainToClass(User, plain);
+console.log(user.name); // 'JOHN'
+console.log(user.address instanceof Address); // true
+console.log(user.password); // undefined
+```
+
+### Features
+
+- ✅ **Full API Compatibility** - All decorators and functions supported
+- ✅ **TC39 Stage 3 Decorators** - Modern, standards-compliant implementation
+- ✅ **Better Performance** - Optimized metadata storage and transformation
+- ✅ **Type Safe** - Full TypeScript support
+- ✅ **Zero Breaking Changes** - Works exactly like class-transformer
+
+### Documentation
+
+- [Class-Transformer Compatibility Guide](./docs/CLASS_TRANSFORMER_COMPATIBILITY.md) - Complete API reference
+- [TC39 Decorators Migration Guide](./docs/TC39_DECORATORS_MIGRATION.md) - Migration from legacy decorators
+
+---
+
 ## API Documentation
 
 For more detailed examples and advanced usage patterns, check out the [examples directory](./example) in this repository:

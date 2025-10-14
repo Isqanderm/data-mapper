@@ -2,7 +2,17 @@
 
 ## Overview
 
-om-data-mapper provides a **full API compatibility layer** for the popular [class-transformer](https://github.com/typestack/class-transformer) library. This allows you to use om-data-mapper as a **drop-in replacement** for class-transformer with **significantly better performance** (average **376.73% faster**).
+om-data-mapper provides a **full API compatibility layer** for the popular [class-transformer](https://github.com/typestack/class-transformer) library. This allows you to use om-data-mapper as a **drop-in replacement** for class-transformer with **significantly better performance**.
+
+**🎉 NEW: Now using TC39 Stage 3 Decorators!**
+
+The compatibility layer has been completely rewritten to use modern **TC39 Stage 3 decorators** (the JavaScript standard) instead of legacy experimental decorators. This provides:
+- ✅ Better performance and type safety
+- ✅ Standards-compliant implementation
+- ✅ Future-proof code that works with native JavaScript decorators
+- ✅ Full API compatibility maintained
+
+See [TC39 Decorators Migration Guide](./TC39_DECORATORS_MIGRATION.md) for details.
 
 ## Why Use om-data-mapper Instead of class-transformer?
 
