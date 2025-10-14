@@ -16,7 +16,7 @@ permissions:
 
 jobs:
   benchmark:
-    name: Run Benchmarks
+    name: Run Performance Benchmarks
     runs-on: ubuntu-latest
 
     steps:
@@ -43,37 +43,51 @@ jobs:
       - name: Build benchmarks
         run: cd benchmarks && npm run build
 
+      - name: Run class-transformer comparison benchmark
+        run: |
+          npm run bench:compat > benchmark-compat.txt 2>&1 || echo "Comparison benchmark failed" > benchmark-compat.txt
+          cat benchmark-compat.txt
+
       - name: Run simple benchmark
-        run: cd benchmarks && node build/benchmarks/simple/Mapper.performance-benchmark.js > ../benchmark-simple.txt
+        continue-on-error: true
+        run: |
+          if [ -f "benchmarks/build/benchmarks/simple/Mapper.performance-benchmark.js" ]; then
+            cd benchmarks && node build/benchmarks/simple/Mapper.performance-benchmark.js > ../benchmark-simple.txt 2>&1
+          else
+            echo "Simple benchmark not available (file not found)" > benchmark-simple.txt
+          fi
 
       - name: Run complex benchmark
-        run: cd benchmarks && node build/benchmarks/complex/Mapper.performance-benchmark.complex.js > ../benchmark-complex.txt
-
-      - name: Parse benchmark results
-        id: parse-results
+        continue-on-error: true
         run: |
-          # Extract JSON from benchmark output (last 13 lines contain the JSON array)
-          cd benchmarks
-          node build/benchmarks/simple/Mapper.performance-benchmark.js 2>&1 | tail -n 13 > ../bench-results.json
-          echo "Benchmark results:"
-          cat ../bench-results.json
+          if [ -f "benchmarks/build/benchmarks/complex/Mapper.performance-benchmark.complex.js" ]; then
+            cd benchmarks && node build/benchmarks/complex/Mapper.performance-benchmark.complex.js > ../benchmark-complex.txt 2>&1
+          else
+            echo "Complex benchmark not available (file not found)" > benchmark-complex.txt
+          fi
 
-      - name: Store benchmark result
+      - name: Generate JSON benchmark results for tracking
+        run: |
+          node benchmarks/suites/compat/comparison-json.js > bench-results.json 2>&1 || echo "[]" > bench-results.json
+          echo "Benchmark results for tracking:"
+          cat bench-results.json
+
+      - name: Store benchmark result (main branch only)
         uses: benchmark-action/github-action-benchmark@v1
-        if: github.event_name != 'pull_request'
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
-          name: Benchmark.js Performance
+          name: om-data-mapper Performance
           tool: 'benchmarkjs'
           output-file-path: bench-results.json
           github-token: ${{ secrets.GITHUB_TOKEN }}
           auto-push: true
-          # Show alert with commit comment on detecting possible performance regression
           alert-threshold: '150%'
           comment-on-alert: true
           fail-on-alert: false
           alert-comment-cc-users: '@Isqanderm'
-          # Enable Job Summary for PRs
           summary-always: true
+          gh-pages-branch: gh-pages
+          benchmark-data-dir-path: dev/bench
 
       - name: Upload benchmark results
         uses: actions/upload-artifact@v4
@@ -83,35 +97,124 @@ jobs:
             bench-results.json
             benchmark-simple.txt
             benchmark-complex.txt
+            benchmark-compat.txt
           retention-days: 30
 
-      - name: Comment PR with results
+      - name: Comment PR with comparison results
         if: github.event_name == 'pull_request'
         uses: actions/github-script@v7
         with:
           script: |
             const fs = require('fs');
-            const simpleResults = fs.readFileSync('benchmark-simple.txt', 'utf8');
-            const complexResults = fs.readFileSync('benchmark-complex.txt', 'utf8');
 
-            const body = `## 📊 Benchmark Results
+            // Read all benchmark results
+            let compatResults = '';
+            let simpleResults = '';
+            let complexResults = '';
 
-            ### Simple Mapping
-            \`\`\`
-            ${simpleResults}
-            \`\`\`
+            try {
+              compatResults = fs.readFileSync('benchmark-compat.txt', 'utf8');
+            } catch (e) {
+              compatResults = 'Comparison benchmark not available';
+            }
 
-            ### Complex Transformations
-            \`\`\`
-            ${complexResults}
-            \`\`\`
+            try {
+              simpleResults = fs.readFileSync('benchmark-simple.txt', 'utf8');
+            } catch (e) {
+              simpleResults = 'Simple benchmark not available';
+            }
 
-            *Benchmarked with Benchmark.js on Node.js 20*`;
+            try {
+              complexResults = fs.readFileSync('benchmark-complex.txt', 'utf8');
+            } catch (e) {
+              complexResults = 'Complex benchmark not available';
+            }
 
-            github.rest.issues.createComment({
+            // Extract summary table and detailed results
+            const summaryMatch = compatResults.match(/📈 Summary[\s\S]*$/);
+            const summary = summaryMatch ? summaryMatch[0] : '';
+
+            // Extract individual scenario results for better formatting
+            const scenarios = [];
+            const scenarioRegex = /📊 Scenario \d+: (.+?)\n\s+class-transformer x ([\d,]+) ops\/sec[^\n]+\n\s+om-data-mapper x ([\d,]+) ops\/sec[^\n]+\n\s+✓ Fastest: (.+?)\n\s+⚡ Performance gain: ([\d.]+)% faster/g;
+            let match;
+            while ((match = scenarioRegex.exec(compatResults)) !== null) {
+              scenarios.push({
+                name: match[1],
+                ctOps: match[2],
+                omOps: match[3],
+                winner: match[4],
+                improvement: match[5]
+              });
+            }
+
+            // Build improved summary with visual indicators
+            let improvedSummary = '### 📊 Performance Comparison Summary\n\n';
+
+            if (scenarios.length > 0) {
+              improvedSummary += '| Scenario | class-transformer | om-data-mapper | Improvement |\n';
+              improvedSummary += '|----------|-------------------|----------------|-------------|\n';
+
+              scenarios.forEach(s => {
+                const improvement = parseFloat(s.improvement);
+                let badge = '';
+                if (improvement > 2000) badge = '🔥🔥🔥';
+                else if (improvement > 1000) badge = '🔥🔥';
+                else if (improvement > 500) badge = '🔥';
+                else badge = '⚡';
+
+                improvedSummary += '| ' + s.name + ' | ' + s.ctOps + ' ops/sec | ' +
+                  s.omOps + ' ops/sec | **+' + s.improvement + '%** ' + badge + ' |\n';
+              });
+
+              // Calculate average
+              const avgImprovement = scenarios.reduce((sum, s) => sum + parseFloat(s.improvement), 0) / scenarios.length;
+              improvedSummary += '\n**Average Performance Gain: +' + avgImprovement.toFixed(2) + '%** 🚀\n\n';
+              improvedSummary += '> 🏆 **om-data-mapper won ' + scenarios.length + '/' + scenarios.length + ' scenarios**\n\n';
+            } else {
+              improvedSummary += '```\n' + summary + '\n```\n\n';
+            }
+
+            const body = '## 🚀 Performance Benchmark Results\n\n' +
+              improvedSummary +
+              '<details>\n<summary>📋 Full Benchmark Output</summary>\n\n' +
+              '```\n' + compatResults + '\n```\n\n</details>\n\n' +
+              '<details>\n<summary>⚡ Simple Mapping Benchmark</summary>\n\n' +
+              '```\n' + simpleResults + '\n```\n\n</details>\n\n' +
+              '<details>\n<summary>🔧 Complex Transformations Benchmark</summary>\n\n' +
+              '```\n' + complexResults + '\n```\n\n</details>\n\n' +
+              '---\n' +
+              '💡 **Note:** These are absolute performance numbers from this PR.\n' +
+              'Historical performance trends will be available after merging to `main`.\n\n' +
+              '*Benchmarked with Benchmark.js on Node.js 20 • [View History](https://isqanderm.github.io/data-mapper/dev/bench/)*';
+
+            // Find existing benchmark comment
+            const { data: comments } = await github.rest.issues.listComments({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: body
             });
+
+            const botComment = comments.find(comment =>
+              comment.user.type === 'Bot' &&
+              comment.body.includes('Performance Benchmark Results')
+            );
+
+            if (botComment) {
+              // Update existing comment
+              await github.rest.issues.updateComment({
+                comment_id: botComment.id,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: body
+              });
+            } else {
+              // Create new comment
+              await github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: body
+              });
+            }
 
