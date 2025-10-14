@@ -1,60 +1,78 @@
-# Benchmark.js Performance Tests
+# om-data-mapper Benchmarks
 
-This directory contains high-precision performance benchmarks using [Benchmark.js](https://benchmarkjs.com/).
+This directory contains comprehensive performance benchmarks for om-data-mapper.
 
-## Quick Start
+## 📁 Directory Structure
+
+```
+benchmarks/
+├── suites/                    # Benchmark test suites
+│   ├── core/                  # Core functionality benchmarks
+│   │   ├── simple.bench.ts    # Simple mapping (Vitest)
+│   │   ├── complex.bench.ts   # Complex transformations (Vitest)
+│   │   ├── nested.bench.ts    # Nested objects (Vitest)
+│   │   └── array.bench.ts     # Array mapping (Vitest)
+│   └── compat/                # Compatibility benchmarks
+│       └── class-transformer-comparison.js  # vs class-transformer (Benchmark.js)
+├── simple/                    # Legacy Benchmark.js tests
+├── complex/                   # Legacy Benchmark.js tests
+├── compare/                   # Library comparison tests
+├── PERFORMANCE_COMPARISON.md  # Detailed performance analysis
+└── README.md                  # This file
+```
+
+## 🚀 Quick Start
+
+### Run Core Benchmarks (Vitest)
 
 ```bash
-# Install dependencies
-npm install
+# From project root
+npm run bench:core
 
-# Build the project
-npm run build
-
-# Run benchmarks
-node build/benchmarks/simple/Mapper.performance-benchmark.js
-node build/benchmarks/complex/Mapper.performance-benchmark.complex.js
+# Or run all benchmarks
+npm run bench
 ```
 
-## Available Benchmarks
+### Run Compatibility Benchmarks (Benchmark.js)
 
-### Simple Mapping
-**File:** `simple/Mapper.performance-benchmark.ts`
+```bash
+# From project root
+npm run bench:compat
 
-Tests basic field mapping with nested access:
-```typescript
-{ id, name, details: { age, address } } → { userId, fullName, age, location }
+# Or directly
+node benchmarks/suites/compat/class-transformer-comparison.js
 ```
 
-**Results:**
-- OmDataMapper: ~946M ops/sec
-- Vanilla: ~977M ops/sec
-- **Performance: 1.03x** (nearly identical)
+## 📊 Available Benchmarks
 
-### Complex Mapping
-**File:** `complex/Mapper.performance-benchmark.complex.ts`
+### Core Benchmarks (Vitest)
 
-Tests complex transformations with nested objects, arrays, and custom functions.
+Located in `suites/core/`:
 
-**Results:**
-- OmDataMapper: ~21M ops/sec
-- Vanilla: ~39M ops/sec
-- **Performance: 1.89x**
+1. **simple.bench.ts** - Simple property mapping
+   - Direct field mapping
+   - ~30M ops/sec
 
-### Unsafe Mode
-**File:** `simple/Mapper.performance-benchmark.unsafe.ts`
+2. **complex.bench.ts** - Complex transformations
+   - Nested objects, arrays, custom functions
+   - ~13M ops/sec
 
-Tests performance with `useUnsafe: true` (no try/catch overhead).
+3. **nested.bench.ts** - Deep nested access
+   - Multi-level object traversal
+   - ~2.4M ops/sec
 
-### Comparison Benchmarks
-**File:** `compare/compare-benchmark.ts`
+4. **array.bench.ts** - Array transformations
+   - Mapping 100 items
+   - ~1M ops/sec
 
-Compares OmDataMapper with other popular mapping libraries:
-- class-transformer
-- @cookbook/mapper-js
-- automapper-ts
-- object-mapper
-- morphism
+### Compatibility Benchmarks (Benchmark.js)
+
+Located in `suites/compat/`:
+
+1. **class-transformer-comparison.js** - vs class-transformer
+   - 6 comprehensive scenarios
+   - Average: **4.77x faster** than class-transformer
+   - See [PERFORMANCE_COMPARISON.md](./PERFORMANCE_COMPARISON.md) for details
 
 ## Understanding Results
 
