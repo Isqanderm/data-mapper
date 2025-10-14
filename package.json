@@ -6,6 +6,27 @@
   "main": "build/index.js",
   "types": "build/index.d.ts",
   "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./build/index.d.ts",
+      "import": "./build/index.js",
+      "require": "./build/index.js",
+      "default": "./build/index.js"
+    },
+    "./decorators": {
+      "types": "./build/decorators/index.d.ts",
+      "import": "./build/decorators/index.js",
+      "require": "./build/decorators/index.js",
+      "default": "./build/decorators/index.js"
+    },
+    "./class-transformer-compat": {
+      "types": "./build/compat/class-transformer/index.d.ts",
+      "import": "./build/compat/class-transformer/index.js",
+      "require": "./build/compat/class-transformer/index.js",
+      "default": "./build/compat/class-transformer/index.js"
+    },
+    "./package.json": "./package.json"
+  },
   "scripts": {
     "build": "tsc",
     "build:watch": "tsc --watch",
@@ -18,8 +39,12 @@
     "release": "semantic-release",
     "test": "vitest run --coverage",
     "test:watch": "vitest",
+    "test:unit": "vitest run tests/unit",
+    "test:integration": "vitest run tests/integration",
     "bench": "vitest bench --run",
-    "bench:watch": "vitest bench"
+    "bench:watch": "vitest bench",
+    "bench:core": "vitest bench benchmarks/suites/core --run",
+    "bench:compat": "node benchmarks/suites/compat/class-transformer-comparison.js"
   },
   "repository": {
     "type": "git",
