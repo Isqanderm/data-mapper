@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { Mapper } from '../src';
+import { Mapper } from '../../../src';
 
 describe('om-data-mapper', () => {
   describe('Basic mapping functionality', () => {

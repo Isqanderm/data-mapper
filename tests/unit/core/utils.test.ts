@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { getValueByPath, parsePath, PathObject } from '../src/utils';
+import { getValueByPath, parsePath, PathObject } from '../../../src/core/utils';
 
 describe('parsePath()', () => {
   it('parses a single key', () => {

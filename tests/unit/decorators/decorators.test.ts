@@ -7,7 +7,7 @@ import {
   Transform,
   MapWith,
   Ignore,
-} from '../src/decorators';
+} from '../../../src/decorators';
 
 describe('Decorator-Based Mapper', () => {
   describe('@Mapper decorator', () => {
