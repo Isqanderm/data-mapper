@@ -376,6 +376,113 @@ describe('Decorator-Based Mapper', () => {
       expect(result.fullName).toBe('John');
       expect(errors).toHaveLength(0);
     });
+
+    it('should handle errors in tryTransform', () => {
+      type Source = { data: any };
+
+      @Mapper()
+      class TestMapper {
+        @MapFrom((src: Source) => src.data.nested.value)
+        value!: string;
+      }
+
+      const mapper = new TestMapper();
+      const result = mapper.tryTransform({ data: null });
+
+      expect(result.errors.length).toBeGreaterThan(0);
+    });
+
+    it('should handle MapFrom with Transform', () => {
+      type Source = { firstName: string; lastName: string };
+
+      @Mapper()
+      class TestMapper {
+        @MapFrom((src: Source) => `${src.firstName} ${src.lastName}`)
+        @Transform((value: string) => value.toUpperCase())
+        fullName!: string;
+      }
+
+      const mapper = new TestMapper();
+      const result = mapper.transform({ firstName: 'John', lastName: 'Doe' });
+
+      expect(result.fullName).toBe('JOHN DOE');
+    });
+
+    it('should handle MapFrom with Default', () => {
+      type Source = { value?: number };
+
+      @Mapper()
+      class TestMapper {
+        @MapFrom((src: Source) => src.value)
+        @Default(100)
+        score!: number;
+      }
+
+      const mapper = new TestMapper();
+      const result1 = mapper.transform({ value: 50 });
+      const result2 = mapper.transform({});
+
+      expect(result1.score).toBe(50);
+      expect(result2.score).toBe(100);
+    });
+
+    it('should handle Map with Transform on nested path', () => {
+      type Source = {
+        user: {
+          profile: {
+            age: number;
+          };
+        };
+      };
+
+      @Mapper()
+      class TestMapper {
+        @Map('user.profile.age')
+        @Transform((age: number) => age >= 18)
+        isAdult!: boolean;
+      }
+
+      const mapper = new TestMapper();
+      const result1 = mapper.transform({
+        user: { profile: { age: 25 } },
+      });
+      const result2 = mapper.transform({
+        user: { profile: { age: 15 } },
+      });
+
+      expect(result1.isAdult).toBe(true);
+      expect(result2.isAdult).toBe(false);
+    });
+  });
+
+  describe('Unsafe mode', () => {
+    it('should throw errors in unsafe mode', () => {
+      type Source = { data: any };
+
+      @Mapper({ unsafe: true })
+      class TestMapper {
+        @MapFrom((src: Source) => src.data.nested.value)
+        value!: string;
+      }
+
+      const mapper = new TestMapper();
+
+      expect(() => mapper.transform({ data: null })).toThrow();
+    });
+
+    it('should not catch errors in unsafe mode with tryTransform', () => {
+      type Source = { data: any };
+
+      @Mapper({ unsafe: true })
+      class TestMapper {
+        @MapFrom((src: Source) => src.data.nested.value)
+        value!: string;
+      }
+
+      const mapper = new TestMapper();
+
+      expect(() => mapper.tryTransform({ data: null })).toThrow();
+    });
   });
 });
 

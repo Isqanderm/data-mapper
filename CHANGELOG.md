@@ -22,6 +22,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Updated benchmark compilation configuration to use TC39 decorators
   - Cleaned up build artifacts and outdated compiled files
 
+- **Test Coverage** - Significantly improved test coverage from ~63% to 84%
+  - Added comprehensive tests for BaseMapper (legacy API)
+  - Added extensive tests for class-transformer compatibility layer
+  - Added advanced decorator combination tests
+  - Added edge case tests for error handling and complex transformations
+  - Total test count increased from 44 to 125 tests
+
 ### Added
 
 #### 🚀 Decorator API with JIT Compilation (MAJOR FEATURE)
