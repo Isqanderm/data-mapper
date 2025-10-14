@@ -79,6 +79,69 @@ describe('Decorator-Based Mapper', () => {
 
       expect(result.email).toBe('john@example.com');
     });
+
+    it('should handle missing nested properties gracefully', () => {
+      type Source = {
+        user?: {
+          profile?: {
+            email?: string;
+          };
+        };
+      };
+
+      @Mapper()
+      class TestMapper {
+        @Map('user.profile.email')
+        email!: string;
+      }
+
+      const mapper = new TestMapper();
+
+      // Test with completely missing nested object
+      const result1 = mapper.transform({});
+      expect(result1.email).toBeUndefined();
+
+      // Test with partially missing nested object
+      const result2 = mapper.transform({ user: {} });
+      expect(result2.email).toBeUndefined();
+
+      // Test with missing final property
+      const result3 = mapper.transform({ user: { profile: {} } });
+      expect(result3.email).toBeUndefined();
+    });
+
+    it('should handle missing nested properties with default value', () => {
+      type Source = {
+        user?: {
+          profile?: {
+            email?: string;
+          };
+        };
+      };
+
+      @Mapper()
+      class TestMapper {
+        @Map('user.profile.email')
+        @Default('no-email@example.com')
+        email!: string;
+      }
+
+      const mapper = new TestMapper();
+
+      // Test with missing nested object - should use default
+      const result1 = mapper.transform({});
+      expect(result1.email).toBe('no-email@example.com');
+
+      // Test with partially missing nested object - should use default
+      const result2 = mapper.transform({ user: {} });
+      expect(result2.email).toBe('no-email@example.com');
+
+      // Test with existing value - should not use default
+      const result3 = mapper.transform({
+        user: { profile: { email: 'john@example.com' } }
+      });
+      expect(result3.email).toBe('john@example.com');
+    });
   });
 
   describe('@MapFrom decorator', () => {

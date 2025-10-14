@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **Decorator API** - Fixed nested path access in generated mapper code
+  - Now properly guards all segments of nested paths with optional chaining
+  - Prevents runtime errors when intermediate properties are missing
+  - Example: `@Map('user.profile.email')` now generates `source?.user?.profile?.email`
+  - Added comprehensive tests for missing nested properties with and without defaults
+
 ### Changed
 
 - **Project Structure** - Reorganized benchmark files for better code organization

@@ -19,6 +19,19 @@ const METADATA_INITIALIZED = Symbol('om-data-mapper:initialized');
 const COMPILED_MAPPER_CACHE = new WeakMap<any, BaseMapper<any, any>>();
 
 /**
+ * Generate safe nested property access code with optional chaining
+ * Converts 'user.profile.email' to 'source?.user?.profile?.email'
+ */
+function generateSafePropertyAccess(sourcePath: string): string {
+  const parts = sourcePath.split('.');
+  if (parts.length === 1) {
+    return sourcePath;
+  }
+  // Add optional chaining to each segment
+  return parts.join('?.');
+}
+
+/**
  * Class decorator to mark a class as a mapper
  * @param options - Mapper configuration options
  *
@@ -170,6 +183,9 @@ export function Mapper(options: MapperOptions = {}) {
           defaultValues[key] = mapping.defaultValue;
         }
 
+        // Generate safe nested property access with optional chaining
+        const safeSourcePath = generateSafePropertyAccess(sourcePath);
+
         // Handle value transformation
         if (mapping.transformValue) {
           cache[`${key}__valueTransform`] = mapping.transformValue;
@@ -178,7 +194,7 @@ export function Mapper(options: MapperOptions = {}) {
             : '';
 
           const body = `
-            target.${key} = cache['${key}__valueTransform'](source?.${sourcePath})${defaultPart};
+            target.${key} = cache['${key}__valueTransform'](source?.${safeSourcePath})${defaultPart};
           `;
 
           return useUnsafe ? body : this._wrapInTryCatch(body, key);
@@ -190,7 +206,7 @@ export function Mapper(options: MapperOptions = {}) {
           : '';
 
         const body = `
-          target.${key} = source?.${sourcePath}${defaultPart};
+          target.${key} = source?.${safeSourcePath}${defaultPart};
         `;
 
         return useUnsafe ? body : this._wrapInTryCatch(body, key);
