@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **Project Structure** - Reorganized benchmark files for better code organization
+  - Moved `src/benchmarks/` to `benchmarks/src/` to keep source code clean
+  - Updated benchmark compilation configuration to use TC39 decorators
+  - Cleaned up build artifacts and outdated compiled files
+
 ### Added
 
 #### 🚀 Decorator API with JIT Compilation (MAJOR FEATURE)

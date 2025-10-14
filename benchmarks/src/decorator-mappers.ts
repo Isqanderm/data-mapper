@@ -9,7 +9,7 @@ import {
   MapFrom,
   Transform,
   Default,
-} from '../decorators';
+} from '../../src/decorators';
 
 // ============================================================================
 // Simple Mapping Mapper
