@@ -122,43 +122,16 @@ jobs:
             const summaryMatch = compatResults.match(/📈 Summary[\s\S]*?$/m);
             const summary = summaryMatch ? summaryMatch[0] : compatResults;
 
-            const body = `## 🚀 Performance Benchmark Results
-
-### 📊 om-data-mapper vs class-transformer Comparison
-
-\`\`\`
-${summary}
-\`\`\`
-
-<details>
-<summary>📋 Full Comparison Details</summary>
-
-\`\`\`
-${compatResults}
-\`\`\`
-
-</details>
-
-<details>
-<summary>⚡ Simple Mapping Benchmark</summary>
-
-\`\`\`
-${simpleResults}
-\`\`\`
-
-</details>
-
-<details>
-<summary>🔧 Complex Transformations Benchmark</summary>
-
-\`\`\`
-${complexResults}
-\`\`\`
-
-</details>
-
----
-*Benchmarked with Benchmark.js on Node.js 20 • [View History](https://isqanderm.github.io/data-mapper/dev/bench/)*`;
+            const body = '## 🚀 Performance Benchmark Results\n\n' +
+              '### 📊 om-data-mapper vs class-transformer Comparison\n\n' +
+              '```\n' + summary + '\n```\n\n' +
+              '<details>\n<summary>📋 Full Comparison Details</summary>\n\n' +
+              '```\n' + compatResults + '\n```\n\n</details>\n\n' +
+              '<details>\n<summary>⚡ Simple Mapping Benchmark</summary>\n\n' +
+              '```\n' + simpleResults + '\n```\n\n</details>\n\n' +
+              '<details>\n<summary>🔧 Complex Transformations Benchmark</summary>\n\n' +
+              '```\n' + complexResults + '\n```\n\n</details>\n\n' +
+              '---\n*Benchmarked with Benchmark.js on Node.js 20 • [View History](https://isqanderm.github.io/data-mapper/dev/bench/)*';
 
             // Find existing benchmark comment
             const { data: comments } = await github.rest.issues.listComments({
