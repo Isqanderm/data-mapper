@@ -268,6 +268,90 @@ Your existing code works exactly the same, but **17.28x faster** on average!
 
 [📖 Full migration guide](./docs/COMPARISON.md#migration-guide)
 
+## 🎯 NestJS Integration
+
+High-performance drop-in replacement for NestJS's `ClassSerializerInterceptor`.
+
+### Quick Start
+
+```typescript
+// Before
+import { ClassSerializerInterceptor } from '@nestjs/common';
+
+// After
+import { ClassSerializerInterceptor } from 'om-data-mapper/nestjs';
+
+// That's it! 17.28x faster serialization 🚀
+```
+
+### Global Usage (Recommended)
+
+**Option 1: Using APP_INTERCEPTOR Provider (Recommended)**
+
+```typescript
+// app.module.ts
+import { Module } from '@nestjs/common';
+import { APP_INTERCEPTOR } from '@nestjs/core';
+import { ClassSerializerInterceptor } from 'om-data-mapper/nestjs';
+
+@Module({
+  providers: [
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: ClassSerializerInterceptor,
+    },
+  ],
+})
+export class AppModule {}
+```
+
+**Option 2: Using app.useGlobalInterceptors()**
+
+```typescript
+// main.ts
+import { NestFactory, Reflector } from '@nestjs/core';
+import { ClassSerializerInterceptor } from 'om-data-mapper/nestjs';
+
+async function bootstrap() {
+  const app = await NestFactory.create(AppModule);
+
+  app.useGlobalInterceptors(
+    new ClassSerializerInterceptor(app.get(Reflector))
+  );
+
+  await app.listen(3000);
+}
+```
+
+### DTO Example
+
+```typescript
+import { Expose, Exclude, Type } from 'om-data-mapper/class-transformer-compat';
+
+export class UserDto {
+  @Expose()
+  id: number;
+
+  @Expose()
+  name: string;
+
+  @Exclude()
+  password: string;  // Never serialized
+
+  @Type(() => AddressDto)
+  @Expose()
+  address: AddressDto;
+}
+```
+
+**Benefits:**
+- ✅ **17.28x faster** than built-in NestJS serialization
+- ✅ **100% compatible** with existing NestJS code
+- ✅ **Zero code changes** - just update imports
+- ✅ **All decorators work** - @Expose, @Exclude, @Type, @Transform, etc.
+
+[📖 Full NestJS integration guide](./docs/NESTJS_INTEGRATION.md)
+
 ### Legacy API (Still Supported)
 
 <details>
