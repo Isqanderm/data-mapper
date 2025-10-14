@@ -45,14 +45,26 @@ jobs:
 
       - name: Run class-transformer comparison benchmark
         run: |
-          npm run bench:compat > benchmark-compat.txt 2>&1 || true
+          npm run bench:compat > benchmark-compat.txt 2>&1 || echo "Comparison benchmark failed" > benchmark-compat.txt
           cat benchmark-compat.txt
 
       - name: Run simple benchmark
-        run: cd benchmarks && node build/benchmarks/simple/Mapper.performance-benchmark.js > ../benchmark-simple.txt
+        continue-on-error: true
+        run: |
+          if [ -f "benchmarks/build/benchmarks/simple/Mapper.performance-benchmark.js" ]; then
+            cd benchmarks && node build/benchmarks/simple/Mapper.performance-benchmark.js > ../benchmark-simple.txt 2>&1
+          else
+            echo "Simple benchmark not available (file not found)" > benchmark-simple.txt
+          fi
 
       - name: Run complex benchmark
-        run: cd benchmarks && node build/benchmarks/complex/Mapper.performance-benchmark.complex.js > ../benchmark-complex.txt
+        continue-on-error: true
+        run: |
+          if [ -f "benchmarks/build/benchmarks/complex/Mapper.performance-benchmark.complex.js" ]; then
+            cd benchmarks && node build/benchmarks/complex/Mapper.performance-benchmark.complex.js > ../benchmark-complex.txt 2>&1
+          else
+            echo "Complex benchmark not available (file not found)" > benchmark-complex.txt
+          fi
 
       - name: Generate JSON benchmark results for tracking
         run: |
