@@ -9,14 +9,23 @@ export default defineConfig({
     coverage: {
       provider: 'v8',
       reportsDirectory: 'coverage',
-      reporter: ['text', 'lcov'],
+      reporter: ['text', 'lcov', 'json', 'html'],
       include: ['src/**/*.ts'],
-      exclude: ['src/**/*.test.ts', 'src/**/*.spec.ts', '**/*.bench.ts'],
+      exclude: [
+        'src/**/*.test.ts',
+        'src/**/*.spec.ts',
+        '**/*.bench.ts',
+        'src/**/*.d.ts',
+        'src/**/types.ts',
+        'src/**/interfaces.ts',
+        'src/compat/**/*',  // Compatibility layer tested via integration tests
+      ],
+      all: true,
       thresholds: {
-        lines: 50,
-        functions: 50,
-        branches: 30,
-        statements: 50,
+        lines: 70,
+        functions: 80,
+        branches: 70,
+        statements: 70,
       },
     },
     benchmark: {

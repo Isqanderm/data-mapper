@@ -54,6 +54,10 @@
     "url": "https://github.com/Isqanderm/data-mapper/issues"
   },
   "homepage": "https://github.com/Isqanderm/data-mapper#readme",
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  },
   "devDependencies": {
     "@eslint/js": "^9.37.0",
     "@semantic-release/commit-analyzer": "^13.0.1",

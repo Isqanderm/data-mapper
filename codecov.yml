@@ -1,0 +1,43 @@
+codecov:
+  require_ci_to_pass: yes
+  notify:
+    wait_for_ci: yes
+
+coverage:
+  precision: 2
+  round: down
+  range: "70...100"
+  status:
+    project:
+      default:
+        target: auto
+        threshold: 1%
+        base: auto
+    patch:
+      default:
+        target: auto
+        threshold: 1%
+        base: auto
+
+ignore:
+  - "benchmarks/**/*"
+  - "examples/**/*"
+  - "docs/**/*"
+  - "tests/**/*"
+  - "**/*.test.ts"
+  - "**/*.bench.ts"
+  - "**/*.d.ts"
+  - "build/**/*"
+  - "coverage/**/*"
+  - "node_modules/**/*"
+  - "src/compat/**/*"  # Compatibility layer tested via integration tests
+  - "src/**/types.ts"  # Type definitions only
+  - "src/**/interfaces.ts"  # Interface definitions only
+
+comment:
+  layout: "reach,diff,flags,tree,footer"
+  behavior: default
+  require_changes: false
+  require_base: no
+  require_head: yes
+
