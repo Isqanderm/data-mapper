@@ -9,6 +9,7 @@ import {
   updatePropertyMapping,
   MapperOptions,
   PropertyMapping,
+  IMapper,
 } from './metadata';
 import { Mapper as BaseMapper } from '../core/Mapper';
 
@@ -38,17 +39,17 @@ function generateSafePropertyAccess(sourcePath: string): string {
  * @example
  * ```typescript
  * @Mapper({ unsafe: true })
- * class UserDTOMapper {
+ * class UserDTOMapper implements IMapper<UserSource, UserDTO> {
  *   @Map('name')
  *   fullName!: string;
  * }
  * ```
  */
-export function Mapper(options: MapperOptions = {}) {
+export function Mapper<Source = any, Target = any>(options: MapperOptions = {}) {
   return function <T extends new (...args: any[]) => any>(
     target: T,
     context: ClassDecoratorContext,
-  ): T {
+  ): T & (new (...args: any[]) => IMapper<Source, Target>) {
     // Validate context
     if (context.kind !== 'class') {
       throw new Error('@Mapper can only be applied to classes');
@@ -58,12 +59,12 @@ export function Mapper(options: MapperOptions = {}) {
     let compiledMapper: BaseMapper<any, any> | null = null;
 
     // Create enhanced class with transform method
-    const EnhancedClass = class extends target {
+    const EnhancedClass = class extends target implements IMapper<Source, Target> {
       /**
        * Transform source object to target object
        * Optimized for performance - skips error checking in hot path
        */
-      transform<Source = any>(source: Source): any {
+      transform(source: Source): Target {
         // Mapper is pre-compiled via context.addInitializer
         // No need for lazy compilation check - compiledMapper is always ready
         // Optimized: directly return result without destructuring and error checking
@@ -76,7 +77,7 @@ export function Mapper(options: MapperOptions = {}) {
        * Transform source object to target object (safe mode)
        * Returns both result and errors
        */
-      tryTransform<Source = any>(source: Source): { result: any; errors: string[] } {
+      tryTransform(source: Source): { result: Target; errors: string[] } {
         // Mapper is pre-compiled via context.addInitializer
         // No need for lazy compilation check
         return compiledMapper!.execute(source);
@@ -448,7 +449,7 @@ export function Mapper(options: MapperOptions = {}) {
         }
         return path.split('.').reduce((current, key) => current?.[key], obj);
       }
-    } as T;
+    };
 
     // Store mapper options on the original target (for property decorators to access)
     const metadata = getMapperMetadata(target);
@@ -466,7 +467,7 @@ export function Mapper(options: MapperOptions = {}) {
       }
     });
 
-    return EnhancedClass;
+    return EnhancedClass as T & (new (...args: any[]) => IMapper<Source, Target>);
   };
 }
 

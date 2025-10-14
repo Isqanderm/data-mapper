@@ -138,7 +138,7 @@ describe('Decorator-Based Mapper', () => {
 
       // Test with existing value - should not use default
       const result3 = mapper.transform({
-        user: { profile: { email: 'john@example.com' } }
+        user: { profile: { email: 'john@example.com' } },
       });
       expect(result3.email).toBe('john@example.com');
     });
@@ -486,4 +486,3 @@ describe('Decorator-Based Mapper', () => {
     });
   });
 });
-
