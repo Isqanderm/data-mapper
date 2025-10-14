@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [4.0.0] - 2025-10-14
+
+### BREAKING CHANGES
+
+This is a **major release** introducing a modern Decorator API with JIT compilation. While the BaseMapper API remains fully supported for backward compatibility, the new Decorator API is now the recommended approach.
+
+**Migration:** No breaking changes for existing BaseMapper users. The new Decorator API is opt-in. See [Migration Guide](docs/MIGRATION_GUIDE.md) for details.
+
 ### Added
 
 - **Performance Benchmarks vs class-transformer** - Comprehensive comparison showing om-data-mapper is **17.28x faster** on average
