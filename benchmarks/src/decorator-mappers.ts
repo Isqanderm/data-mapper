@@ -4,7 +4,7 @@
  */
 
 import {
-  MapperDecorator as Mapper,
+  Mapper,
   Map,
   MapFrom,
   Transform,
