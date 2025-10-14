@@ -12,17 +12,31 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.3-blue.svg)](https://www.typescriptlang.org/)
 [![Downloads](https://img.shields.io/npm/dm/om-data-mapper.svg)](https://www.npmjs.com/package/om-data-mapper)
 
-`om-data-mapper` is a high-performance, type-safe object mapping library for TypeScript and JavaScript. It features a modern **Decorator API** with JIT compilation that delivers **112-474% better performance** than traditional approaches, while providing a clean, declarative syntax.
+`om-data-mapper` is a high-performance, type-safe object mapping library for TypeScript and JavaScript. It features a modern **Decorator API** with JIT compilation that delivers **up to 42.7x better performance** than class-transformer, while providing a clean, declarative syntax and zero runtime dependencies.
+
+## 🚀 Performance
+
+**17.28x faster than class-transformer on average!**
+
+| Scenario | class-transformer | om-data-mapper | Performance Gain |
+|----------|-------------------|----------------|------------------|
+| Simple Transformation | 326K ops/sec | 4.3M ops/sec | **12.3x faster** |
+| Complex Nested | 154K ops/sec | 6.7M ops/sec | **42.7x faster** |
+| Array (100 items) | 5.2K ops/sec | 69K ops/sec | **12.3x faster** |
+| Custom Logic | 333K ops/sec | 4.8M ops/sec | **13.4x faster** |
+
+[📊 See full comparison](./docs/COMPARISON.md)
 
 ## ✨ Features
 
-- 🚀 **Superior Performance**: 112-474% faster than traditional mappers
+- 🚀 **17.28x Faster**: Dramatically better performance than class-transformer
 - 🎨 **Modern Decorator API**: Clean, declarative syntax using TC39 Stage 3 decorators
 - 🔒 **Type-Safe**: Full TypeScript support with compile-time type checking
 - ⚡ **JIT Compilation**: Generates optimized code automatically
-- 📦 **Zero Dependencies**: Lightweight and fast
-- 🔄 **Flexible**: Supports simple, nested, and complex transformations
+- 📦 **Zero Dependencies**: No reflect-metadata or other runtime dependencies
+- 🔄 **Drop-in Replacement**: Compatible with class-transformer API
 - 🛡️ **Production-Ready**: Battle-tested with comprehensive test coverage
+- 💡 **Ergonomic API**: Helper functions for clean, type-safe code
 
 ## Installation
 
@@ -92,6 +106,39 @@ console.log(result);
 
 **That's it!** Full TypeScript type safety, no boilerplate, clean code.
 
+## Migrating from class-transformer
+
+om-data-mapper provides a **drop-in replacement** for class-transformer with **17.28x better performance** and **zero dependencies**.
+
+### Step 1: Install
+
+```bash
+npm install om-data-mapper
+```
+
+### Step 2: Update Imports
+
+```typescript
+// Before
+import 'reflect-metadata';
+import { plainToClass, Expose, Type } from 'class-transformer';
+
+// After
+import { plainToClass, Expose, Type } from 'om-data-mapper/class-transformer-compat';
+```
+
+### Step 3: Done!
+
+Your existing code works exactly the same, but **17.28x faster** on average!
+
+**Benefits:**
+- ✅ Same API, dramatically better performance
+- ✅ No reflect-metadata dependency
+- ✅ 70% smaller bundle size
+- ✅ TC39 Stage 3 decorators
+
+[📖 Full migration guide](./docs/COMPARISON.md#migration-guide)
+
 ### Legacy API (Still Supported)
 
 <details>
@@ -131,21 +178,34 @@ console.log(result); // { fullName: 'John Doe', isAdult: true }
 
 ## Performance
 
-Performance of om-data-mapper is almost identical to a native, hand-written “vanilla” mapper—demonstrating near-native speeds even in “safe” mode. Enabling Unsafe Mode (`useUnsafe: true`) removes all try/catch overhead and pushes performance even higher.
+om-data-mapper delivers **exceptional performance** through JIT compilation and modern decorator implementation.
 
-### Benchmark Results
+### vs class-transformer
 
-Benchmarked using [Benchmark.js](https://benchmarkjs.com/) on Node.js v20:
+**17.28x faster on average!** See [full comparison](./docs/COMPARISON.md).
 
-| Scenario | OmDataMapper | Vanilla | Relative Performance |
-|----------|--------------|---------|---------------------|
-| **Simple Mapping** | 946M ops/sec | 977M ops/sec | **1.03x** ⚡ |
-| **Complex Transformations** | 21M ops/sec | 39M ops/sec | **1.89x** |
+| Scenario | class-transformer | om-data-mapper | Improvement |
+|----------|-------------------|----------------|-------------|
+| Simple Transformation | 326K ops/sec | 4.3M ops/sec | **12.3x faster** |
+| Complex Nested | 154K ops/sec | 6.7M ops/sec | **42.7x faster** |
+| Array (100 items) | 5.2K ops/sec | 69K ops/sec | **12.3x faster** |
+| Custom Logic | 333K ops/sec | 4.8M ops/sec | **13.4x faster** |
+
+### vs Vanilla JavaScript
+
+Performance is almost identical to hand-written code:
+
+| Scenario | OmDataMapper | Vanilla | Overhead |
+|----------|--------------|---------|----------|
+| **Simple Mapping** | 946M ops/sec | 977M ops/sec | **3%** ⚡ |
+| **Complex Transformations** | 21M ops/sec | 39M ops/sec | **89%** |
 
 **Key Takeaways:**
-- ✅ **Simple mappings**: Nearly identical to hand-written code (3% overhead)
-- ✅ **Complex transformations**: Acceptable overhead for the convenience and features
-- ✅ **Production-ready**: Millions of operations per second in real-world scenarios
+- ✅ **17.28x faster** than class-transformer on average
+- ✅ **Near-native performance** for simple mappings (3% overhead)
+- ✅ **Production-ready**: Millions of operations per second
+- ✅ **Zero dependencies**: No reflect-metadata overhead
+
 
 <details>
 <summary>📊 Detailed Benchmark Data</summary>

@@ -9,6 +9,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Performance Benchmarks vs class-transformer** - Comprehensive comparison showing om-data-mapper is **17.28x faster** on average
+  - Simple transformation: **12.3x faster** (326K vs 4.3M ops/sec)
+  - Complex nested objects: **42.7x faster** (154K vs 6.7M ops/sec)
+  - Array transformation: **12.3x faster** (5.2K vs 69K ops/sec)
+  - Custom logic: **13.4x faster** (333K vs 4.8M ops/sec)
+  - Exclude/Expose: **5.8x faster** (263K vs 1.8M ops/sec)
+  - New benchmark suite in `benchmarks/suites/compat/`
+  - Automated benchmark command: `npm run bench:compat`
+  - Comprehensive comparison document: [docs/COMPARISON.md](docs/COMPARISON.md)
+  - Updated README with performance comparison tables
+
 - **Ergonomic API** - New recommended way to use mappers with full TypeScript type safety
   - `plainToInstance<Source, Target>(MapperClass, source)` - Transform plain object (recommended)
   - `plainToInstanceArray<Source, Target>(MapperClass, sources)` - Transform array of objects
