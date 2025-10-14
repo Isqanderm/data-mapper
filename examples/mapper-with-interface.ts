@@ -23,9 +23,9 @@ type UserDTO = {
 };
 
 // Mapper class with type-safe methods
-// Option 1: Use implements MapperMethods<Source, Target>
+// The @Mapper decorator adds transform() and tryTransform() methods at runtime
 @Mapper<UserSource, UserDTO>()
-class UserMapper implements MapperMethods<UserSource, UserDTO> {
+class UserMapper {
   @MapFrom((src: UserSource) => `${src.firstName} ${src.lastName}`)
   fullName!: string;
 
@@ -34,15 +34,10 @@ class UserMapper implements MapperMethods<UserSource, UserDTO> {
 
   @MapFrom((src: UserSource) => src.age >= 18)
   isAdult!: boolean;
-
-  // Methods are declared by MapperMethods interface
-  // Implementation is provided by @Mapper decorator at runtime
-  transform!: (source: UserSource) => UserDTO;
-  tryTransform!: (source: UserSource) => { result: UserDTO; errors: string[] };
 }
 
-// Usage example
-const mapper = new UserMapper();
+// Usage with type assertion for TypeScript type safety
+const mapper = new UserMapper() as UserMapper & MapperMethods<UserSource, UserDTO>;
 
 const source: UserSource = {
   firstName: 'John',
@@ -88,29 +83,26 @@ type PersonDTO = {
   location: AddressDTO;
 };
 
-// Option 2: Implement MapperMethods for nested mappers
+// Nested mappers example
 @Mapper<AddressSource, AddressDTO>()
-class AddressMapper implements MapperMethods<AddressSource, AddressDTO> {
+class AddressMapper {
   @MapFrom((src: AddressSource) => `${src.street}, ${src.city}, ${src.country}`)
   fullAddress!: string;
-
-  transform!: (source: AddressSource) => AddressDTO;
-  tryTransform!: (source: AddressSource) => { result: AddressDTO; errors: string[] };
 }
 
 @Mapper<PersonSource, PersonDTO>()
-class PersonMapper implements MapperMethods<PersonSource, PersonDTO> {
+class PersonMapper {
   @Map('name')
   name!: string;
 
-  @MapFrom((src: PersonSource) => new AddressMapper().transform(src.address))
+  @MapFrom((src: PersonSource) => {
+    const addressMapper = new AddressMapper() as AddressMapper & MapperMethods<AddressSource, AddressDTO>;
+    return addressMapper.transform(src.address);
+  })
   location!: AddressDTO;
-
-  transform!: (source: PersonSource) => PersonDTO;
-  tryTransform!: (source: PersonSource) => { result: PersonDTO; errors: string[] };
 }
 
-const personMapper = new PersonMapper();
+const personMapper = new PersonMapper() as PersonMapper & MapperMethods<PersonSource, PersonDTO>;
 const personSource: PersonSource = {
   name: 'Jane Smith',
   address: {

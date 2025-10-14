@@ -59,7 +59,7 @@ export function Mapper<Source = any, Target = any>(options: MapperOptions = {}) 
     let compiledMapper: BaseMapper<any, any> | null = null;
 
     // Create enhanced class with transform method
-    const EnhancedClass = class extends target implements IMapper<Source, Target> {
+    const EnhancedClass = class extends target {
       /**
        * Transform source object to target object
        * Optimized for performance - skips error checking in hot path

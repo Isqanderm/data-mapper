@@ -10,19 +10,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - **Decorator API** - Added `MapperMethods<Source, Target>` type for TypeScript type safety
-  - Provides type-safe declarations for `transform()` and `tryTransform()` methods
-  - Use `implements MapperMethods<Source, Target>` in your mapper classes
-  - Enables full TypeScript autocomplete and type checking
+  - Provides type information for `transform()` and `tryTransform()` methods
+  - Use type assertions for full TypeScript autocomplete and type checking
+  - Enables type-safe mapper usage without interfering with decorator functionality
   - Example:
     ```typescript
     @Mapper<UserSource, UserDTO>()
-    class UserMapper implements MapperMethods<UserSource, UserDTO> {
+    class UserMapper {
       @Map('name')
       fullName!: string;
-
-      transform!: (source: UserSource) => UserDTO;
-      tryTransform!: (source: UserSource) => { result: UserDTO; errors: string[] };
     }
+
+    const mapper = new UserMapper() as UserMapper & MapperMethods<UserSource, UserDTO>;
+    const result = mapper.transform(source); // ✅ Fully typed
     ```
 
 - **Decorator API** - Enhanced `@MapWith` decorator for nested mapper composition

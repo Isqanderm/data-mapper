@@ -4,15 +4,15 @@ This guide explains how to get full TypeScript type safety and autocomplete when
 
 ## The Challenge
 
-Due to TypeScript limitations with TC39 Stage 3 decorators, the `transform()` and `tryTransform()` methods added by the `@Mapper()` decorator at runtime are not visible to TypeScript at compile time. This means you won't get autocomplete or type checking for these methods.
+Due to TypeScript limitations with TC39 Stage 3 decorators, the `transform()` and `tryTransform()` methods added by the `@Mapper()` decorator at runtime are not visible to TypeScript at compile time. This means you won't get autocomplete or type checking for these methods without type assertions.
 
-## The Solution: MapperMethods Type
+## The Solution: Type Assertions with MapperMethods
 
-The `MapperMethods<Source, Target>` type provides a way to declare the mapper methods in your class, giving you full TypeScript support while the actual implementation is still provided by the decorator.
+The `MapperMethods<Source, Target>` type provides type information for the methods added by the decorator. Use type assertions to get full TypeScript support.
 
 ## Basic Usage
 
-### Option 1: Implements MapperMethods (Recommended)
+### Recommended Pattern: Type Assertion
 
 ```typescript
 import { Mapper, Map, MapFrom, MapperMethods } from 'om-data-mapper';
@@ -29,24 +29,22 @@ type UserDTO = {
 };
 
 @Mapper<UserSource, UserDTO>()
-class UserMapper implements MapperMethods<UserSource, UserDTO> {
+class UserMapper {
   @MapFrom((src: UserSource) => `${src.firstName} ${src.lastName}`)
   fullName!: string;
 
   @Map('email')
   email!: string;
-
-  // Declare methods (implementation provided by @Mapper decorator)
-  transform!: (source: UserSource) => UserDTO;
-  tryTransform!: (source: UserSource) => { result: UserDTO; errors: string[] };
 }
 
+// Type-safe usage with type assertion
+const mapper = new UserMapper() as UserMapper & MapperMethods<UserSource, UserDTO>;
+
 // TypeScript knows the exact types!
-const mapper = new UserMapper();
-const result = mapper.transform({ 
-  firstName: 'John', 
-  lastName: 'Doe', 
-  email: 'john@example.com' 
+const result = mapper.transform({
+  firstName: 'John',
+  lastName: 'Doe',
+  email: 'john@example.com'
 });
 
 // Full autocomplete for result properties
@@ -54,23 +52,17 @@ console.log(result.fullName); // ✅ TypeScript knows this exists
 console.log(result.email);    // ✅ TypeScript knows this exists
 ```
 
-### Option 2: Manual Method Declarations
+### Alternative: Helper Function
 
-If you prefer not to use `implements`, you can declare the methods manually:
+Create a helper function to avoid repeating type assertions:
 
 ```typescript
-@Mapper<UserSource, UserDTO>()
-class UserMapper {
-  @MapFrom((src: UserSource) => `${src.firstName} ${src.lastName}`)
-  fullName!: string;
-
-  @Map('email')
-  email!: string;
-
-  // Manually declare methods
-  transform!: (source: UserSource) => UserDTO;
-  tryTransform!: (source: UserSource) => { result: UserDTO; errors: string[] };
+function createMapper<S, T>(MapperClass: new () => any): MapperMethods<S, T> {
+  return new MapperClass();
 }
+
+const mapper = createMapper<UserSource, UserDTO>(UserMapper);
+const result = mapper.transform(source); // ✅ Fully typed
 ```
 
 ## Benefits
@@ -78,7 +70,7 @@ class UserMapper {
 ### 1. Type-Safe Transform Calls
 
 ```typescript
-const mapper = new UserMapper();
+const mapper = new UserMapper() as UserMapper & MapperMethods<UserSource, UserDTO>;
 
 // ✅ TypeScript checks source type
 const result = mapper.transform(source);
@@ -90,6 +82,7 @@ const badResult = mapper.transform({ wrong: 'type' });
 ### 2. Autocomplete for Result Properties
 
 ```typescript
+const mapper = new UserMapper() as UserMapper & MapperMethods<UserSource, UserDTO>;
 const result = mapper.transform(source);
 
 // ✅ Autocomplete shows: fullName, email
@@ -103,6 +96,7 @@ result.nonExistent;
 ### 3. Type-Safe Error Handling
 
 ```typescript
+const mapper = new UserMapper() as UserMapper & MapperMethods<UserSource, UserDTO>;
 const { result, errors } = mapper.tryTransform(source);
 
 // ✅ TypeScript knows result is UserDTO
@@ -116,7 +110,7 @@ if (errors.length > 0) {
 
 ## Working with Nested Mappers
 
-When using nested mappers with `@MapWith`, both mappers should implement `MapperMethods`:
+When using nested mappers, use type assertions for both mappers:
 
 ```typescript
 type AddressSource = { street: string; city: string };
@@ -126,28 +120,25 @@ type PersonSource = { name: string; address: AddressSource };
 type PersonDTO = { name: string; location: AddressDTO };
 
 @Mapper<AddressSource, AddressDTO>()
-class AddressMapper implements MapperMethods<AddressSource, AddressDTO> {
+class AddressMapper {
   @MapFrom((src: AddressSource) => `${src.street}, ${src.city}`)
   fullAddress!: string;
-
-  transform!: (source: AddressSource) => AddressDTO;
-  tryTransform!: (source: AddressSource) => { result: AddressDTO; errors: string[] };
 }
 
 @Mapper<PersonSource, PersonDTO>()
-class PersonMapper implements MapperMethods<PersonSource, PersonDTO> {
+class PersonMapper {
   @Map('name')
   name!: string;
 
-  @MapFrom((src: PersonSource) => new AddressMapper().transform(src.address))
+  @MapFrom((src: PersonSource) => {
+    const addressMapper = new AddressMapper() as AddressMapper & MapperMethods<AddressSource, AddressDTO>;
+    return addressMapper.transform(src.address);
+  })
   location!: AddressDTO;
-
-  transform!: (source: PersonSource) => PersonDTO;
-  tryTransform!: (source: PersonSource) => { result: PersonDTO; errors: string[] };
 }
 
 // ✅ Full type safety throughout the chain
-const personMapper = new PersonMapper();
+const personMapper = new PersonMapper() as PersonMapper & MapperMethods<PersonSource, PersonDTO>;
 const result = personMapper.transform({
   name: 'Jane',
   address: { street: '123 Main St', city: 'New York' }
@@ -175,7 +166,7 @@ class GenericMapper<Source, Target> implements MapperMethods<Source, Target> {
 ```typescript
 // ✅ Good: Explicit types
 @Mapper<UserSource, UserDTO>()
-class UserMapper implements MapperMethods<UserSource, UserDTO> {
+class UserMapper {
   // ...
 }
 
@@ -186,16 +177,14 @@ class UserMapper {
 }
 ```
 
-### 2. Use Non-Null Assertion for Method Declarations
-
-The `!` operator tells TypeScript that the property will be initialized (by the decorator):
+### 2. Always Use Type Assertions
 
 ```typescript
-// ✅ Good: Non-null assertion
-transform!: (source: UserSource) => UserDTO;
+// ✅ Good: Type assertion for type safety
+const mapper = new UserMapper() as UserMapper & MapperMethods<UserSource, UserDTO>;
 
-// ❌ Bad: Optional (makes the method optional in TypeScript)
-transform?: (source: UserSource) => UserDTO;
+// ❌ Bad: No type assertion (no type safety)
+const mapper = new UserMapper();
 ```
 
 ### 3. Keep Source and Target Types Close to Mapper
@@ -206,7 +195,7 @@ type UserSource = { /* ... */ };
 type UserDTO = { /* ... */ };
 
 @Mapper<UserSource, UserDTO>()
-class UserMapper implements MapperMethods<UserSource, UserDTO> {
+class UserMapper {
   // ...
 }
 ```
@@ -217,48 +206,44 @@ class UserMapper implements MapperMethods<UserSource, UserDTO> {
 
 ```typescript
 @Mapper<UserSource, UserDTO>()
-class UserMapper implements MapperMethods<UserSource, UserDTO> {
+class UserMapper {
   @MapFrom((src: UserSource) => src.email.toLowerCase())
   email!: string;
-
-  transform!: (source: UserSource) => UserDTO;
-  tryTransform!: (source: UserSource) => { result: UserDTO; errors: string[] };
 
   // Custom validation method
   validate(source: UserSource): boolean {
     return source.email.includes('@');
   }
 }
+
+const mapper = new UserMapper() as UserMapper & MapperMethods<UserSource, UserDTO>;
 ```
 
 ### Pattern 2: Mapper with Helper Methods
 
 ```typescript
 @Mapper<UserSource, UserDTO>()
-class UserMapper implements MapperMethods<UserSource, UserDTO> {
+class UserMapper {
   @MapFrom((src: UserSource) => this.formatName(src))
   fullName!: string;
-
-  transform!: (source: UserSource) => UserDTO;
-  tryTransform!: (source: UserSource) => { result: UserDTO; errors: string[] };
 
   // Helper method
   private formatName(src: UserSource): string {
     return `${src.firstName} ${src.lastName}`.trim();
   }
 }
+
+const mapper = new UserMapper() as UserMapper & MapperMethods<UserSource, UserDTO>;
 ```
 
 ### Pattern 3: Mapper Factory
 
 ```typescript
-function createMapper<S, T>(
-  MapperClass: new () => MapperMethods<S, T>
-): MapperMethods<S, T> {
+function createMapper<S, T>(MapperClass: new () => any): MapperMethods<S, T> {
   return new MapperClass();
 }
 
-const userMapper = createMapper(UserMapper);
+const userMapper = createMapper<UserSource, UserDTO>(UserMapper);
 const result = userMapper.transform(source); // ✅ Fully typed
 ```
 
@@ -279,18 +264,15 @@ const result = userMapper.transform(source);
 ### After (Decorator API with Type Safety)
 ```typescript
 @Mapper<UserSource, UserDTO>()
-class UserMapper implements MapperMethods<UserSource, UserDTO> {
+class UserMapper {
   @MapFrom((src: UserSource) => `${src.firstName} ${src.lastName}`)
   fullName!: string;
 
   @Map('email')
   email!: string;
-
-  transform!: (source: UserSource) => UserDTO;
-  tryTransform!: (source: UserSource) => { result: UserDTO; errors: string[] };
 }
 
-const mapper = new UserMapper();
+const mapper = new UserMapper() as UserMapper & MapperMethods<UserSource, UserDTO>;
 const result = mapper.transform(source);
 ```
 
@@ -298,15 +280,16 @@ const result = mapper.transform(source);
 
 ### Issue: "Property 'transform' does not exist"
 
-**Solution**: Make sure you've declared the methods in your class:
+**Solution**: Make sure you're using type assertion:
 
 ```typescript
 @Mapper<Source, Target>()
-class MyMapper implements MapperMethods<Source, Target> {
-  // Add these declarations:
-  transform!: (source: Source) => Target;
-  tryTransform!: (source: Source) => { result: Target; errors: string[] };
+class MyMapper {
+  // ... your mappings
 }
+
+// Add type assertion
+const mapper = new MyMapper() as MyMapper & MapperMethods<Source, Target>;
 ```
 
 ### Issue: "Type 'X' is not assignable to type 'Y'"
@@ -329,9 +312,10 @@ type UserDTO = {
 
 ## Summary
 
-- Use `MapperMethods<Source, Target>` for full TypeScript type safety
-- Declare `transform!` and `tryTransform!` methods in your mapper class
+- Use `MapperMethods<Source, Target>` type for full TypeScript type safety
+- Always use type assertions: `new MyMapper() as MyMapper & MapperMethods<Source, Target>`
 - Always specify Source and Target types in `@Mapper<Source, Target>()`
-- Use `implements MapperMethods<Source, Target>` for cleaner code
-- The decorator provides the implementation at runtime
+- Create helper functions to avoid repeating type assertions
+- The decorator provides the `transform()` and `tryTransform()` methods at runtime
+- Do NOT use `implements MapperMethods` in class declaration (it interferes with the decorator)
 

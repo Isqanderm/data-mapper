@@ -13,9 +13,9 @@ export interface MapperOptions {
  * Interface for mapper instances
  * Classes decorated with @Mapper() will have these methods added at runtime
  *
- * Note: Due to TypeScript limitations with TC39 decorators, you cannot use
- * `implements IMapper<Source, Target>` directly. Instead, use the type assertion
- * pattern or declare the methods in your class using MapperMethods<Source, Target>.
+ * Note: Due to TypeScript limitations with TC39 decorators, the methods are added
+ * at runtime by the decorator. For TypeScript type safety, cast the mapper instance
+ * to the MapperMethods type or use type assertions.
  *
  * @example
  * ```typescript
@@ -23,18 +23,17 @@ export interface MapperOptions {
  * class UserMapper {
  *   @Map('name')
  *   fullName!: string;
- *
- *   // Declare methods for TypeScript (implementation added by decorator)
- *   transform!: MapperMethods<UserSource, UserDTO>['transform'];
- *   tryTransform!: MapperMethods<UserSource, UserDTO>['tryTransform'];
  * }
  *
- * // Or use the shorthand:
- * @Mapper<UserSource, UserDTO>()
- * class UserMapper implements MapperMethods<UserSource, UserDTO> {
- *   @Map('name')
- *   fullName!: string;
+ * // Type-safe usage with type assertion
+ * const mapper = new UserMapper() as UserMapper & MapperMethods<UserSource, UserDTO>;
+ * const result = mapper.transform(source); // ✅ TypeScript knows the types
+ *
+ * // Or use a helper function
+ * function createMapper<S, T>(MapperClass: new () => any): MapperMethods<S, T> {
+ *   return new MapperClass();
  * }
+ * const mapper = createMapper<UserSource, UserDTO>(UserMapper);
  * ```
  */
 export interface IMapper<Source = any, Target = any> {
@@ -56,16 +55,23 @@ export interface IMapper<Source = any, Target = any> {
 }
 
 /**
- * Type helper for declaring mapper methods in your class
- * Use this to get TypeScript type checking without implementation
+ * Type helper for mapper methods
+ * Use this for type assertions to get TypeScript type checking
+ *
+ * IMPORTANT: Do NOT use `implements MapperMethods` in your class declaration
+ * as it will interfere with the decorator. Instead, use type assertions.
  *
  * @example
  * ```typescript
  * @Mapper<UserSource, UserDTO>()
- * class UserMapper implements MapperMethods<UserSource, UserDTO> {
+ * class UserMapper {
  *   @Map('name')
  *   fullName!: string;
  * }
+ *
+ * // Type-safe usage
+ * const mapper = new UserMapper() as UserMapper & MapperMethods<UserSource, UserDTO>;
+ * const result = mapper.transform(source);
  * ```
  */
 export type MapperMethods<Source = any, Target = any> = {
