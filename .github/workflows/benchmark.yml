@@ -72,6 +72,12 @@ jobs:
           echo "Benchmark results for tracking:"
           cat bench-results.json
 
+      - name: Clean up benchmark text files before switching branches
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          git clean -fd
+          git reset --hard HEAD
+
       - name: Store benchmark result (main branch only)
         uses: benchmark-action/github-action-benchmark@v1
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
