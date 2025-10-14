@@ -130,20 +130,63 @@ jobs:
               complexResults = 'Complex benchmark not available';
             }
 
-            // Extract summary from compat results
+            // Extract summary table and detailed results
             const summaryMatch = compatResults.match(/📈 Summary[\s\S]*$/);
-            const summary = summaryMatch ? summaryMatch[0] : compatResults;
+            const summary = summaryMatch ? summaryMatch[0] : '';
+
+            // Extract individual scenario results for better formatting
+            const scenarios = [];
+            const scenarioRegex = /📊 Scenario \d+: (.+?)\n\s+class-transformer x ([\d,]+) ops\/sec[^\n]+\n\s+om-data-mapper x ([\d,]+) ops\/sec[^\n]+\n\s+✓ Fastest: (.+?)\n\s+⚡ Performance gain: ([\d.]+)% faster/g;
+            let match;
+            while ((match = scenarioRegex.exec(compatResults)) !== null) {
+              scenarios.push({
+                name: match[1],
+                ctOps: match[2],
+                omOps: match[3],
+                winner: match[4],
+                improvement: match[5]
+              });
+            }
+
+            // Build improved summary with visual indicators
+            let improvedSummary = '### 📊 Performance Comparison Summary\n\n';
+
+            if (scenarios.length > 0) {
+              improvedSummary += '| Scenario | class-transformer | om-data-mapper | Improvement |\n';
+              improvedSummary += '|----------|-------------------|----------------|-------------|\n';
+
+              scenarios.forEach(s => {
+                const improvement = parseFloat(s.improvement);
+                let badge = '';
+                if (improvement > 2000) badge = '🔥🔥🔥';
+                else if (improvement > 1000) badge = '🔥🔥';
+                else if (improvement > 500) badge = '🔥';
+                else badge = '⚡';
+
+                improvedSummary += '| ' + s.name + ' | ' + s.ctOps + ' ops/sec | ' +
+                  s.omOps + ' ops/sec | **+' + s.improvement + '%** ' + badge + ' |\n';
+              });
+
+              // Calculate average
+              const avgImprovement = scenarios.reduce((sum, s) => sum + parseFloat(s.improvement), 0) / scenarios.length;
+              improvedSummary += '\n**Average Performance Gain: +' + avgImprovement.toFixed(2) + '%** 🚀\n\n';
+              improvedSummary += '> 🏆 **om-data-mapper won ' + scenarios.length + '/' + scenarios.length + ' scenarios**\n\n';
+            } else {
+              improvedSummary += '```\n' + summary + '\n```\n\n';
+            }
 
             const body = '## 🚀 Performance Benchmark Results\n\n' +
-              '### 📊 om-data-mapper vs class-transformer Comparison\n\n' +
-              '```\n' + summary + '\n```\n\n' +
-              '<details>\n<summary>📋 Full Comparison Details</summary>\n\n' +
+              improvedSummary +
+              '<details>\n<summary>📋 Full Benchmark Output</summary>\n\n' +
               '```\n' + compatResults + '\n```\n\n</details>\n\n' +
               '<details>\n<summary>⚡ Simple Mapping Benchmark</summary>\n\n' +
               '```\n' + simpleResults + '\n```\n\n</details>\n\n' +
               '<details>\n<summary>🔧 Complex Transformations Benchmark</summary>\n\n' +
               '```\n' + complexResults + '\n```\n\n</details>\n\n' +
-              '---\n*Benchmarked with Benchmark.js on Node.js 20 • [View History](https://isqanderm.github.io/data-mapper/dev/bench/)*';
+              '---\n' +
+              '💡 **Note:** These are absolute performance numbers from this PR.\n' +
+              'Historical performance trends will be available after merging to `main`.\n\n' +
+              '*Benchmarked with Benchmark.js on Node.js 20 • [View History](https://isqanderm.github.io/data-mapper/dev/bench/)*';
 
             // Find existing benchmark comment
             const { data: comments } = await github.rest.issues.listComments({
