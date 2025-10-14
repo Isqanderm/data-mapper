@@ -1,5 +1,5 @@
-export * from './interface';
-export * from './Mapper';
+export * from './core/interfaces';
+export * from './core/Mapper';
 
 // Export decorators (Mapper decorator is exported separately to avoid conflict)
 export {

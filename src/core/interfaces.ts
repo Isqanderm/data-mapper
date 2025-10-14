@@ -1,4 +1,4 @@
-import type { Mapper } from './index';
+import type { Mapper } from './Mapper';
 
 // === 1) Базовые утилиты ===
 

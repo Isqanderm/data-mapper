@@ -10,7 +10,7 @@ import {
   MapperOptions,
   PropertyMapping,
 } from './metadata';
-import { Mapper as BaseMapper } from '../Mapper';
+import { Mapper as BaseMapper } from '../core/Mapper';
 
 // Symbol for storing metadata initialization flag on class
 const METADATA_INITIALIZED = Symbol('om-data-mapper:initialized');

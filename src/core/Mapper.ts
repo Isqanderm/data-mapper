@@ -1,4 +1,4 @@
-import { DefaultValues, MapperConfig, MappingConfiguration, MappingResult } from './interface';
+import { DefaultValues, MapperConfig, MappingConfiguration, MappingResult } from './interfaces';
 import { getValueByPath, PathObject } from './utils';
 
 export class Mapper<Source, Target> {
