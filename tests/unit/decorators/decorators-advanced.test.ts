@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { Mapper, Map, MapFrom, Transform, Default, MapWith } from '../../../src/decorators';
+import { Mapper, Map, MapFrom, Transform, Default } from '../../../src/decorators';
 
 describe('Decorators - Advanced Coverage', () => {
   describe('Complex transformation chains', () => {

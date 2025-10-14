@@ -139,7 +139,7 @@ describe('Mapper Helper Functions', () => {
         result!: string;
       }
 
-      const { result, errors } = tryPlainToInstance<Source, Target>(TestMapper, {});
+      const { errors } = tryPlainToInstance<Source, Target>(TestMapper, {});
 
       expect(errors.length).toBeGreaterThan(0);
     });

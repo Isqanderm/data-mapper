@@ -16,9 +16,6 @@ import { Mapper as BaseMapper } from '../core/Mapper';
 // Symbol for storing metadata initialization flag on class
 const METADATA_INITIALIZED = Symbol('om-data-mapper:initialized');
 
-// WeakMap for caching compiled mappers at class level (shared across instances)
-const COMPILED_MAPPER_CACHE = new WeakMap<any, BaseMapper<any, any>>();
-
 /**
  * Generate safe nested property access code with optional chaining
  * Converts 'user.profile.email' to 'source?.user?.profile?.email'

@@ -59,13 +59,6 @@ const complexUserData = {
   },
 };
 
-const productData = {
-  id: 1,
-  name: 'Laptop',
-  price: 999.99,
-  inStock: true,
-};
-
 const productsArray = Array.from({ length: 100 }, (_, i) => ({
   id: i + 1,
   name: `Product ${i + 1}`,
@@ -116,7 +109,6 @@ suite1
   })
   .on('complete', function() {
     const fastest = this.filter('fastest').map('name');
-    const slowest = this.filter('slowest').map('name');
     const fastestHz = this.filter('fastest')[0].hz;
     const slowestHz = this.filter('slowest')[0].hz;
     const improvement = ((fastestHz / slowestHz - 1) * 100).toFixed(2);
@@ -148,7 +140,6 @@ suite2
   })
   .on('complete', function() {
     const fastest = this.filter('fastest').map('name');
-    const slowest = this.filter('slowest').map('name');
     const fastestHz = this.filter('fastest')[0].hz;
     const slowestHz = this.filter('slowest')[0].hz;
     const improvement = ((fastestHz / slowestHz - 1) * 100).toFixed(2);
@@ -180,7 +171,6 @@ suite3
   })
   .on('complete', function() {
     const fastest = this.filter('fastest').map('name');
-    const slowest = this.filter('slowest').map('name');
     const fastestHz = this.filter('fastest')[0].hz;
     const slowestHz = this.filter('slowest')[0].hz;
     const improvement = ((fastestHz / slowestHz - 1) * 100).toFixed(2);
@@ -212,7 +202,6 @@ suite4
   })
   .on('complete', function() {
     const fastest = this.filter('fastest').map('name');
-    const slowest = this.filter('slowest').map('name');
     const fastestHz = this.filter('fastest')[0].hz;
     const slowestHz = this.filter('slowest')[0].hz;
     const improvement = ((fastestHz / slowestHz - 1) * 100).toFixed(2);
@@ -246,7 +235,6 @@ suite5
   })
   .on('complete', function() {
     const fastest = this.filter('fastest').map('name');
-    const slowest = this.filter('slowest').map('name');
     const fastestHz = this.filter('fastest')[0].hz;
     const slowestHz = this.filter('slowest')[0].hz;
     const improvement = ((fastestHz / slowestHz - 1) * 100).toFixed(2);
@@ -273,9 +261,6 @@ console.log(chalk.bold('├─────────────────�
 
 results.forEach(result => {
   const scenario = result.scenario.padEnd(39);
-  const winner = result.fastest[0] === 'om-data-mapper'
-    ? chalk.green('om-data-mapper')
-    : chalk.yellow('class-transformer');
   const winnerPadded = result.fastest[0].padEnd(12);
   const perf = result.fastest[0] === 'om-data-mapper'
     ? chalk.green(`+${result.improvement.toFixed(2)}% faster`)
