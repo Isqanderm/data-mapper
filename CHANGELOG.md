@@ -7,6 +7,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **Decorator API** - Enhanced `@MapWith` decorator for nested mapper composition
+  - Fully restored nested mapper composition from legacy BaseMapper API
+  - Works seamlessly with `@Map`, `@MapFrom`, `@Transform`, and `@Default` decorators
+  - Supports both safe and unsafe modes with proper error handling
+  - Handles undefined/null nested sources gracefully
+  - Applies `@Transform` to nested mapper results (including undefined values)
+  - Added 13 comprehensive tests covering all use cases
+  - Example:
+    ```typescript
+    @Mapper()
+    class AddressMapper {
+      @MapFrom((src) => `${src.street}, ${src.city}`)
+      fullAddress!: string;
+    }
+
+    @Mapper()
+    class UserMapper {
+      @MapWith(AddressMapper)
+      @Map('address')
+      location!: AddressTarget;
+    }
+    ```
+
 ### Fixed
 
 - **Decorator API** - Fixed nested path access in generated mapper code
@@ -22,12 +47,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Updated benchmark compilation configuration to use TC39 decorators
   - Cleaned up build artifacts and outdated compiled files
 
-- **Test Coverage** - Significantly improved test coverage from ~63% to 84%
+- **Test Coverage** - Significantly improved test coverage from ~63% to 83.4%
   - Added comprehensive tests for BaseMapper (legacy API)
   - Added extensive tests for class-transformer compatibility layer
   - Added advanced decorator combination tests
   - Added edge case tests for error handling and complex transformations
-  - Total test count increased from 44 to 125 tests
+  - Added 13 tests for `@MapWith` nested mapper composition
+  - Total test count increased from 44 to 138 tests
 
 ### Added
 

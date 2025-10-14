@@ -162,6 +162,7 @@ describe('Decorator-Based Mapper', () => {
         firstName: 'John',
         lastName: 'Doe',
       };
+
       const result = mapper.transform(source);
 
       expect(result.fullName).toBe('John Doe');

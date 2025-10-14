@@ -160,7 +160,7 @@ export function Mapper(options: MapperOptions = {}) {
 
         // Handle nested mapper
         if (mapping.type === 'nested' && mapping.nestedMapper) {
-          return this._generateNestedMapperCode(key, mapping, cache, useUnsafe);
+          return this._generateNestedMapperCode(key, mapping, cache, defaultValues, useUnsafe);
         }
 
         return '';
@@ -321,22 +321,104 @@ export function Mapper(options: MapperOptions = {}) {
         key: string,
         mapping: PropertyMapping,
         cache: any,
+        defaultValues: any,
         useUnsafe: boolean,
       ): string {
         // Create instance of nested mapper and store in cache
         const nestedInstance = new mapping.nestedMapper!();
         cache[`${key}__nestedMapper`] = nestedInstance;
 
+        const hasDefault = mapping.defaultValue !== undefined;
+        const hasTransformValue = mapping.transformValue !== undefined;
+
+        if (hasDefault) {
+          defaultValues[key] = mapping.defaultValue;
+        }
+
+        if (hasTransformValue) {
+          cache[`${key}__valueTransform`] = mapping.transformValue;
+        }
+
         let body = '';
-        if (mapping.sourcePath) {
-          body = `
-            const __nestedSource = source?.${mapping.sourcePath};
-            target.${key} = __nestedSource ? cache['${key}__nestedMapper'].transform(__nestedSource) : undefined;
-          `;
-        } else {
-          body = `
-            target.${key} = cache['${key}__nestedMapper'].transform(source);
-          `;
+
+        // Handle transformer function (from @MapFrom)
+        if (mapping.transformer) {
+          cache[`${key}__transformer`] = mapping.transformer;
+
+          if (hasTransformValue) {
+            const defaultPart = hasDefault
+              ? ` ?? cache['__defValues']['${key}']`
+              : '';
+
+            body = `
+              const __nestedSource = cache['${key}__transformer'](source);
+              const __nestedResult = __nestedSource !== undefined && __nestedSource !== null
+                ? cache['${key}__nestedMapper'].transform(__nestedSource)
+                : undefined;
+              target.${key} = cache['${key}__valueTransform'](__nestedResult)${defaultPart};
+            `;
+          } else {
+            const defaultPart = hasDefault
+              ? ` ?? cache['__defValues']['${key}']`
+              : '';
+
+            body = `
+              const __nestedSource = cache['${key}__transformer'](source);
+              target.${key} = __nestedSource !== undefined && __nestedSource !== null
+                ? cache['${key}__nestedMapper'].transform(__nestedSource)
+                : undefined${defaultPart};
+            `;
+          }
+        }
+        // Handle source path (from @Map)
+        else if (mapping.sourcePath) {
+          const safeSourcePath = generateSafePropertyAccess(mapping.sourcePath);
+
+          if (hasTransformValue) {
+            const defaultPart = hasDefault
+              ? ` ?? cache['__defValues']['${key}']`
+              : '';
+
+            body = `
+              const __nestedSource = source?.${safeSourcePath};
+              const __nestedResult = __nestedSource !== undefined && __nestedSource !== null
+                ? cache['${key}__nestedMapper'].transform(__nestedSource)
+                : undefined;
+              target.${key} = cache['${key}__valueTransform'](__nestedResult)${defaultPart};
+            `;
+          } else {
+            const defaultPart = hasDefault
+              ? ` ?? cache['__defValues']['${key}']`
+              : '';
+
+            body = `
+              const __nestedSource = source?.${safeSourcePath};
+              target.${key} = __nestedSource !== undefined && __nestedSource !== null
+                ? cache['${key}__nestedMapper'].transform(__nestedSource)
+                : undefined${defaultPart};
+            `;
+          }
+        }
+        // No source specified, use entire source object
+        else {
+          if (hasTransformValue) {
+            const defaultPart = hasDefault
+              ? ` ?? cache['__defValues']['${key}']`
+              : '';
+
+            body = `
+              const __nestedResult = cache['${key}__nestedMapper'].transform(source);
+              target.${key} = cache['${key}__valueTransform'](__nestedResult)${defaultPart};
+            `;
+          } else {
+            const defaultPart = hasDefault
+              ? ` ?? cache['__defValues']['${key}']`
+              : '';
+
+            body = `
+              target.${key} = cache['${key}__nestedMapper'].transform(source)${defaultPart};
+            `;
+          }
         }
 
         return useUnsafe ? body : this._wrapInTryCatch(body, key);
