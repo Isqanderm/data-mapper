@@ -9,7 +9,6 @@ const Benchmark = require('benchmark');
 
 // Import class-transformer
 require('reflect-metadata');
-const ct = require('class-transformer');
 
 // Import om-data-mapper compatibility layer
 const om = require('../../../build/compat/class-transformer');
