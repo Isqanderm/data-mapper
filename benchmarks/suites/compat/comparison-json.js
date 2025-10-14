@@ -86,8 +86,14 @@ const totalSuites = 5;
 function checkComplete() {
   completedSuites++;
   if (completedSuites === totalSuites) {
-    // Output results in Benchmark.js JSON format
-    console.log(JSON.stringify(results, null, 2));
+    // Output results in github-action-benchmark compatible format
+    // The action expects an array of objects with 'name', 'unit', and 'value' fields
+    const formattedResults = results.map(r => ({
+      name: r.name,
+      unit: 'ops/sec',
+      value: r.ops
+    }));
+    console.log(JSON.stringify(formattedResults, null, 2));
   }
 }
 
