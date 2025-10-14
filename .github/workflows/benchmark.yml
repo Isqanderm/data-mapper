@@ -131,7 +131,7 @@ jobs:
             }
 
             // Extract summary from compat results
-            const summaryMatch = compatResults.match(/📈 Summary[\s\S]*?$/m);
+            const summaryMatch = compatResults.match(/📈 Summary[\s\S]*$/);
             const summary = summaryMatch ? summaryMatch[0] : compatResults;
 
             const body = '## 🚀 Performance Benchmark Results\n\n' +
