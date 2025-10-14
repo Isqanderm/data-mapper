@@ -77,7 +77,7 @@ jobs:
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           name: om-data-mapper Performance
-          tool: 'benchmarkjs'
+          tool: 'customBiggerIsBetter'
           output-file-path: bench-results.json
           github-token: ${{ secrets.GITHUB_TOKEN }}
           auto-push: true
