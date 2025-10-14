@@ -232,12 +232,23 @@ Vanilla:      38,985,378 ops/sec ±1.89% (96 runs)
 ### Continuous Performance Tracking
 
 We use automated benchmarks to track performance regressions:
-- 🔄 Runs automatically on every commit via GitHub Actions
-- 📈 Historical performance tracking with [github-action-benchmark](https://github.com/benchmark-action/github-action-benchmark)
-- 🔔 Alerts on performance regressions >50%
-- 📊 See [Benchmark Setup Guide](./reports/benchmarks-setup.md) for details
+- 🔄 **Automatic**: Runs on every PR and commit to main
+- 📊 **PR Comments**: Results posted automatically to pull requests
+- 📈 **Historical Tracking**: Performance trends on [GitHub Pages](https://isqanderm.github.io/data-mapper/dev/bench/)
+- 🔔 **Alerts**: Automatic notifications on regressions >150%
+- 📚 **Documentation**: See [Benchmark Setup Guide](./docs/BENCHMARK_SETUP.md) for details
 
-[![Benchmark Chart](https://raw.githubusercontent.com/Isqanderm/data-mapper/659ae4ac86f3a44bc16475867ad26efaa8dd6177/benchmarks/benckmarks.png)](https://raw.githubusercontent.com/Isqanderm/data-mapper/659ae4ac86f3a44bc16475867ad26efaa8dd6177/benchmarks/benckmarks.png)
+**Run benchmarks locally:**
+```bash
+# Run class-transformer comparison
+npm run bench:compat
+
+# Run core benchmarks
+npm run bench:core
+
+# Run all benchmarks
+npm run bench
+```
 
 ## Features
 
