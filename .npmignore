@@ -1,3 +1,6 @@
+# Source files
+src/
+
 # Test files
 tests/
 coverage/
@@ -6,11 +9,21 @@ coverage/
 *.spec.ts
 *.spec.js
 
+# Examples and benchmarks
+examples/
+benchmarks/
+bench/
+
 # CI/CD
 .github/
 
-# Reports and documentation
+# Documentation (keep only essential)
+docs/
 reports/
+*.md
+!README.md
+!LICENSE
+!CHANGELOG.md
 
 # Configuration files
 .editorconfig
@@ -20,11 +33,6 @@ eslint.config.mjs
 vitest.config.mts
 tsconfig.json
 .releaserc.json
-
-# Development files
-benchmarks/
-example/
-src/
 
 # Git files
 .git/
