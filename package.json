@@ -6,6 +6,24 @@
   "main": "build/index.js",
   "types": "build/index.d.ts",
   "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./build/index.d.ts",
+      "default": "./build/index.js"
+    },
+    "./class-transformer-compat": {
+      "types": "./build/compat/class-transformer/index.d.ts",
+      "default": "./build/compat/class-transformer/index.js"
+    },
+    "./class-validator-compat": {
+      "types": "./build/compat/class-validator/index.d.ts",
+      "default": "./build/compat/class-validator/index.js"
+    },
+    "./nestjs": {
+      "types": "./build/integrations/nestjs/index.d.ts",
+      "default": "./build/integrations/nestjs/index.js"
+    }
+  },
   "scripts": {
     "build": "tsc",
     "build:watch": "tsc --watch",
