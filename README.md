@@ -12,7 +12,17 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.3-blue.svg)](https://www.typescriptlang.org/)
 [![Downloads](https://img.shields.io/npm/dm/om-data-mapper.svg)](https://www.npmjs.com/package/om-data-mapper)
 
-`om-data-mapper` is a flexible and powerful tool for object mapping in JavaScript and TypeScript, supporting simple mapping, deep mapping, and mapping through composition.
+`om-data-mapper` is a high-performance, type-safe object mapping library for TypeScript and JavaScript. It features a modern **Decorator API** with JIT compilation that delivers **112-474% better performance** than traditional approaches, while providing a clean, declarative syntax.
+
+## ✨ Features
+
+- 🚀 **Superior Performance**: 112-474% faster than traditional mappers
+- 🎨 **Modern Decorator API**: Clean, declarative syntax using TC39 Stage 3 decorators
+- 🔒 **Type-Safe**: Full TypeScript support with compile-time type checking
+- ⚡ **JIT Compilation**: Generates optimized code automatically
+- 📦 **Zero Dependencies**: Lightweight and fast
+- 🔄 **Flexible**: Supports simple, nested, and complex transformations
+- 🛡️ **Production-Ready**: Battle-tested with comprehensive test coverage
 
 ## Installation
 
@@ -36,12 +46,56 @@ pnpm add om-data-mapper
 
 ## Quick Start
 
-Get started with `om-data-mapper` in just a few lines:
+### Decorator API (Recommended)
+
+```typescript
+import { Mapper, Map, Transform, Default } from 'om-data-mapper';
+
+// Define your source type
+interface User {
+  firstName: string;
+  lastName: string;
+  age: number;
+  score?: number;
+}
+
+// Create a mapper using decorators
+@Mapper()
+class UserMapper {
+  @Map('firstName')
+  name!: string;
+
+  @Transform((user: User) => `${user.firstName} ${user.lastName}`)
+  fullName!: string;
+
+  @Transform((user: User) => user.age >= 18)
+  isAdult!: boolean;
+
+  @Map('score')
+  @Default(0)
+  userScore!: number;
+}
+
+// Use the mapper
+const mapper = new UserMapper();
+const result = mapper.transform({
+  firstName: 'John',
+  lastName: 'Doe',
+  age: 30,
+});
+
+console.log(result);
+// { name: 'John', fullName: 'John Doe', isAdult: true, userScore: 0 }
+```
+
+### Legacy API (Still Supported)
+
+<details>
+<summary>Click to see BaseMapper API (not recommended for new projects)</summary>
 
 ```typescript
 import { Mapper } from 'om-data-mapper';
 
-// Define your source and target types
 type User = {
   firstName: string;
   lastName: string;
@@ -53,22 +107,23 @@ type UserDTO = {
   isAdult: boolean;
 };
 
-// Create a mapper
 const userMapper = Mapper.create<User, UserDTO>({
   fullName: (user) => `${user.firstName} ${user.lastName}`,
   isAdult: (user) => user.age >= 18,
 });
 
-// Execute the mapping
-const user: User = {
+const { result, errors } = userMapper.execute({
   firstName: 'John',
   lastName: 'Doe',
   age: 30,
-};
+});
 
-const { result, errors } = userMapper.execute(user);
 console.log(result); // { fullName: 'John Doe', isAdult: true }
 ```
+
+**Note**: The Decorator API is recommended for new projects due to better performance and developer experience.
+
+</details>
 
 ## Performance
 

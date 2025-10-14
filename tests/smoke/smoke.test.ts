@@ -1,10 +1,11 @@
 import { describe, it, expect } from 'vitest';
-import { Mapper } from '../../src';
+import { MapperDecorator, Map, MapFrom } from '../../src';
 
-describe('Smoke Test', () => {
-  it('should import Mapper successfully', () => {
-    expect(Mapper).toBeDefined();
-    expect(typeof Mapper.create).toBe('function');
+describe('Smoke Test - Decorator API', () => {
+  it('should import decorators successfully', () => {
+    expect(MapperDecorator).toBeDefined();
+    expect(Map).toBeDefined();
+    expect(MapFrom).toBeDefined();
   });
 
   it('should create a basic mapper and execute transformation', () => {
@@ -14,25 +15,24 @@ describe('Smoke Test', () => {
       age: number;
     };
 
-    type Target = {
-      fullName: string;
-      isAdult: boolean;
-    };
+    @MapperDecorator()
+    class UserMapper {
+      @MapFrom((source: Source) => `${source.firstName} ${source.lastName}`)
+      fullName!: string;
 
-    const mapper = Mapper.create<Source, Target>({
-      fullName: (source) => `${source.firstName} ${source.lastName}`,
-      isAdult: (source) => source.age >= 18,
-    });
+      @MapFrom((source: Source) => source.age >= 18)
+      isAdult!: boolean;
+    }
 
+    const mapper = new UserMapper();
     const source: Source = {
       firstName: 'John',
       lastName: 'Doe',
       age: 30,
     };
 
-    const { result, errors } = mapper.execute(source);
+    const result = mapper.transform(source);
 
-    expect(errors).toHaveLength(0);
     expect(result.fullName).toBe('John Doe');
     expect(result.isAdult).toBe(true);
   });
@@ -43,24 +43,23 @@ describe('Smoke Test', () => {
       email: string;
     };
 
-    type Target = {
-      userName: string;
-      userEmail: string;
-    };
+    @MapperDecorator()
+    class UserMapper {
+      @Map('name')
+      userName!: string;
 
-    const mapper = Mapper.create<Source, Target>({
-      userName: 'name',
-      userEmail: 'email',
-    });
+      @Map('email')
+      userEmail!: string;
+    }
 
+    const mapper = new UserMapper();
     const source: Source = {
       name: 'Alice',
       email: 'alice@example.com',
     };
 
-    const { result, errors } = mapper.execute(source);
+    const result = mapper.transform(source);
 
-    expect(errors).toHaveLength(0);
     expect(result.userName).toBe('Alice');
     expect(result.userEmail).toBe('alice@example.com');
   });

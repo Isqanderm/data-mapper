@@ -1,6 +1,22 @@
 import { DefaultValues, MapperConfig, MappingConfiguration, MappingResult } from './interfaces';
 import { getValueByPath, PathObject } from './utils';
 
+/**
+ * BaseMapper - Internal/Legacy API
+ *
+ * @deprecated For new projects, use the Decorator API (@Mapper, @Map, @Transform, etc.)
+ * which provides better performance (112-474% faster) and developer experience.
+ *
+ * This class is maintained for:
+ * - Internal use by the Decorator API
+ * - Backward compatibility with existing code
+ * - Dynamic mapping scenarios where decorators can't be used
+ *
+ * See docs/DECORATOR_API.md for the recommended approach.
+ * See docs/MIGRATION_GUIDE.md for migration instructions.
+ *
+ * @internal
+ */
 export class Mapper<Source, Target> {
   private transformFunction:
     | ((
