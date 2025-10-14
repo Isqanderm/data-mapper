@@ -311,5 +311,33 @@ describe('ClassSerializerInterceptor', () => {
     // Plain objects should be returned as-is by default
     expect(result).toEqual(plainObject);
   });
+
+  it('should work with dependency injection (APP_INTERCEPTOR pattern)', async () => {
+    // This test simulates how NestJS creates the interceptor when using APP_INTERCEPTOR
+    const reflector = mockReflector as any;
+    const interceptor = new ClassSerializerInterceptor(reflector);
+
+    const user = new UserDto();
+    user.id = 1;
+    user.name = 'John Doe';
+    user.password = 'secret123';
+    user.email = 'john@example.com';
+
+    mockReflector.getAllAndOverride.mockReturnValue(undefined);
+    mockCallHandler.handle.mockReturnValue(of(user));
+
+    const result$ = interceptor.intercept(mockExecutionContext, mockCallHandler as any);
+
+    const result = await new Promise((resolve) => {
+      result$.subscribe((data) => resolve(data));
+    });
+
+    expect(result).toEqual({
+      id: 1,
+      name: 'John Doe',
+      email: 'john@example.com',
+    });
+    expect(result).not.toHaveProperty('password');
+  });
 });
 

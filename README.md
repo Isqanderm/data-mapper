@@ -284,9 +284,31 @@ import { ClassSerializerInterceptor } from 'om-data-mapper/nestjs';
 // That's it! 17.28x faster serialization 🚀
 ```
 
-### Global Usage
+### Global Usage (Recommended)
+
+**Option 1: Using APP_INTERCEPTOR Provider (Recommended)**
 
 ```typescript
+// app.module.ts
+import { Module } from '@nestjs/common';
+import { APP_INTERCEPTOR } from '@nestjs/core';
+import { ClassSerializerInterceptor } from 'om-data-mapper/nestjs';
+
+@Module({
+  providers: [
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: ClassSerializerInterceptor,
+    },
+  ],
+})
+export class AppModule {}
+```
+
+**Option 2: Using app.useGlobalInterceptors()**
+
+```typescript
+// main.ts
 import { NestFactory, Reflector } from '@nestjs/core';
 import { ClassSerializerInterceptor } from 'om-data-mapper/nestjs';
 

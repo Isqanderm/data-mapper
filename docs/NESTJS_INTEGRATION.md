@@ -37,25 +37,57 @@ That's it! Your application will now use the high-performance `om-data-mapper` f
 
 ## 📖 Usage Examples
 
-### Global Usage
+### Global Usage (Recommended)
+
+There are two ways to apply the interceptor globally:
+
+#### Option 1: Using APP_INTERCEPTOR Provider (Recommended)
+
+This is the recommended approach as it allows dependency injection and works with all NestJS features.
 
 ```typescript
+// app.module.ts
+import { Module } from '@nestjs/common';
+import { APP_INTERCEPTOR } from '@nestjs/core';
+import { ClassSerializerInterceptor } from 'om-data-mapper/nestjs';
+
+@Module({
+  providers: [
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: ClassSerializerInterceptor,
+    },
+  ],
+})
+export class AppModule {}
+```
+
+#### Option 2: Using app.useGlobalInterceptors()
+
+```typescript
+// main.ts
 import { NestFactory, Reflector } from '@nestjs/core';
 import { ClassSerializerInterceptor } from 'om-data-mapper/nestjs';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  
+
   // Apply globally
   app.useGlobalInterceptors(
     new ClassSerializerInterceptor(app.get(Reflector))
   );
-  
+
   await app.listen(3000);
 }
 bootstrap();
 ```
+
+**Note:** Option 1 is preferred because:
+- ✅ Works with dependency injection
+- ✅ Easier to test
+- ✅ More idiomatic NestJS
+- ✅ Works with all module features
 
 ### Controller-Level Usage
 
@@ -90,24 +122,53 @@ export class UsersController {
 }
 ```
 
-### With Custom Options
+### Global Usage with Custom Options
+
+#### Using APP_INTERCEPTOR with Custom Options
 
 ```typescript
+// app.module.ts
+import { Module } from '@nestjs/common';
+import { APP_INTERCEPTOR, Reflector } from '@nestjs/core';
+import { ClassSerializerInterceptor } from 'om-data-mapper/nestjs';
+
+@Module({
+  providers: [
+    {
+      provide: APP_INTERCEPTOR,
+      useFactory: (reflector: Reflector) => {
+        return new ClassSerializerInterceptor(reflector, {
+          excludeExtraneousValues: true,
+          groups: ['user'],
+        });
+      },
+      inject: [Reflector],
+    },
+  ],
+})
+export class AppModule {}
+```
+
+#### Using app.useGlobalInterceptors() with Custom Options
+
+```typescript
+// main.ts
 import { NestFactory, Reflector } from '@nestjs/core';
 import { ClassSerializerInterceptor } from 'om-data-mapper/nestjs';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  
+
   app.useGlobalInterceptors(
     new ClassSerializerInterceptor(app.get(Reflector), {
       excludeExtraneousValues: true,
       groups: ['user'],
     })
   );
-  
+
   await app.listen(3000);
 }
+bootstrap();
 ```
 
 ### Using @SerializeOptions Decorator
