@@ -1,63 +1,62 @@
 # Ergonomic API Guide
 
-This guide explains the new ergonomic API that provides TypeScript type safety without requiring verbose type assertions on every mapper instantiation.
+This guide explains the ergonomic API - the recommended way to use om-data-mapper with full TypeScript type safety.
 
 ## Table of Contents
 
 - [Overview](#overview)
-- [The Problem](#the-problem)
-- [The Solution](#the-solution)
+- [Quick Start](#quick-start)
 - [API Reference](#api-reference)
 - [Examples](#examples)
 - [Comparison with class-transformer](#comparison-with-class-transformer)
-- [Migration Guide](#migration-guide)
+- [Best Practices](#best-practices)
 
 ## Overview
 
-The ergonomic API provides helper functions inspired by `class-transformer` that make it easy to create and use mappers with full TypeScript type safety, without the need for verbose type assertions.
+The ergonomic API provides helper functions inspired by `class-transformer` that make it easy to create and use mappers with full TypeScript type safety.
 
 **Key Benefits:**
-- ✅ No type assertions needed
-- ✅ Full TypeScript type safety
+- ✅ Full TypeScript type safety out of the box
 - ✅ Clean, readable code
 - ✅ Similar API to class-transformer
 - ✅ Works seamlessly with nested mappers
+- ✅ No boilerplate code needed
 
-## The Problem
-
-Previously, to get TypeScript type safety, you had to use type assertions on every mapper instantiation:
-
-```typescript
-@Mapper<UserSource, UserDTO>()
-class UserMapper {
-  @Map('name')
-  fullName!: string;
-}
-
-// ❌ Verbose and repetitive
-const mapper = new UserMapper() as UserMapper & MapperMethods<UserSource, UserDTO>;
-const result = mapper.transform(source);
-```
-
-This approach works but is:
-- Verbose and repetitive
-- Easy to forget
-- Not ergonomic for common use cases
-
-## The Solution
-
-The new ergonomic API provides helper functions that handle type safety automatically:
+## Quick Start
 
 ```typescript
+import { Mapper, Map, MapFrom, plainToInstance } from 'om-data-mapper';
+
+// 1. Define your types
+type UserSource = {
+  firstName: string;
+  lastName: string;
+  age: number;
+};
+
+type UserDTO = {
+  fullName: string;
+  isAdult: boolean;
+};
+
+// 2. Create a mapper class with decorators
 @Mapper<UserSource, UserDTO>()
 class UserMapper {
-  @Map('name')
+  @MapFrom((src: UserSource) => `${src.firstName} ${src.lastName}`)
   fullName!: string;
+
+  @MapFrom((src: UserSource) => src.age >= 18)
+  isAdult!: boolean;
 }
 
-// ✅ Clean and type-safe!
+// 3. Transform your data
+const source = { firstName: 'John', lastName: 'Doe', age: 30 };
 const result = plainToInstance<UserSource, UserDTO>(UserMapper, source);
+
+console.log(result); // { fullName: 'John Doe', isAdult: true }
 ```
+
+That's it! No type assertions, no boilerplate - just clean, type-safe code.
 
 ## API Reference
 
@@ -285,47 +284,41 @@ Our API is inspired by `class-transformer` and provides similar functionality:
 
 ## Migration Guide
 
-### From Type Assertions
+### From Legacy BaseMapper API
 
-**Before:**
+**Before (Legacy API):**
 ```typescript
-const mapper = new UserMapper() as UserMapper & MapperMethods<UserSource, UserDTO>;
-const result = mapper.transform(source);
+import { Mapper } from 'om-data-mapper';
+
+const mapper = Mapper.create<UserSource, UserDTO>({
+  fullName: (src) => `${src.firstName} ${src.lastName}`,
+  isAdult: (src) => src.age >= 18,
+});
+
+const result = mapper.execute(source);
 ```
 
-**After:**
+**After (Ergonomic API):**
 ```typescript
+import { Mapper, MapFrom, plainToInstance } from 'om-data-mapper';
+
+@Mapper<UserSource, UserDTO>()
+class UserMapper {
+  @MapFrom((src: UserSource) => `${src.firstName} ${src.lastName}`)
+  fullName!: string;
+
+  @MapFrom((src: UserSource) => src.age >= 18)
+  isAdult!: boolean;
+}
+
 const result = plainToInstance<UserSource, UserDTO>(UserMapper, source);
 ```
 
-### From Direct Instantiation
-
-**Before:**
-```typescript
-const mapper = new UserMapper();
-const result = mapper.transform(source); // ❌ No type safety
-```
-
-**After:**
-```typescript
-const result = plainToInstance<UserSource, UserDTO>(UserMapper, source); // ✅ Type safe!
-```
-
-### For Reusable Mappers
-
-**Before:**
-```typescript
-const mapper = new UserMapper() as UserMapper & MapperMethods<UserSource, UserDTO>;
-const result1 = mapper.transform(source1);
-const result2 = mapper.transform(source2);
-```
-
-**After:**
-```typescript
-const mapper = createMapper<UserSource, UserDTO>(UserMapper);
-const result1 = mapper.transform(source1);
-const result2 = mapper.transform(source2);
-```
+**Benefits:**
+- ✅ 112-474% faster (JIT compilation)
+- ✅ Better type safety
+- ✅ Cleaner syntax
+- ✅ Better IDE support
 
 ## Best Practices
 
@@ -361,8 +354,8 @@ const result2 = mapper.transform(source2);
 
 ## See Also
 
-- [Decorator API Guide](./DECORATOR_API.md)
-- [TypeScript Type Safety Guide](./typescript-type-safety.md)
-- [Migration Guide](./MIGRATION_GUIDE.md)
-- [Examples](../examples/ergonomic-api.ts)
+- [Decorator API Guide](./DECORATOR_API.md) - Detailed guide on all decorators
+- [Migration Guide](./MIGRATION_GUIDE.md) - Migrating from legacy API
+- [Examples](../examples/ergonomic-api.ts) - Practical examples
+- [GitHub Repository](https://github.com/Isqanderm/data-mapper) - Source code and issues
 

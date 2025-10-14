@@ -1,9 +1,9 @@
 import { describe, it, expect } from 'vitest';
-import { MapperDecorator, Map, MapFrom } from '../../src';
+import { Mapper, Map, MapFrom } from '../../src';
 
 describe('Smoke Test - Decorator API', () => {
   it('should import decorators successfully', () => {
-    expect(MapperDecorator).toBeDefined();
+    expect(Mapper).toBeDefined();
     expect(Map).toBeDefined();
     expect(MapFrom).toBeDefined();
   });
@@ -15,7 +15,7 @@ describe('Smoke Test - Decorator API', () => {
       age: number;
     };
 
-    @MapperDecorator()
+    @Mapper()
     class UserMapper {
       @MapFrom((source: Source) => `${source.firstName} ${source.lastName}`)
       fullName!: string;
@@ -43,7 +43,7 @@ describe('Smoke Test - Decorator API', () => {
       email: string;
     };
 
-    @MapperDecorator()
+    @Mapper()
     class UserMapper {
       @Map('name')
       userName!: string;

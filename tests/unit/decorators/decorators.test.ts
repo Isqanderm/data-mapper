@@ -1,20 +1,19 @@
 import { describe, it, expect } from 'vitest';
 import {
-  MapperDecorator as Mapper,
+  Mapper,
   Map,
   MapFrom,
   Default,
   Transform,
   MapWith,
   Ignore,
-  IMapper,
 } from '../../../src/decorators';
 
 describe('Decorator-Based Mapper', () => {
   describe('@Mapper decorator', () => {
     it('should create a mapper class', () => {
       @Mapper()
-      class TestMapper implements IMapper<any, any> {
+      class TestMapper {
         @Map('name')
         fullName!: string;
       }

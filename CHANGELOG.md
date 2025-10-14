@@ -9,18 +9,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- **Ergonomic API** - Added helper functions for type-safe mapper usage (inspired by class-transformer)
-  - `plainToInstance<Source, Target>(MapperClass, source)` - Transform plain object to instance
+- **Ergonomic API** - New recommended way to use mappers with full TypeScript type safety
+  - `plainToInstance<Source, Target>(MapperClass, source)` - Transform plain object (recommended)
   - `plainToInstanceArray<Source, Target>(MapperClass, sources)` - Transform array of objects
   - `tryPlainToInstance<Source, Target>(MapperClass, source)` - Transform with error handling
   - `tryPlainToInstanceArray<Source, Target>(MapperClass, sources)` - Transform array with error handling
   - `createMapper<Source, Target>(MapperClass)` - Create reusable mapper instance
   - `getMapper<Source, Target>(MapperClass)` - Alias for createMapper
-  - No type assertions needed - clean, ergonomic API
+  - Inspired by class-transformer's API design
+  - Clean, ergonomic API without type assertions
   - Full TypeScript type safety out of the box
   - See [Ergonomic API Guide](docs/ERGONOMIC_API.md) for details
   - Example:
     ```typescript
+    import { Mapper, Map, plainToInstance } from 'om-data-mapper';
+
     @Mapper<UserSource, UserDTO>()
     class UserMapper {
       @Map('name')
@@ -29,22 +32,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
     // ✅ Clean and type-safe!
     const result = plainToInstance<UserSource, UserDTO>(UserMapper, source);
-    ```
-
-- **Decorator API** - Added `MapperMethods<Source, Target>` type for TypeScript type safety
-  - Provides type information for `transform()` and `tryTransform()` methods
-  - Use type assertions for full TypeScript autocomplete and type checking
-  - Enables type-safe mapper usage without interfering with decorator functionality
-  - Example:
-    ```typescript
-    @Mapper<UserSource, UserDTO>()
-    class UserMapper {
-      @Map('name')
-      fullName!: string;
-    }
-
-    const mapper = new UserMapper() as UserMapper & MapperMethods<UserSource, UserDTO>;
-    const result = mapper.transform(source); // ✅ Fully typed
     ```
 
 - **Decorator API** - Enhanced `@MapWith` decorator for nested mapper composition

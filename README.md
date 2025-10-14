@@ -46,47 +46,51 @@ pnpm add om-data-mapper
 
 ## Quick Start
 
-### Decorator API (Recommended)
-
 ```typescript
-import { Mapper, Map, Transform, Default } from 'om-data-mapper';
+import { Mapper, Map, MapFrom, plainToInstance } from 'om-data-mapper';
 
-// Define your source type
-interface User {
+// 1. Define your types
+type UserSource = {
   firstName: string;
   lastName: string;
   age: number;
-  score?: number;
-}
+  email: string;
+};
 
-// Create a mapper using decorators
-@Mapper()
+type UserDTO = {
+  fullName: string;
+  email: string;
+  isAdult: boolean;
+};
+
+// 2. Create a mapper class with decorators
+@Mapper<UserSource, UserDTO>()
 class UserMapper {
-  @Map('firstName')
-  name!: string;
-
-  @Transform((user: User) => `${user.firstName} ${user.lastName}`)
+  @MapFrom((src: UserSource) => `${src.firstName} ${src.lastName}`)
   fullName!: string;
 
-  @Transform((user: User) => user.age >= 18)
-  isAdult!: boolean;
+  @Map('email')
+  email!: string;
 
-  @Map('score')
-  @Default(0)
-  userScore!: number;
+  @MapFrom((src: UserSource) => src.age >= 18)
+  isAdult!: boolean;
 }
 
-// Use the mapper
-const mapper = new UserMapper();
-const result = mapper.transform({
+// 3. Transform your data
+const source = {
   firstName: 'John',
   lastName: 'Doe',
   age: 30,
-});
+  email: 'john@example.com',
+};
+
+const result = plainToInstance<UserSource, UserDTO>(UserMapper, source);
 
 console.log(result);
-// { name: 'John', fullName: 'John Doe', isAdult: true, userScore: 0 }
+// { fullName: 'John Doe', email: 'john@example.com', isAdult: true }
 ```
+
+**That's it!** Full TypeScript type safety, no boilerplate, clean code.
 
 ### Legacy API (Still Supported)
 
