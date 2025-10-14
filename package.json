@@ -22,7 +22,8 @@
     "bench:watch": "vitest bench",
     "bench:core": "vitest bench benchmarks/suites/core --run",
     "bench:compat:build": "cd benchmarks/suites/compat && tsc -p tsconfig.ct.json",
-    "bench:compat": "npm run build && npm run bench:compat:build && node benchmarks/suites/compat/comparison.js"
+    "bench:compat": "npm run build && npm run bench:compat:build && node benchmarks/suites/compat/comparison.js",
+    "bench:compat:json": "npm run build && npm run bench:compat:build && node benchmarks/suites/compat/comparison-json.js"
   },
   "repository": {
     "type": "git",
