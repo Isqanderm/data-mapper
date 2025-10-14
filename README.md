@@ -201,7 +201,7 @@ const result = plainToInstance(UserMapper, data);  // ✅ Type-safe
 | **Dependencies** | reflect-metadata required | **Zero dependencies** |
 | **Bundle Size** | ~50KB | **~15KB (70% smaller)** |
 | **Decorators** | Legacy (experimental) | **TC39 Stage 3 (standard)** |
-| **Type Safety** | Partial | **Full TypeScript support** |
+| **Type Safety** | Runtime only | **Compile-time for transformers** |
 | **JIT Compilation** | ❌ | **✅ Optimized code generation** |
 | **Null Safety** | Manual | **Automatic optional chaining** |
 | **Error Handling** | Throws exceptions | **Structured error reporting** |
@@ -209,19 +209,22 @@ const result = plainToInstance(UserMapper, data);  // ✅ Type-safe
 ### 🎓 Developer Experience
 
 ```typescript
-// ✅ Autocomplete and type checking
+// ✅ Type-safe mapper definition
 @Mapper<UserSource, UserDTO>()
 class UserMapper {
-  @Map('firstName')  // ← IDE knows 'firstName' exists in UserSource
-  name!: string;     // ← IDE knows this should be string in UserDTO
+  @Map('firstName')  // String paths - runtime validation
+  name!: string;     // TypeScript validates target type
+
+  @MapFrom((src: UserSource) => src.firstName)  // ← Full type checking!
+  fullName!: string;  // ← TypeScript knows src type and validates return type
 }
 
-// ✅ Compile-time errors
-@Map('nonExistentField')  // ← TypeScript error: Property doesn't exist
-invalidField!: string;
+// ✅ Type-safe transformers
+@MapFrom((src: UserSource) => src.age)  // ← Autocomplete for 'src' properties
+age!: number;  // ← TypeScript validates return type matches field type
 
-// ✅ Refactoring support
-// Rename 'firstName' → IDE updates all @Map('firstName') automatically
+// ⚠️ Note: String paths in @Map() are validated at runtime, not compile-time
+// For compile-time safety, use @MapFrom() with typed functions
 ```
 
 ### 🔒 Production Ready
