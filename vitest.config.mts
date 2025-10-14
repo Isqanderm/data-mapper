@@ -19,6 +19,7 @@ export default defineConfig({
         'src/**/types.ts',
         'src/**/interfaces.ts',
         'src/compat/**/*',  // Compatibility layer tested via integration tests
+        'src/integrations/**/*',  // Optional integrations tested separately
       ],
       all: true,
       thresholds: {
