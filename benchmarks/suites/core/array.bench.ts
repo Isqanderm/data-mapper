@@ -1,5 +1,5 @@
 import { bench, describe } from 'vitest';
-import { Mapper } from '../src';
+import { Mapper } from '../../../src/core/Mapper';
 
 interface Item {
   id: number;

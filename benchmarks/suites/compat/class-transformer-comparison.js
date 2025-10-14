@@ -14,7 +14,7 @@ const {
   Exclude: OmExclude,
   Type: OmType,
   Transform: OmTransform,
-} = require('../build/class-transformer-compat/index.js');
+} = require('../../../build/compat/class-transformer/index.js');
 
 // Import original class-transformer
 const {
@@ -266,9 +266,9 @@ const results = [];
 
 function runScenario(name, omFn, ctFn, onComplete) {
   console.log(`Running ${name}...\n`);
-  
+
   const suite = new Benchmark.Suite();
-  
+
   suite
     .add('om-data-mapper', omFn)
     .add('class-transformer', ctFn)
@@ -279,16 +279,16 @@ function runScenario(name, omFn, ctFn, onComplete) {
       const omHz = this[0].hz;
       const ctHz = this[1].hz;
       const improvement = ((omHz - ctHz) / ctHz) * 100;
-      
+
       results.push({
         scenario: name,
         omDataMapper: Math.round(omHz).toLocaleString() + ' ops/sec',
         classTransformer: Math.round(ctHz).toLocaleString() + ' ops/sec',
         improvement: improvement.toFixed(2) + '%',
       });
-      
+
       console.log(`  → om-data-mapper is ${improvement > 0 ? improvement.toFixed(2) + '% faster' : Math.abs(improvement).toFixed(2) + '% slower'}\n`);
-      
+
       if (onComplete) onComplete();
     })
     .run({ async: false });
