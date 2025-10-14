@@ -15,7 +15,6 @@ const ct = require('class-transformer');
 const om = require('../../../build/compat/class-transformer');
 
 // Import pre-compiled model classes
-const ctModels = require('./build-ct/models-ct');
 const omModels = require('./models-om');
 
 // ============================================================================
@@ -97,16 +96,16 @@ function checkComplete() {
 const suite1 = new Benchmark.Suite('Simple Transformation');
 
 suite1
-  .add('om-data-mapper: Simple Object Mapping', function() {
+  .add('om-data-mapper: Simple Object Mapping', function () {
     om.plainToClass(omModels.SimpleUser, simpleUserData);
   })
-  .on('cycle', function(event) {
+  .on('cycle', function (event) {
     const bench = event.target;
     results.push({
       name: bench.name,
       ops: bench.hz,
       margin: bench.stats.rme,
-      samples: bench.stats.sample.length
+      samples: bench.stats.sample.length,
     });
   })
   .on('complete', checkComplete)
@@ -116,16 +115,16 @@ suite1
 const suite2 = new Benchmark.Suite('Complex Nested Transformation');
 
 suite2
-  .add('om-data-mapper: Complex Nested Object', function() {
+  .add('om-data-mapper: Complex Nested Object', function () {
     om.plainToClass(omModels.ComplexUser, complexUserData);
   })
-  .on('cycle', function(event) {
+  .on('cycle', function (event) {
     const bench = event.target;
     results.push({
       name: bench.name,
       ops: bench.hz,
       margin: bench.stats.rme,
-      samples: bench.stats.sample.length
+      samples: bench.stats.sample.length,
     });
   })
   .on('complete', checkComplete)
@@ -135,16 +134,16 @@ suite2
 const suite3 = new Benchmark.Suite('Array Transformation');
 
 suite3
-  .add('om-data-mapper: Array (100 items)', function() {
+  .add('om-data-mapper: Array (100 items)', function () {
     om.plainToClass(omModels.Product, productsArray);
   })
-  .on('cycle', function(event) {
+  .on('cycle', function (event) {
     const bench = event.target;
     results.push({
       name: bench.name,
       ops: bench.hz,
       margin: bench.stats.rme,
-      samples: bench.stats.sample.length
+      samples: bench.stats.sample.length,
     });
   })
   .on('complete', checkComplete)
@@ -154,16 +153,16 @@ suite3
 const suite4 = new Benchmark.Suite('Custom Transformation');
 
 suite4
-  .add('om-data-mapper: Custom Logic', function() {
+  .add('om-data-mapper: Custom Logic', function () {
     om.plainToClass(omModels.TransformUser, transformUserData);
   })
-  .on('cycle', function(event) {
+  .on('cycle', function (event) {
     const bench = event.target;
     results.push({
       name: bench.name,
       ops: bench.hz,
       margin: bench.stats.rme,
-      samples: bench.stats.sample.length
+      samples: bench.stats.sample.length,
     });
   })
   .on('complete', checkComplete)
@@ -173,19 +172,18 @@ suite4
 const suite5 = new Benchmark.Suite('Exclude/Expose');
 
 suite5
-  .add('om-data-mapper: Exclude/Expose', function() {
+  .add('om-data-mapper: Exclude/Expose', function () {
     const user = om.plainToClass(omModels.SecureUser, secureUserData);
     om.classToPlain(user);
   })
-  .on('cycle', function(event) {
+  .on('cycle', function (event) {
     const bench = event.target;
     results.push({
       name: bench.name,
       ops: bench.hz,
       margin: bench.stats.rme,
-      samples: bench.stats.sample.length
+      samples: bench.stats.sample.length,
     });
   })
   .on('complete', checkComplete)
   .run({ async: false });
-
