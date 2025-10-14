@@ -7,13 +7,14 @@ import {
   Transform,
   MapWith,
   Ignore,
+  IMapper,
 } from '../../../src/decorators';
 
 describe('Decorator-Based Mapper', () => {
   describe('@Mapper decorator', () => {
     it('should create a mapper class', () => {
       @Mapper()
-      class TestMapper {
+      class TestMapper implements IMapper<any, any> {
         @Map('name')
         fullName!: string;
       }

@@ -10,3 +10,17 @@ export type { MapperOptions, PropertyMapping, MapperMetadata, IMapper, MapperMet
 // Re-export Mapper decorator as default name for convenience
 export { Mapper } from './core';
 
+// Export helper functions for type-safe mapper instantiation
+export {
+  createMapper,
+  plainToInstance,
+  plainToClass,
+  plainToInstanceArray,
+  plainToClassArray,
+  tryPlainToInstance,
+  tryPlainToInstanceArray,
+  getMapper,
+} from './functions';
+
+export type { TransformOptions } from './functions';
+
