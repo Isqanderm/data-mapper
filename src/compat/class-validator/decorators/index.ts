@@ -6,10 +6,47 @@
 export { IsOptional, IsDefined, IsNotEmpty } from './common';
 
 // String decorators
-export { IsString, MinLength, MaxLength, Length } from './string';
+export {
+  IsString,
+  MinLength,
+  MaxLength,
+  Length,
+  // Email & Web
+  IsEmail,
+  IsURL,
+  IsUUID,
+  IsJSON,
+  // Format
+  IsAlpha,
+  IsAlphanumeric,
+  IsHexColor,
+  IsIP,
+  // Specialized
+  IsCreditCard,
+  IsISBN,
+  IsPhoneNumber,
+  // String Content
+  Contains,
+  NotContains,
+  IsLowercase,
+  IsUppercase,
+  Matches,
+} from './string';
 
 // Number decorators
-export { IsNumber, IsInt, Min, Max, IsPositive, IsNegative } from './number';
+export {
+  IsNumber,
+  IsInt,
+  Min,
+  Max,
+  IsPositive,
+  IsNegative,
+  IsDivisibleBy,
+  IsDecimal,
+} from './number';
+
+// Date decorators
+export { MinDate, MaxDate } from './date';
 
 // Array decorators
 export {

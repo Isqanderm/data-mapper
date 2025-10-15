@@ -180,3 +180,61 @@ export function IsNegative(options?: ValidationDecoratorOptions) {
   };
 }
 
+/**
+ * Checks if value is divisible by a number
+ *
+ * @param num - Number to divide by
+ * @param options - Validation options
+ *
+ * @example
+ * ```typescript
+ * class ProductDto {
+ *   @IsDivisibleBy(5)
+ *   quantity: number;
+ * }
+ * ```
+ */
+export function IsDivisibleBy(num: number, options?: ValidationDecoratorOptions) {
+  return function (target: undefined, context: ClassFieldDecoratorContext): any {
+    const propertyKey = context.name;
+
+    context.addInitializer(function (this: any) {
+      addValidationConstraint(this.constructor, propertyKey, {
+        type: 'isDivisibleBy',
+        value: num,
+        message: options?.message,
+        groups: options?.groups,
+        always: options?.always,
+      });
+    });
+  };
+}
+
+/**
+ * Checks if value is a decimal number
+ *
+ * @param options - Validation options
+ *
+ * @example
+ * ```typescript
+ * class PriceDto {
+ *   @IsDecimal()
+ *   amount: number;
+ * }
+ * ```
+ */
+export function IsDecimal(options?: ValidationDecoratorOptions) {
+  return function (target: undefined, context: ClassFieldDecoratorContext): any {
+    const propertyKey = context.name;
+
+    context.addInitializer(function (this: any) {
+      addValidationConstraint(this.constructor, propertyKey, {
+        type: 'isDecimal',
+        message: options?.message,
+        groups: options?.groups,
+        always: options?.always,
+      });
+    });
+  };
+}
+
