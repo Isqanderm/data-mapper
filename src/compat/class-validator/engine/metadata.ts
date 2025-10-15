@@ -35,14 +35,14 @@ export function getPropertyMetadata(
   propertyKey: string | symbol,
 ): PropertyValidationMetadata {
   const classMetadata = getValidationMetadata(target);
-  
+
   if (!classMetadata.properties.has(propertyKey)) {
     classMetadata.properties.set(propertyKey, {
       propertyKey,
       constraints: [],
     });
   }
-  
+
   return classMetadata.properties.get(propertyKey)!;
 }
 
@@ -103,6 +103,17 @@ export function markPropertyAsArray(
 ): void {
   const propertyMetadata = getPropertyMetadata(target, propertyKey);
   propertyMetadata.isArray = true;
+}
+
+/**
+ * Mark property as nested (for ValidateNested)
+ */
+export function markPropertyAsNested(
+  target: any,
+  propertyKey: string | symbol,
+): void {
+  const propertyMetadata = getPropertyMetadata(target, propertyKey);
+  propertyMetadata.isNested = true;
 }
 
 /**
