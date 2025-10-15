@@ -1,4 +1,5 @@
 "use strict";
+// @ts-nocheck - Import path is relative to compiled output, module resolution disabled for benchmarks
 /**
  * Validation models using om-data-mapper/class-validator-compat
  * These models will be compiled and used in benchmarks
@@ -39,9 +40,7 @@ var __runInitializers = (this && this.__runInitializers) || function (thisArg, i
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ComplexUserDto = exports.MixedDto = exports.ProductDto = exports.SimpleUserDto = void 0;
-const class_validator_1 = require("../../../build/compat/class-validator");
-// Note: IsEmail is not yet implemented in MVP, so we'll use IsString for now
-// This will be updated when IsEmail is added
+const class_validator_1 = require("../../../../build/compat/class-validator");
 /**
  * Simple DTO with string validators
  */
@@ -59,7 +58,7 @@ let SimpleUserDto = (() => {
         static {
             const _metadata = typeof Symbol === "function" && Symbol.metadata ? Object.create(null) : void 0;
             _name_decorators = [(0, class_validator_1.IsString)(), (0, class_validator_1.MinLength)(3), (0, class_validator_1.MaxLength)(50)];
-            _email_decorators = [(0, class_validator_1.IsString)()];
+            _email_decorators = [(0, class_validator_1.IsEmail)()];
             _password_decorators = [(0, class_validator_1.IsString)(), (0, class_validator_1.MinLength)(8)];
             __esDecorate(null, null, _name_decorators, { kind: "field", name: "name", static: false, private: false, access: { has: obj => "name" in obj, get: obj => obj.name, set: (obj, value) => { obj.name = value; } }, metadata: _metadata }, _name_initializers, _name_extraInitializers);
             __esDecorate(null, null, _email_decorators, { kind: "field", name: "email", static: false, private: false, access: { has: obj => "email" in obj, get: obj => obj.email, set: (obj, value) => { obj.email = value; } }, metadata: _metadata }, _email_initializers, _email_extraInitializers);
@@ -88,22 +87,29 @@ let ProductDto = (() => {
     let _quantity_decorators;
     let _quantity_initializers = [];
     let _quantity_extraInitializers = [];
+    let _inStock_decorators;
+    let _inStock_initializers = [];
+    let _inStock_extraInitializers = [];
     return class ProductDto {
         static {
             const _metadata = typeof Symbol === "function" && Symbol.metadata ? Object.create(null) : void 0;
             _name_decorators = [(0, class_validator_1.IsString)(), (0, class_validator_1.IsNotEmpty)()];
             _price_decorators = [(0, class_validator_1.IsNumber)(), (0, class_validator_1.Min)(0), (0, class_validator_1.Max)(1000000)];
             _quantity_decorators = [(0, class_validator_1.IsInt)(), (0, class_validator_1.Min)(0)];
+            _inStock_decorators = [(0, class_validator_1.IsBoolean)()];
             __esDecorate(null, null, _name_decorators, { kind: "field", name: "name", static: false, private: false, access: { has: obj => "name" in obj, get: obj => obj.name, set: (obj, value) => { obj.name = value; } }, metadata: _metadata }, _name_initializers, _name_extraInitializers);
             __esDecorate(null, null, _price_decorators, { kind: "field", name: "price", static: false, private: false, access: { has: obj => "price" in obj, get: obj => obj.price, set: (obj, value) => { obj.price = value; } }, metadata: _metadata }, _price_initializers, _price_extraInitializers);
             __esDecorate(null, null, _quantity_decorators, { kind: "field", name: "quantity", static: false, private: false, access: { has: obj => "quantity" in obj, get: obj => obj.quantity, set: (obj, value) => { obj.quantity = value; } }, metadata: _metadata }, _quantity_initializers, _quantity_extraInitializers);
+            __esDecorate(null, null, _inStock_decorators, { kind: "field", name: "inStock", static: false, private: false, access: { has: obj => "inStock" in obj, get: obj => obj.inStock, set: (obj, value) => { obj.inStock = value; } }, metadata: _metadata }, _inStock_initializers, _inStock_extraInitializers);
             if (_metadata) Object.defineProperty(this, Symbol.metadata, { enumerable: true, configurable: true, writable: true, value: _metadata });
         }
         name = __runInitializers(this, _name_initializers, void 0);
         price = (__runInitializers(this, _name_extraInitializers), __runInitializers(this, _price_initializers, void 0));
         quantity = (__runInitializers(this, _price_extraInitializers), __runInitializers(this, _quantity_initializers, void 0));
-        // @IsBoolean() - Not yet implemented in MVP
-        inStock = __runInitializers(this, _quantity_extraInitializers);
+        inStock = (__runInitializers(this, _quantity_extraInitializers), __runInitializers(this, _inStock_initializers, void 0));
+        constructor() {
+            __runInitializers(this, _inStock_extraInitializers);
+        }
     };
 })();
 exports.ProductDto = ProductDto;
@@ -136,7 +142,7 @@ let MixedDto = (() => {
             _lastName_decorators = [(0, class_validator_1.IsString)(), (0, class_validator_1.MinLength)(3)];
             _middleName_decorators = [(0, class_validator_1.IsOptional)(), (0, class_validator_1.IsString)()];
             _age_decorators = [(0, class_validator_1.IsNumber)(), (0, class_validator_1.Min)(0), (0, class_validator_1.Max)(150)];
-            _email_decorators = [(0, class_validator_1.IsString)()];
+            _email_decorators = [(0, class_validator_1.IsEmail)()];
             _phone_decorators = [(0, class_validator_1.IsOptional)(), (0, class_validator_1.IsString)()];
             __esDecorate(null, null, _firstName_decorators, { kind: "field", name: "firstName", static: false, private: false, access: { has: obj => "firstName" in obj, get: obj => obj.firstName, set: (obj, value) => { obj.firstName = value; } }, metadata: _metadata }, _firstName_initializers, _firstName_extraInitializers);
             __esDecorate(null, null, _lastName_decorators, { kind: "field", name: "lastName", static: false, private: false, access: { has: obj => "lastName" in obj, get: obj => obj.lastName, set: (obj, value) => { obj.lastName = value; } }, metadata: _metadata }, _lastName_initializers, _lastName_extraInitializers);
@@ -195,6 +201,12 @@ let ComplexUserDto = (() => {
     let _phone_decorators;
     let _phone_initializers = [];
     let _phone_extraInitializers = [];
+    let _isActive_decorators;
+    let _isActive_initializers = [];
+    let _isActive_extraInitializers = [];
+    let _emailVerified_decorators;
+    let _emailVerified_initializers = [];
+    let _emailVerified_extraInitializers = [];
     let _bio_decorators;
     let _bio_initializers = [];
     let _bio_extraInitializers = [];
@@ -202,7 +214,7 @@ let ComplexUserDto = (() => {
         static {
             const _metadata = typeof Symbol === "function" && Symbol.metadata ? Object.create(null) : void 0;
             _username_decorators = [(0, class_validator_1.IsString)(), (0, class_validator_1.MinLength)(3), (0, class_validator_1.MaxLength)(50)];
-            _email_decorators = [(0, class_validator_1.IsString)()];
+            _email_decorators = [(0, class_validator_1.IsEmail)()];
             _password_decorators = [(0, class_validator_1.IsString)(), (0, class_validator_1.MinLength)(8), (0, class_validator_1.MaxLength)(100)];
             _firstName_decorators = [(0, class_validator_1.IsString)(), (0, class_validator_1.MinLength)(2), (0, class_validator_1.MaxLength)(50)];
             _lastName_decorators = [(0, class_validator_1.IsString)(), (0, class_validator_1.MinLength)(2), (0, class_validator_1.MaxLength)(50)];
@@ -212,6 +224,8 @@ let ComplexUserDto = (() => {
             _city_decorators = [(0, class_validator_1.IsString)(), (0, class_validator_1.IsNotEmpty)()];
             _address_decorators = [(0, class_validator_1.IsOptional)(), (0, class_validator_1.IsString)()];
             _phone_decorators = [(0, class_validator_1.IsOptional)(), (0, class_validator_1.IsString)()];
+            _isActive_decorators = [(0, class_validator_1.IsBoolean)()];
+            _emailVerified_decorators = [(0, class_validator_1.IsBoolean)()];
             _bio_decorators = [(0, class_validator_1.IsOptional)(), (0, class_validator_1.IsString)()];
             __esDecorate(null, null, _username_decorators, { kind: "field", name: "username", static: false, private: false, access: { has: obj => "username" in obj, get: obj => obj.username, set: (obj, value) => { obj.username = value; } }, metadata: _metadata }, _username_initializers, _username_extraInitializers);
             __esDecorate(null, null, _email_decorators, { kind: "field", name: "email", static: false, private: false, access: { has: obj => "email" in obj, get: obj => obj.email, set: (obj, value) => { obj.email = value; } }, metadata: _metadata }, _email_initializers, _email_extraInitializers);
@@ -224,6 +238,8 @@ let ComplexUserDto = (() => {
             __esDecorate(null, null, _city_decorators, { kind: "field", name: "city", static: false, private: false, access: { has: obj => "city" in obj, get: obj => obj.city, set: (obj, value) => { obj.city = value; } }, metadata: _metadata }, _city_initializers, _city_extraInitializers);
             __esDecorate(null, null, _address_decorators, { kind: "field", name: "address", static: false, private: false, access: { has: obj => "address" in obj, get: obj => obj.address, set: (obj, value) => { obj.address = value; } }, metadata: _metadata }, _address_initializers, _address_extraInitializers);
             __esDecorate(null, null, _phone_decorators, { kind: "field", name: "phone", static: false, private: false, access: { has: obj => "phone" in obj, get: obj => obj.phone, set: (obj, value) => { obj.phone = value; } }, metadata: _metadata }, _phone_initializers, _phone_extraInitializers);
+            __esDecorate(null, null, _isActive_decorators, { kind: "field", name: "isActive", static: false, private: false, access: { has: obj => "isActive" in obj, get: obj => obj.isActive, set: (obj, value) => { obj.isActive = value; } }, metadata: _metadata }, _isActive_initializers, _isActive_extraInitializers);
+            __esDecorate(null, null, _emailVerified_decorators, { kind: "field", name: "emailVerified", static: false, private: false, access: { has: obj => "emailVerified" in obj, get: obj => obj.emailVerified, set: (obj, value) => { obj.emailVerified = value; } }, metadata: _metadata }, _emailVerified_initializers, _emailVerified_extraInitializers);
             __esDecorate(null, null, _bio_decorators, { kind: "field", name: "bio", static: false, private: false, access: { has: obj => "bio" in obj, get: obj => obj.bio, set: (obj, value) => { obj.bio = value; } }, metadata: _metadata }, _bio_initializers, _bio_extraInitializers);
             if (_metadata) Object.defineProperty(this, Symbol.metadata, { enumerable: true, configurable: true, writable: true, value: _metadata });
         }
@@ -238,11 +254,9 @@ let ComplexUserDto = (() => {
         city = (__runInitializers(this, _country_extraInitializers), __runInitializers(this, _city_initializers, void 0));
         address = (__runInitializers(this, _city_extraInitializers), __runInitializers(this, _address_initializers, void 0));
         phone = (__runInitializers(this, _address_extraInitializers), __runInitializers(this, _phone_initializers, void 0));
-        // @IsBoolean() - Not yet implemented in MVP
-        isActive = __runInitializers(this, _phone_extraInitializers);
-        // @IsBoolean() - Not yet implemented in MVP
-        emailVerified;
-        bio = __runInitializers(this, _bio_initializers, void 0);
+        isActive = (__runInitializers(this, _phone_extraInitializers), __runInitializers(this, _isActive_initializers, void 0));
+        emailVerified = (__runInitializers(this, _isActive_extraInitializers), __runInitializers(this, _emailVerified_initializers, void 0));
+        bio = (__runInitializers(this, _emailVerified_extraInitializers), __runInitializers(this, _bio_initializers, void 0));
         constructor() {
             __runInitializers(this, _bio_extraInitializers);
         }

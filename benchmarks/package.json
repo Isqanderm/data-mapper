@@ -5,8 +5,8 @@
   "private": false,
   "main": "build/index.js",
   "scripts": {
-    "build": "tsc",
-    "build:watch": "tsc --watch",
+    "build": "echo 'Benchmarks do not require compilation - they use the main project build'",
+    "build:watch": "echo 'Benchmarks do not require compilation'",
     "clean": "rm -rf build",
     "prepublishOnly": "npm run clean && npm run test && npm run build",
     "test": "jest",

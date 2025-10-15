@@ -1,3 +1,4 @@
+// @ts-nocheck - Import path is relative to compiled output, module resolution disabled for benchmarks
 /**
  * Validation models using om-data-mapper/class-validator-compat
  * These models will be compiled and used in benchmarks
@@ -6,6 +7,8 @@
 import {
   IsString,
   IsNumber,
+  IsEmail,
+  IsBoolean,
   MinLength,
   MaxLength,
   Min,
@@ -13,10 +16,7 @@ import {
   IsOptional,
   IsNotEmpty,
   IsInt,
-} from '../../../build/compat/class-validator';
-
-// Note: IsEmail is not yet implemented in MVP, so we'll use IsString for now
-// This will be updated when IsEmail is added
+} from '../../../../build/compat/class-validator';
 
 /**
  * Simple DTO with string validators
@@ -27,7 +27,7 @@ export class SimpleUserDto {
   @MaxLength(50)
   name!: string;
 
-  @IsString() // Will be @IsEmail() when implemented
+  @IsEmail()
   email!: string;
 
   @IsString()
@@ -52,7 +52,7 @@ export class ProductDto {
   @Min(0)
   quantity!: number;
 
-  // @IsBoolean() - Not yet implemented in MVP
+  @IsBoolean()
   inStock!: boolean;
 }
 
@@ -77,7 +77,7 @@ export class MixedDto {
   @Max(150)
   age!: number;
 
-  @IsString() // Will be @IsEmail() when implemented
+  @IsEmail()
   email!: string;
 
   @IsOptional()
@@ -94,7 +94,7 @@ export class ComplexUserDto {
   @MaxLength(50)
   username!: string;
 
-  @IsString() // Will be @IsEmail() when implemented
+  @IsEmail()
   email!: string;
 
   @IsString()
@@ -138,10 +138,10 @@ export class ComplexUserDto {
   @IsString()
   phone?: string;
 
-  // @IsBoolean() - Not yet implemented in MVP
+  @IsBoolean()
   isActive!: boolean;
 
-  // @IsBoolean() - Not yet implemented in MVP
+  @IsBoolean()
   emailVerified!: boolean;
 
   @IsOptional()

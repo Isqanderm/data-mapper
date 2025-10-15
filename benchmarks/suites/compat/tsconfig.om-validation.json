@@ -5,7 +5,12 @@
     "rootDir": ".",
     "declaration": false,
     "declarationMap": false,
-    "sourceMap": false
+    "sourceMap": false,
+    "skipLibCheck": true,
+    "baseUrl": ".",
+    "paths": {
+      "../../../../build/compat/class-validator": ["../../../build/compat/class-validator"]
+    }
   },
   "include": ["models-validation-om.ts"]
 }
