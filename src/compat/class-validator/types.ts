@@ -226,6 +226,11 @@ export interface PropertyValidationMetadata {
    * Is array
    */
   isArray?: boolean;
+
+  /**
+   * Is nested validation
+   */
+  isNested?: boolean;
 }
 
 /**
