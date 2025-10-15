@@ -449,6 +449,322 @@ class UserDto {
 }
 ```
 
+#### `@IsFQDN()`
+Checks if value is a fully qualified domain name (FQDN).
+
+```typescript
+class WebsiteDto {
+  @IsFQDN()
+  domain: string; // 'example.com', 'subdomain.example.com'
+}
+```
+
+#### `@IsISO8601()`
+Checks if value is a valid ISO 8601 date string.
+
+```typescript
+class EventDto {
+  @IsISO8601()
+  startDate: string; // '2024-01-15T10:30:00Z', '2024-01-15'
+}
+```
+
+#### `@IsDateString()`
+Alias for `@IsISO8601()`. Checks if value is a valid ISO 8601 date string.
+
+```typescript
+class EventDto {
+  @IsDateString()
+  createdAt: string; // '2024-01-15T10:30:00Z'
+}
+```
+
+#### `@IsMobilePhone(locale?)`
+Checks if value is a valid mobile phone number. Supports locale-specific validation.
+
+```typescript
+class UserDto {
+  @IsMobilePhone('en-US')
+  phone: string; // '+1-555-123-4567', '555-123-4567'
+}
+
+// Without locale (accepts various formats)
+class ContactDto {
+  @IsMobilePhone()
+  mobile: string;
+}
+```
+
+#### `@IsPostalCode(locale?)`
+Checks if value is a valid postal code. Supports US, RU, and GB locales.
+
+```typescript
+class AddressDto {
+  @IsPostalCode('US')
+  zipCode: string; // '12345', '12345-6789'
+}
+
+class RussianAddressDto {
+  @IsPostalCode('RU')
+  postalCode: string; // '123456'
+}
+```
+
+#### `@IsMongoId()`
+Checks if value is a valid MongoDB ObjectId (24-character hexadecimal string).
+
+```typescript
+class DocumentDto {
+  @IsMongoId()
+  id: string; // '507f1f77bcf86cd799439011'
+}
+```
+
+#### `@IsJWT()`
+Checks if value is a valid JWT token.
+
+```typescript
+class AuthDto {
+  @IsJWT()
+  token: string; // 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0.dozjgNryP4J3jVmNHl0w5N_XgL0n3I9PlFUP0THsR8U'
+}
+```
+
+#### `@IsStrongPassword()`
+Checks if value is a strong password (min 8 chars, uppercase, lowercase, number, special char).
+
+```typescript
+class UserDto {
+  @IsStrongPassword()
+  password: string; // 'MyP@ssw0rd123'
+}
+```
+
+#### `@IsPort()`
+Checks if value is a valid port number (0-65535).
+
+```typescript
+class ServerDto {
+  @IsPort()
+  port: string; // '8080', '3000', '443'
+}
+```
+
+#### `@IsMACAddress()`
+Checks if value is a valid MAC address.
+
+```typescript
+class DeviceDto {
+  @IsMACAddress()
+  macAddress: string; // '00:1B:44:11:3A:B7', '00-1B-44-11-3A-B7'
+}
+```
+
+#### `@IsBase64()`
+Checks if value is a valid base64 encoded string.
+
+```typescript
+class FileDto {
+  @IsBase64()
+  content: string; // 'SGVsbG8gV29ybGQ=', 'SGVsbG8gV29ybGQ'
+}
+```
+
+#### `@IsIBAN()`
+Checks if value is a valid International Bank Account Number (IBAN).
+
+```typescript
+class BankAccountDto {
+  @IsIBAN()
+  iban: string; // 'GB82WEST12345698765432', 'DE89370400440532013000'
+}
+```
+
+#### `@IsBIC()`
+Checks if value is a valid Bank Identifier Code (BIC/SWIFT).
+
+```typescript
+class BankDto {
+  @IsBIC()
+  swiftCode: string; // 'DEUTDEFF', 'DEUTDEFF500'
+}
+```
+
+#### `@IsCurrency()`
+Checks if value is a valid currency amount.
+
+```typescript
+class PaymentDto {
+  @IsCurrency()
+  amount: string; // '$100.00', '€50.99', '¥1000'
+}
+```
+
+#### `@IsISO4217CurrencyCode()`
+Checks if value is a valid ISO 4217 currency code.
+
+```typescript
+class TransactionDto {
+  @IsISO4217CurrencyCode()
+  currency: string; // 'USD', 'EUR', 'RUB', 'GBP'
+}
+```
+
+#### `@IsEthereumAddress()`
+Checks if value is a valid Ethereum address.
+
+```typescript
+class WalletDto {
+  @IsEthereumAddress()
+  address: string; // '0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb'
+}
+```
+
+#### `@IsBtcAddress()`
+Checks if value is a valid Bitcoin address (legacy or SegWit).
+
+```typescript
+class CryptoDto {
+  @IsBtcAddress()
+  btcAddress: string; // '1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa', 'bc1qar0srrr7xfkvy5l643lydnw9re59gtzzwf5mdq'
+}
+```
+
+#### `@IsPassportNumber(locale?)`
+Checks if value is a valid passport number. Supports locale-specific validation.
+
+```typescript
+class TravelDto {
+  @IsPassportNumber('US')
+  passport: string; // '123456789'
+}
+
+class InternationalDto {
+  @IsPassportNumber()
+  passportNumber: string; // Accepts various formats
+}
+```
+
+#### `@IsIdentityCard(locale?)`
+Checks if value is a valid identity card number.
+
+```typescript
+class IdentityDto {
+  @IsIdentityCard('ES')
+  idCard: string; // 'AB12345678'
+}
+```
+
+#### `@IsEAN()`
+Checks if value is a valid European Article Number (EAN-8 or EAN-13).
+
+```typescript
+class ProductDto {
+  @IsEAN()
+  barcode: string; // '12345678' (EAN-8), '1234567890123' (EAN-13)
+}
+```
+
+#### `@IsISIN()`
+Checks if value is a valid International Securities Identification Number (ISIN).
+
+```typescript
+class SecurityDto {
+  @IsISIN()
+  isin: string; // 'US0378331005'
+}
+```
+
+#### `@IsMagnetURI()`
+Checks if value is a valid Magnet URI.
+
+```typescript
+class TorrentDto {
+  @IsMagnetURI()
+  magnetLink: string; // 'magnet:?xt=urn:btih:c12fe1c06bba254a9dc9f519b335aa7c1367a88a'
+}
+```
+
+#### `@IsDataURI()`
+Checks if value is a valid Data URI.
+
+```typescript
+class ImageDto {
+  @IsDataURI()
+  dataUri: string; // 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUA'
+}
+```
+
+#### `@IsISO31661Alpha2()`
+Checks if value is a valid ISO 3166-1 alpha-2 country code.
+
+```typescript
+class AddressDto {
+  @IsISO31661Alpha2()
+  countryCode: string; // 'US', 'RU', 'GB', 'FR'
+}
+```
+
+#### `@IsISO31661Alpha3()`
+Checks if value is a valid ISO 3166-1 alpha-3 country code.
+
+```typescript
+class CountryDto {
+  @IsISO31661Alpha3()
+  code: string; // 'USA', 'RUS', 'GBR', 'FRA'
+}
+```
+
+#### `@IsLocale()`
+Checks if value is a valid locale code.
+
+```typescript
+class UserDto {
+  @IsLocale()
+  locale: string; // 'en-US', 'ru-RU', 'fr-FR', 'en'
+}
+```
+
+#### `@IsSemVer()`
+Checks if value is a valid semantic version.
+
+```typescript
+class PackageDto {
+  @IsSemVer()
+  version: string; // '1.2.3', '2.0.0-beta.1', '1.0.0+20130313144700'
+}
+```
+
+#### `@IsMimeType()`
+Checks if value is a valid MIME type.
+
+```typescript
+class FileDto {
+  @IsMimeType()
+  contentType: string; // 'text/html', 'application/json', 'image/png'
+}
+```
+
+#### `@IsTimeZone()`
+Checks if value is a valid timezone.
+
+```typescript
+class EventDto {
+  @IsTimeZone()
+  timezone: string; // 'America/New_York', 'Europe/Moscow', 'UTC'
+}
+```
+
+#### `@IsRFC3339()`
+Checks if value is a valid RFC 3339 date string.
+
+```typescript
+class TimestampDto {
+  @IsRFC3339()
+  timestamp: string; // '2024-01-15T10:30:00Z', '2024-01-15T10:30:00+03:00'
+}
+```
+
 ---
 
 ### Number Validators

@@ -449,6 +449,322 @@ class UserDto {
 }
 ```
 
+#### `@IsFQDN()`
+Проверяет, является ли значение полным доменным именем (FQDN).
+
+```typescript
+class WebsiteDto {
+  @IsFQDN()
+  domain: string; // 'example.com', 'subdomain.example.com'
+}
+```
+
+#### `@IsISO8601()`
+Проверяет, является ли значение валидной датой в формате ISO 8601.
+
+```typescript
+class EventDto {
+  @IsISO8601()
+  startDate: string; // '2024-01-15T10:30:00Z', '2024-01-15'
+}
+```
+
+#### `@IsDateString()`
+Алиас для `@IsISO8601()`. Проверяет, является ли значение валидной датой в формате ISO 8601.
+
+```typescript
+class EventDto {
+  @IsDateString()
+  createdAt: string; // '2024-01-15T10:30:00Z'
+}
+```
+
+#### `@IsMobilePhone(locale?)`
+Проверяет, является ли значение валидным номером мобильного телефона. Поддерживает валидацию для конкретных локалей.
+
+```typescript
+class UserDto {
+  @IsMobilePhone('en-US')
+  phone: string; // '+1-555-123-4567', '555-123-4567'
+}
+
+// Без указания локали (принимает различные форматы)
+class ContactDto {
+  @IsMobilePhone()
+  mobile: string;
+}
+```
+
+#### `@IsPostalCode(locale?)`
+Проверяет, является ли значение валидным почтовым индексом. Поддерживает локали US, RU и GB.
+
+```typescript
+class AddressDto {
+  @IsPostalCode('US')
+  zipCode: string; // '12345', '12345-6789'
+}
+
+class RussianAddressDto {
+  @IsPostalCode('RU')
+  postalCode: string; // '123456'
+}
+```
+
+#### `@IsMongoId()`
+Проверяет, является ли значение валидным MongoDB ObjectId (24-символьная шестнадцатеричная строка).
+
+```typescript
+class DocumentDto {
+  @IsMongoId()
+  id: string; // '507f1f77bcf86cd799439011'
+}
+```
+
+#### `@IsJWT()`
+Проверяет, является ли значение валидным JWT токеном.
+
+```typescript
+class AuthDto {
+  @IsJWT()
+  token: string; // 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0.dozjgNryP4J3jVmNHl0w5N_XgL0n3I9PlFUP0THsR8U'
+}
+```
+
+#### `@IsStrongPassword()`
+Проверяет, является ли значение надежным паролем (минимум 8 символов, заглавные и строчные буквы, цифры, спецсимволы).
+
+```typescript
+class UserDto {
+  @IsStrongPassword()
+  password: string; // 'MyP@ssw0rd123'
+}
+```
+
+#### `@IsPort()`
+Проверяет, является ли значение валидным номером порта (0-65535).
+
+```typescript
+class ServerDto {
+  @IsPort()
+  port: string; // '8080', '3000', '443'
+}
+```
+
+#### `@IsMACAddress()`
+Проверяет, является ли значение валидным MAC-адресом.
+
+```typescript
+class DeviceDto {
+  @IsMACAddress()
+  macAddress: string; // '00:1B:44:11:3A:B7', '00-1B-44-11-3A-B7'
+}
+```
+
+#### `@IsBase64()`
+Проверяет, является ли значение валидной строкой в кодировке base64.
+
+```typescript
+class FileDto {
+  @IsBase64()
+  content: string; // 'SGVsbG8gV29ybGQ=', 'SGVsbG8gV29ybGQ'
+}
+```
+
+#### `@IsIBAN()`
+Проверяет, является ли значение валидным международным номером банковского счета (IBAN).
+
+```typescript
+class BankAccountDto {
+  @IsIBAN()
+  iban: string; // 'GB82WEST12345698765432', 'DE89370400440532013000'
+}
+```
+
+#### `@IsBIC()`
+Проверяет, является ли значение валидным банковским идентификационным кодом (BIC/SWIFT).
+
+```typescript
+class BankDto {
+  @IsBIC()
+  swiftCode: string; // 'DEUTDEFF', 'DEUTDEFF500'
+}
+```
+
+#### `@IsCurrency()`
+Проверяет, является ли значение валидной денежной суммой.
+
+```typescript
+class PaymentDto {
+  @IsCurrency()
+  amount: string; // '$100.00', '€50.99', '¥1000'
+}
+```
+
+#### `@IsISO4217CurrencyCode()`
+Проверяет, является ли значение валидным кодом валюты по стандарту ISO 4217.
+
+```typescript
+class TransactionDto {
+  @IsISO4217CurrencyCode()
+  currency: string; // 'USD', 'EUR', 'RUB', 'GBP'
+}
+```
+
+#### `@IsEthereumAddress()`
+Проверяет, является ли значение валидным адресом Ethereum.
+
+```typescript
+class WalletDto {
+  @IsEthereumAddress()
+  address: string; // '0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb'
+}
+```
+
+#### `@IsBtcAddress()`
+Проверяет, является ли значение валидным адресом Bitcoin (legacy или SegWit).
+
+```typescript
+class CryptoDto {
+  @IsBtcAddress()
+  btcAddress: string; // '1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa', 'bc1qar0srrr7xfkvy5l643lydnw9re59gtzzwf5mdq'
+}
+```
+
+#### `@IsPassportNumber(locale?)`
+Проверяет, является ли значение валидным номером паспорта. Поддерживает валидацию для конкретных локалей.
+
+```typescript
+class TravelDto {
+  @IsPassportNumber('US')
+  passport: string; // '123456789'
+}
+
+class InternationalDto {
+  @IsPassportNumber()
+  passportNumber: string; // Принимает различные форматы
+}
+```
+
+#### `@IsIdentityCard(locale?)`
+Проверяет, является ли значение валидным номером удостоверения личности.
+
+```typescript
+class IdentityDto {
+  @IsIdentityCard('ES')
+  idCard: string; // 'AB12345678'
+}
+```
+
+#### `@IsEAN()`
+Проверяет, является ли значение валидным европейским артикульным номером (EAN-8 или EAN-13).
+
+```typescript
+class ProductDto {
+  @IsEAN()
+  barcode: string; // '12345678' (EAN-8), '1234567890123' (EAN-13)
+}
+```
+
+#### `@IsISIN()`
+Проверяет, является ли значение валидным международным идентификационным номером ценной бумаги (ISIN).
+
+```typescript
+class SecurityDto {
+  @IsISIN()
+  isin: string; // 'US0378331005'
+}
+```
+
+#### `@IsMagnetURI()`
+Проверяет, является ли значение валидным Magnet URI.
+
+```typescript
+class TorrentDto {
+  @IsMagnetURI()
+  magnetLink: string; // 'magnet:?xt=urn:btih:c12fe1c06bba254a9dc9f519b335aa7c1367a88a'
+}
+```
+
+#### `@IsDataURI()`
+Проверяет, является ли значение валидным Data URI.
+
+```typescript
+class ImageDto {
+  @IsDataURI()
+  dataUri: string; // 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUA'
+}
+```
+
+#### `@IsISO31661Alpha2()`
+Проверяет, является ли значение валидным двухбуквенным кодом страны по стандарту ISO 3166-1 alpha-2.
+
+```typescript
+class AddressDto {
+  @IsISO31661Alpha2()
+  countryCode: string; // 'US', 'RU', 'GB', 'FR'
+}
+```
+
+#### `@IsISO31661Alpha3()`
+Проверяет, является ли значение валидным трёхбуквенным кодом страны по стандарту ISO 3166-1 alpha-3.
+
+```typescript
+class CountryDto {
+  @IsISO31661Alpha3()
+  code: string; // 'USA', 'RUS', 'GBR', 'FRA'
+}
+```
+
+#### `@IsLocale()`
+Проверяет, является ли значение валидным кодом локали.
+
+```typescript
+class UserDto {
+  @IsLocale()
+  locale: string; // 'en-US', 'ru-RU', 'fr-FR', 'en'
+}
+```
+
+#### `@IsSemVer()`
+Проверяет, является ли значение валидной семантической версией.
+
+```typescript
+class PackageDto {
+  @IsSemVer()
+  version: string; // '1.2.3', '2.0.0-beta.1', '1.0.0+20130313144700'
+}
+```
+
+#### `@IsMimeType()`
+Проверяет, является ли значение валидным MIME-типом.
+
+```typescript
+class FileDto {
+  @IsMimeType()
+  contentType: string; // 'text/html', 'application/json', 'image/png'
+}
+```
+
+#### `@IsTimeZone()`
+Проверяет, является ли значение валидным часовым поясом.
+
+```typescript
+class EventDto {
+  @IsTimeZone()
+  timezone: string; // 'America/New_York', 'Europe/Moscow', 'UTC'
+}
+```
+
+#### `@IsRFC3339()`
+Проверяет, является ли значение валидной датой в формате RFC 3339.
+
+```typescript
+class TimestampDto {
+  @IsRFC3339()
+  timestamp: string; // '2024-01-15T10:30:00Z', '2024-01-15T10:30:00+03:00'
+}
+```
+
 ---
 
 ### Валидаторы чисел
