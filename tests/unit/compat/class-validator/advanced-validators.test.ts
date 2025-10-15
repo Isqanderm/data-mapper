@@ -13,6 +13,8 @@ import {
   MinLength,
   Min,
   IsNotEmpty,
+  IsObject,
+  IsEnum,
   validate,
   validateSync,
 } from '../../../../src/compat/class-validator';
@@ -286,6 +288,143 @@ describe('Advanced Validators', () => {
       // ValidatePromise is a marker - actual validation depends on implementation
       // For now, we just verify it doesn't break validation
       expect(Array.isArray(errors)).toBe(true);
+    });
+  });
+
+  describe('@IsObject', () => {
+    it('should validate object values', () => {
+      class TestDto {
+        @IsObject()
+        metadata!: object;
+      }
+
+      const valid1 = new TestDto();
+      valid1.metadata = { key: 'value' };
+      expect(validateSync(valid1)).toHaveLength(0);
+
+      const valid2 = new TestDto();
+      valid2.metadata = {};
+      expect(validateSync(valid2)).toHaveLength(0);
+
+      const valid3 = new TestDto();
+      valid3.metadata = { nested: { data: 'value' } };
+      expect(validateSync(valid3)).toHaveLength(0);
+    });
+
+    it('should fail for non-object values', () => {
+      class TestDto {
+        @IsObject()
+        metadata!: any;
+      }
+
+      const invalid1 = new TestDto();
+      invalid1.metadata = 'string';
+      expect(validateSync(invalid1)).toHaveLength(1);
+
+      const invalid2 = new TestDto();
+      invalid2.metadata = 123;
+      expect(validateSync(invalid2)).toHaveLength(1);
+
+      const invalid3 = new TestDto();
+      invalid3.metadata = null;
+      expect(validateSync(invalid3)).toHaveLength(1);
+
+      const invalid4 = new TestDto();
+      invalid4.metadata = [];
+      expect(validateSync(invalid4)).toHaveLength(1);
+    });
+
+    it('should support custom error message', () => {
+      class TestDto {
+        @IsObject({ message: 'Must be an object' })
+        metadata!: any;
+      }
+
+      const invalid = new TestDto();
+      invalid.metadata = 'not an object';
+      const errors = validateSync(invalid);
+      expect(errors).toHaveLength(1);
+      expect(errors[0].constraints?.isObject).toBe('Must be an object');
+    });
+  });
+
+  describe('@IsEnum', () => {
+    enum UserRole {
+      Admin = 'admin',
+      User = 'user',
+      Guest = 'guest',
+    }
+
+    enum NumericEnum {
+      First = 1,
+      Second = 2,
+      Third = 3,
+    }
+
+    it('should validate string enum values', () => {
+      class TestDto {
+        @IsEnum(UserRole)
+        role!: UserRole;
+      }
+
+      const valid1 = new TestDto();
+      valid1.role = UserRole.Admin;
+      expect(validateSync(valid1)).toHaveLength(0);
+
+      const valid2 = new TestDto();
+      valid2.role = UserRole.User;
+      expect(validateSync(valid2)).toHaveLength(0);
+
+      const valid3 = new TestDto();
+      valid3.role = UserRole.Guest;
+      expect(validateSync(valid3)).toHaveLength(0);
+    });
+
+    it('should validate numeric enum values', () => {
+      class TestDto {
+        @IsEnum(NumericEnum)
+        value!: NumericEnum;
+      }
+
+      const valid1 = new TestDto();
+      valid1.value = NumericEnum.First;
+      expect(validateSync(valid1)).toHaveLength(0);
+
+      const valid2 = new TestDto();
+      valid2.value = NumericEnum.Second;
+      expect(validateSync(valid2)).toHaveLength(0);
+    });
+
+    it('should fail for invalid enum values', () => {
+      class TestDto {
+        @IsEnum(UserRole)
+        role!: any;
+      }
+
+      const invalid1 = new TestDto();
+      invalid1.role = 'invalid';
+      expect(validateSync(invalid1)).toHaveLength(1);
+
+      const invalid2 = new TestDto();
+      invalid2.role = 'superadmin';
+      expect(validateSync(invalid2)).toHaveLength(1);
+
+      const invalid3 = new TestDto();
+      invalid3.role = 123;
+      expect(validateSync(invalid3)).toHaveLength(1);
+    });
+
+    it('should support custom error message', () => {
+      class TestDto {
+        @IsEnum(UserRole, { message: 'Invalid role' })
+        role!: any;
+      }
+
+      const invalid = new TestDto();
+      invalid.role = 'invalid';
+      const errors = validateSync(invalid);
+      expect(errors).toHaveLength(1);
+      expect(errors[0].constraints?.isEnum).toBe('Invalid role');
     });
   });
 });
