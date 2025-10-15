@@ -4,7 +4,7 @@
 
 import type { ValidationError, ValidatorOptions } from '../types';
 import { getClassValidationMetadata } from './metadata';
-import { compileValidator } from './compiler';
+import { compileValidator, compileAsyncValidator } from './compiler';
 
 /**
  * Validate an object asynchronously
@@ -14,7 +14,21 @@ export async function validate(
   object: any,
   options?: ValidatorOptions,
 ): Promise<ValidationError[]> {
-  return validateSync(object, options);
+  // Get validation metadata
+  const metadata = getClassValidationMetadata(object);
+
+  if (!metadata) {
+    // No validation metadata, return empty errors
+    return [];
+  }
+
+  // Compile async validator (or get from cache)
+  const validator = compileAsyncValidator(metadata);
+
+  // Execute async validation
+  const errors = await validator(object, options);
+
+  return errors;
 }
 
 /**
@@ -27,18 +41,18 @@ export function validateSync(
 ): ValidationError[] {
   // Get validation metadata
   const metadata = getClassValidationMetadata(object);
-  
+
   if (!metadata) {
     // No validation metadata, return empty errors
     return [];
   }
-  
+
   // Compile validator (or get from cache)
   const validator = compileValidator(metadata);
-  
+
   // Execute validation
   const errors = validator(object, options);
-  
+
   return errors;
 }
 
@@ -70,7 +84,7 @@ export async function validateOrReject(
   options?: ValidatorOptions,
 ): Promise<void> {
   const errors = await validate(object, options);
-  
+
   if (errors.length > 0) {
     throw new ValidationFailedError(errors);
   }
@@ -84,7 +98,7 @@ export function validateOrRejectSync(
   options?: ValidatorOptions,
 ): void {
   const errors = validateSync(object, options);
-  
+
   if (errors.length > 0) {
     throw new ValidationFailedError(errors);
   }
@@ -97,11 +111,11 @@ export class ValidationFailedError extends Error {
   constructor(public errors: ValidationError[]) {
     super('Validation failed');
     this.name = 'ValidationFailedError';
-    
+
     // Set prototype explicitly for proper instanceof checks
     Object.setPrototypeOf(this, ValidationFailedError.prototype);
   }
-  
+
   /**
    * Get formatted error message
    */
@@ -110,7 +124,7 @@ export class ValidationFailedError extends Error {
       const constraints = Object.values(error.constraints || {});
       return `${error.property}: ${constraints.join(', ')}`;
     });
-    
+
     return `Validation failed:\n${messages.join('\n')}`;
   }
 }
