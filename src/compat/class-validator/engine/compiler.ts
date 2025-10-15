@@ -10,6 +10,7 @@ import type {
   ValidationError,
   ValidatorOptions,
   CompiledValidator,
+  AsyncCompiledValidator,
 } from '../types';
 import { getValidationMetadata, hasValidationMetadata } from './metadata';
 
@@ -17,6 +18,11 @@ import { getValidationMetadata, hasValidationMetadata } from './metadata';
  * Cache for compiled validators
  */
 const compiledValidatorsCache = new Map<any, CompiledValidator>();
+
+/**
+ * Cache for compiled async validators
+ */
+const compiledAsyncValidatorsCache = new Map<any, AsyncCompiledValidator>();
 
 /**
  * Compile validation function for a class
@@ -52,6 +58,41 @@ export function compileValidator(metadata: ClassValidationMetadata): CompiledVal
 }
 
 /**
+ * Compile async validation function for a class
+ */
+export function compileAsyncValidator(metadata: ClassValidationMetadata): AsyncCompiledValidator {
+  // Check cache first
+  if (compiledAsyncValidatorsCache.has(metadata.target)) {
+    return compiledAsyncValidatorsCache.get(metadata.target)!;
+  }
+
+  // Generate async validation code
+  const code = generateAsyncValidationCode(metadata);
+
+  // Create compiled async function with access to helper functions and constraints
+  const compiledFn = new Function(
+    'object',
+    'options',
+    'getValidationMetadata',
+    'hasValidationMetadata',
+    'compileValidator',
+    'compileAsyncValidator',
+    'metadata',
+    code,
+  ) as any;
+
+  // Wrap to provide helper functions
+  const wrappedFn = async (object: any, options?: ValidatorOptions) => {
+    return compiledFn(object, options, getValidationMetadata, hasValidationMetadata, compileValidator, compileAsyncValidator, metadata);
+  };
+
+  // Cache it
+  compiledAsyncValidatorsCache.set(metadata.target, wrappedFn as AsyncCompiledValidator);
+
+  return wrappedFn as AsyncCompiledValidator;
+}
+
+/**
  * Generate validation code for JIT compilation
  */
 function generateValidationCode(metadata: ClassValidationMetadata): string {
@@ -81,6 +122,50 @@ function generateValidationCode(metadata: ClassValidationMetadata): string {
   }
 
   lines.push('return errors;');
+
+  return lines.join('\n');
+}
+
+/**
+ * Generate async validation code for JIT compilation
+ */
+function generateAsyncValidationCode(metadata: ClassValidationMetadata): string {
+  const lines: string[] = [];
+
+  // Wrap everything in an async function
+  lines.push('return (async () => {');
+  lines.push('  const errors = [];');
+  lines.push('  const opts = options || {};');
+  lines.push('  const asyncTasks = [];');
+  lines.push('');
+
+  // Helper function to get nested async validator
+  lines.push('  // Helper to get nested async validator');
+  lines.push('  const getNestedAsyncValidator = (obj) => {');
+  lines.push('    if (!obj || !obj.constructor) return null;');
+  lines.push('    if (!hasValidationMetadata(obj.constructor)) return null;');
+  lines.push('    const metadata = getValidationMetadata(obj.constructor);');
+  lines.push('    if (!metadata || metadata.properties.size === 0) return null;');
+  lines.push('    return compileAsyncValidator(metadata);');
+  lines.push('  };');
+  lines.push('');
+
+  // Generate validation code for each property
+  for (const [propertyKey, propertyMeta] of metadata.properties.entries()) {
+    const propName = String(propertyKey);
+    lines.push(`  // Validate property: ${propName}`);
+    lines.push(generateAsyncPropertyValidation(propName, propertyMeta));
+    lines.push('');
+  }
+
+  // Wait for all async validations to complete
+  lines.push('  // Wait for all async validations');
+  lines.push('  if (asyncTasks.length > 0) {');
+  lines.push('    await Promise.all(asyncTasks);');
+  lines.push('  }');
+  lines.push('');
+  lines.push('  return errors;');
+  lines.push('})();');
 
   return lines.join('\n');
 }
@@ -178,6 +263,117 @@ function generatePropertyValidation(
   lines.push(`}`);
 
   return lines.join('\n');
+}
+
+/**
+ * Generate async validation code for a single property
+ */
+function generateAsyncPropertyValidation(
+  propertyName: string,
+  metadata: PropertyValidationMetadata,
+): string {
+  const lines: string[] = [];
+  const safePropName = JSON.stringify(propertyName);
+  const safeVarName = propertyName.replace(/[^a-zA-Z0-9]/g, '_');
+
+  lines.push(`  {`);
+  lines.push(`    const value = object[${safePropName}];`);
+  lines.push(`    const propertyErrors = {};`);
+  lines.push(`    let nestedErrors = [];`);
+  lines.push(`    const propertyAsyncTasks = [];`);
+
+    // Handle optional properties
+    if (metadata.isOptional) {
+      lines.push(`  if (value === undefined || value === null) {`);
+      lines.push(`    // Skip validation for optional property`);
+      lines.push(`  } else {`);
+    }
+
+    // Generate validation checks for each constraint
+    for (let i = 0; i < metadata.constraints.length; i++) {
+      const constraint = metadata.constraints[i];
+      // Check if constraint should be validated based on groups
+      if (constraint.groups && constraint.groups.length > 0) {
+        // Constraint has groups - only validate if options.groups matches
+        const groupsJson = JSON.stringify(constraint.groups);
+        lines.push(`    // Check validation groups`);
+        lines.push(`    if (opts.groups && opts.groups.length > 0 && opts.groups.some(g => ${groupsJson}.includes(g))) {`);
+        lines.push(generateAsyncConstraintCheck(constraint, i, propertyName, 'value', 'propertyErrors', 'propertyAsyncTasks', '      '));
+        lines.push(`    }`);
+      } else {
+        // No groups specified on constraint - always validate
+        lines.push(generateAsyncConstraintCheck(constraint, i, propertyName, 'value', 'propertyErrors', 'propertyAsyncTasks', '    '));
+      }
+    }
+
+    // Handle nested validation
+    if (metadata.isNested) {
+      lines.push(`  // Nested async validation`);
+      lines.push(`  if (value !== null && value !== undefined) {`);
+
+      // Check if it's an array of nested objects
+      lines.push(`    if (Array.isArray(value)) {`);
+      lines.push(`      // Validate array of nested objects asynchronously`);
+      lines.push(`      const arrayAsyncTask = (async () => {`);
+      lines.push(`        for (let i = 0; i < value.length; i++) {`);
+      lines.push(`          const nestedValue = value[i];`);
+      lines.push(`          if (nestedValue && typeof nestedValue === 'object') {`);
+      lines.push(`            const nestedValidator = getNestedAsyncValidator(nestedValue);`);
+      lines.push(`            if (nestedValidator) {`);
+      lines.push(`              const nestedValidationErrors = await nestedValidator(nestedValue, opts);`);
+      lines.push(`              if (nestedValidationErrors.length > 0) {`);
+      lines.push(`                nestedErrors.push(...nestedValidationErrors.map(err => ({`);
+      lines.push(`                  ...err,`);
+      lines.push(`                  property: \`[\${i}].\${err.property}\``);
+      lines.push(`                })));`);
+      lines.push(`              }`);
+      lines.push(`            }`);
+      lines.push(`          }`);
+      lines.push(`        }`);
+      lines.push(`      })();`);
+      lines.push(`      propertyAsyncTasks.push(arrayAsyncTask);`);
+      lines.push(`    } else if (typeof value === 'object') {`);
+      lines.push(`      // Validate single nested object asynchronously`);
+      lines.push(`      const nestedAsyncTask = (async () => {`);
+      lines.push(`        const nestedValidator = getNestedAsyncValidator(value);`);
+      lines.push(`        if (nestedValidator) {`);
+      lines.push(`          nestedErrors = await nestedValidator(value, opts);`);
+      lines.push(`        }`);
+      lines.push(`      })();`);
+      lines.push(`      propertyAsyncTasks.push(nestedAsyncTask);`);
+      lines.push(`    }`);
+      lines.push(`  }`);
+    }
+
+    if (metadata.isOptional) {
+      lines.push(`  }`);
+    }
+
+    // Wait for property async tasks and add errors
+    lines.push(`  // Wait for property async validations`);
+    lines.push(`  const propertyTask = (async () => {`);
+    lines.push(`    if (propertyAsyncTasks.length > 0) {`);
+    lines.push(`      await Promise.all(propertyAsyncTasks);`);
+    lines.push(`    }`);
+    lines.push(`    if (Object.keys(propertyErrors).length > 0 || nestedErrors.length > 0) {`);
+    lines.push(`      const error = {`);
+    lines.push(`        property: ${safePropName},`);
+    lines.push(`        value: value,`);
+    lines.push(`        target: object`);
+    lines.push(`      };`);
+    lines.push(`      if (Object.keys(propertyErrors).length > 0) {`);
+    lines.push(`        error.constraints = propertyErrors;`);
+    lines.push(`      }`);
+    lines.push(`      if (nestedErrors.length > 0) {`);
+    lines.push(`        error.children = nestedErrors;`);
+    lines.push(`      }`);
+    lines.push(`      errors.push(error);`);
+    lines.push(`    }`);
+    lines.push(`  })();`);
+    lines.push(`  asyncTasks.push(propertyTask);`);
+    lines.push(`}`);
+
+    return lines.join('\n');
 }
 
 /**
@@ -641,6 +837,45 @@ function generateConstraintCheck(
 }
 
 /**
+ * Generate async validation check code for a constraint
+ */
+let asyncTaskCounter = 0;
+function generateAsyncConstraintCheck(
+  constraint: ValidationConstraint,
+  constraintIndex: number,
+  propertyName: string,
+  valueName: string,
+  errorsName: string,
+  asyncTasksName: string,
+  indent: string = '  ',
+): string {
+  const lines: string[] = [];
+  const safePropName = JSON.stringify(propertyName);
+
+  // For custom validators with async support
+  if (constraint.type === 'custom' && constraint.validator) {
+    const taskVarName = `customTask_${asyncTaskCounter++}`;
+    const errorMsg = JSON.stringify(getErrorMessage(constraint, 'validation failed'));
+    lines.push(`${indent}// Custom async validator`);
+    lines.push(`${indent}const ${taskVarName} = (async () => {`);
+    lines.push(`${indent}  const constraint = metadata.properties.get(${safePropName}).constraints[${constraintIndex}];`);
+    lines.push(`${indent}  if (constraint.validator) {`);
+    lines.push(`${indent}    const result = await constraint.validator(${valueName});`);
+    lines.push(`${indent}    if (!result) {`);
+    lines.push(`${indent}      ${errorsName}.${constraint.type} = ${errorMsg};`);
+    lines.push(`${indent}    }`);
+    lines.push(`${indent}  }`);
+    lines.push(`${indent}})();`);
+    lines.push(`${indent}${asyncTasksName}.push(${taskVarName});`);
+  } else {
+    // For built-in validators, use sync validation (they don't support async)
+    lines.push(generateConstraintCheck(constraint, valueName, errorsName, indent));
+  }
+
+  return lines.join('\n');
+}
+
+/**
  * Get error message from constraint
  */
 function getErrorMessage(constraint: ValidationConstraint, defaultMessage: string): string {
@@ -655,12 +890,13 @@ function getErrorMessage(constraint: ValidationConstraint, defaultMessage: strin
  */
 export function clearValidatorCache(): void {
   compiledValidatorsCache.clear();
+  compiledAsyncValidatorsCache.clear();
 }
 
 /**
  * Get cache size (for debugging)
  */
 export function getValidatorCacheSize(): number {
-  return compiledValidatorsCache.size;
+  return compiledValidatorsCache.size + compiledAsyncValidatorsCache.size;
 }
 
