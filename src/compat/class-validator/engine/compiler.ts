@@ -192,6 +192,15 @@ function generatePropertyValidation(
   lines.push(`  const propertyErrors = {};`);
   lines.push(`  let nestedErrors = [];`);
 
+  // Handle conditional validation (ValidateIf)
+  if (metadata.isConditional && metadata.condition) {
+    lines.push(`  // Conditional validation (ValidateIf)`);
+    lines.push(`  const condition = metadata.properties.get(${safePropName}).condition;`);
+    lines.push(`  if (!condition || !condition(object)) {`);
+    lines.push(`    // Skip validation - condition not met`);
+    lines.push(`  } else {`);
+  }
+
   // Handle optional properties
   if (metadata.isOptional) {
     lines.push(`  if (value === undefined || value === null) {`);
@@ -253,6 +262,11 @@ function generatePropertyValidation(
     lines.push(`  }`);
   }
 
+  // Close conditional validation block
+  if (metadata.isConditional && metadata.condition) {
+    lines.push(`  }`);
+  }
+
   // Add error if any constraints failed or nested errors exist
   lines.push(`  if (Object.keys(propertyErrors).length > 0 || nestedErrors.length > 0) {`);
   lines.push(`    const error = {`);
@@ -288,6 +302,15 @@ function generateAsyncPropertyValidation(
   lines.push(`    const propertyErrors = {};`);
   lines.push(`    let nestedErrors = [];`);
   lines.push(`    const propertyAsyncTasks = [];`);
+
+    // Handle conditional validation (ValidateIf)
+    if (metadata.isConditional && metadata.condition) {
+      lines.push(`  // Conditional validation (ValidateIf)`);
+      lines.push(`  const condition = metadata.properties.get(${safePropName}).condition;`);
+      lines.push(`  if (!condition || !condition(object)) {`);
+      lines.push(`    // Skip validation - condition not met`);
+      lines.push(`  } else {`);
+    }
 
     // Handle optional properties
     if (metadata.isOptional) {
@@ -353,6 +376,11 @@ function generateAsyncPropertyValidation(
     }
 
     if (metadata.isOptional) {
+      lines.push(`  }`);
+    }
+
+    // Close conditional validation block
+    if (metadata.isConditional && metadata.condition) {
       lines.push(`  }`);
     }
 
@@ -899,6 +927,39 @@ function generateConstraintCheck(
         lines.push(`${indent}  }`);
         lines.push(`${indent}}`);
       }
+      break;
+
+    // Type checker - IsInstance
+    case 'isInstance':
+      if (constraint.value) {
+        lines.push(`${indent}// IsInstance validator`);
+        lines.push(`${indent}{`);
+        lines.push(`${indent}  const constraint = metadata.properties.get(${safePropName}).constraints[${constraintIndex}];`);
+        lines.push(`${indent}  const targetType = constraint.value;`);
+        lines.push(`${indent}  if (!(${valueName} instanceof targetType)) {`);
+        lines.push(`${indent}    ${errorsName}.isInstance = ${JSON.stringify(getErrorMessage(constraint, 'must be an instance of the specified class'))};`);
+        lines.push(`${indent}  }`);
+        lines.push(`${indent}}`);
+      }
+      break;
+
+    // Conditional validation - ValidateIf
+    case 'validateIf':
+      // ValidateIf is handled at the property level, not as a constraint check
+      // The condition is evaluated before other constraints are checked
+      // This is a no-op in constraint checking
+      break;
+
+    // Allow decorator - no validation needed
+    case 'allow':
+      // Allow decorator marks property as allowed without validation
+      // This is a no-op in constraint checking
+      break;
+
+    // ValidatePromise - handled in async validation
+    case 'validatePromise':
+      // ValidatePromise is handled in async validation flow
+      // This is a no-op in sync constraint checking
       break;
 
     default:

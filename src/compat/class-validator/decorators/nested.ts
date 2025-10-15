@@ -3,7 +3,7 @@
  * Using TC39 Stage 3 decorators
  */
 
-import { addValidationConstraint, markPropertyAsNested } from '../engine/metadata';
+import { addValidationConstraint, markPropertyAsNested, markPropertyAsConditional } from '../engine/metadata';
 import type { ValidationDecoratorOptions } from '../types';
 
 /**
@@ -66,6 +66,10 @@ export function ValidateIf(
     const propertyKey = context.name;
 
     context.addInitializer(function (this: any) {
+      // Mark property as conditional with the condition function
+      markPropertyAsConditional(this.constructor, propertyKey, condition);
+
+      // Also add as a constraint for metadata completeness
       addValidationConstraint(this.constructor, propertyKey, {
         type: 'validateIf',
         value: condition,
