@@ -203,9 +203,19 @@ function generatePropertyValidation(
 
   // Handle optional properties
   if (metadata.isOptional) {
-    lines.push(`  if (value === undefined || value === null) {`);
-    lines.push(`    // Skip validation for optional property`);
-    lines.push(`  } else {`);
+    // Check if optional has groups
+    if (metadata.optionalGroups && metadata.optionalGroups.length > 0) {
+      const groupsJson = JSON.stringify(metadata.optionalGroups);
+      lines.push(`  // Optional with groups - only skip if groups match`);
+      lines.push(`  if ((value === undefined || value === null) && opts.groups && opts.groups.length > 0 && opts.groups.some(g => ${groupsJson}.includes(g))) {`);
+      lines.push(`    // Skip validation for optional property in matching group`);
+      lines.push(`  } else {`);
+    } else {
+      // No groups - always optional
+      lines.push(`  if (value === undefined || value === null) {`);
+      lines.push(`    // Skip validation for optional property`);
+      lines.push(`  } else {`);
+    }
   }
 
   // Generate validation checks for each constraint
@@ -314,9 +324,19 @@ function generateAsyncPropertyValidation(
 
     // Handle optional properties
     if (metadata.isOptional) {
-      lines.push(`  if (value === undefined || value === null) {`);
-      lines.push(`    // Skip validation for optional property`);
-      lines.push(`  } else {`);
+      // Check if optional has groups
+      if (metadata.optionalGroups && metadata.optionalGroups.length > 0) {
+        const groupsJson = JSON.stringify(metadata.optionalGroups);
+        lines.push(`  // Optional with groups - only skip if groups match`);
+        lines.push(`  if ((value === undefined || value === null) && opts.groups && opts.groups.length > 0 && opts.groups.some(g => ${groupsJson}.includes(g))) {`);
+        lines.push(`    // Skip validation for optional property in matching group`);
+        lines.push(`  } else {`);
+      } else {
+        // No groups - always optional
+        lines.push(`  if (value === undefined || value === null) {`);
+        lines.push(`    // Skip validation for optional property`);
+        lines.push(`  } else {`);
+      }
     }
 
     // Generate validation checks for each constraint

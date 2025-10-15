@@ -208,6 +208,16 @@ export interface PropertyValidationMetadata {
   isOptional?: boolean;
 
   /**
+   * Optional groups
+   */
+  optionalGroups?: string[];
+
+  /**
+   * Optional always
+   */
+  optionalAlways?: boolean;
+
+  /**
    * Is conditional
    */
   isConditional?: boolean;

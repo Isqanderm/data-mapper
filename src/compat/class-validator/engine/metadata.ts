@@ -89,9 +89,13 @@ export function addValidationConstraint(
 export function markPropertyAsOptional(
   target: any,
   propertyKey: string | symbol,
+  groups?: string[],
+  always?: boolean,
 ): void {
   const propertyMetadata = getPropertyMetadata(target, propertyKey);
   propertyMetadata.isOptional = true;
+  propertyMetadata.optionalGroups = groups;
+  propertyMetadata.optionalAlways = always;
 }
 
 /**

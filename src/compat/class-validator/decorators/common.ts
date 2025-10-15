@@ -9,6 +9,8 @@ import type { ValidationDecoratorOptions } from '../types';
 /**
  * Marks property as optional - validation will be skipped if value is undefined or null
  *
+ * @param options - Validation options (groups, always)
+ *
  * @example
  * ```typescript
  * class UserDto {
@@ -18,12 +20,12 @@ import type { ValidationDecoratorOptions } from '../types';
  * }
  * ```
  */
-export function IsOptional() {
+export function IsOptional(options?: Pick<ValidationDecoratorOptions, 'groups' | 'always'>) {
   return function (target: undefined, context: ClassFieldDecoratorContext): any {
     const propertyKey = context.name;
 
     context.addInitializer(function (this: any) {
-      markPropertyAsOptional(this.constructor, propertyKey);
+      markPropertyAsOptional(this.constructor, propertyKey, options?.groups, options?.always);
     });
   };
 }
