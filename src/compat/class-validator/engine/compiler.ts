@@ -468,6 +468,94 @@ function generateConstraintCheck(
       }
       break;
 
+    // Common validators - Comparison
+    case 'equals':
+      lines.push(`    if (${valueName} !== ${JSON.stringify(constraint.value)}) {`);
+      lines.push(`      ${errorsName}.equals = ${JSON.stringify(getErrorMessage(constraint, `must be equal to ${constraint.value}`))};`);
+      lines.push(`    }`);
+      break;
+
+    case 'notEquals':
+      lines.push(`    if (${valueName} === ${JSON.stringify(constraint.value)}) {`);
+      lines.push(`      ${errorsName}.notEquals = ${JSON.stringify(getErrorMessage(constraint, `should not be equal to ${constraint.value}`))};`);
+      lines.push(`    }`);
+      break;
+
+    case 'isIn':
+      if (Array.isArray(constraint.value)) {
+        lines.push(`    const allowedValues = ${JSON.stringify(constraint.value)};`);
+        lines.push(`    if (!allowedValues.includes(${valueName})) {`);
+        lines.push(`      ${errorsName}.isIn = ${JSON.stringify(getErrorMessage(constraint, `must be one of the following values: ${constraint.value.join(', ')}`))};`);
+        lines.push(`    }`);
+      }
+      break;
+
+    case 'isNotIn':
+      if (Array.isArray(constraint.value)) {
+        lines.push(`    const disallowedValues = ${JSON.stringify(constraint.value)};`);
+        lines.push(`    if (disallowedValues.includes(${valueName})) {`);
+        lines.push(`      ${errorsName}.isNotIn = ${JSON.stringify(getErrorMessage(constraint, `should not be one of the following values: ${constraint.value.join(', ')}`))};`);
+        lines.push(`    }`);
+      }
+      break;
+
+    case 'isEmpty':
+      lines.push(`    if (${valueName} !== null && ${valueName} !== undefined) {`);
+      lines.push(`      if (typeof ${valueName} === 'string' && ${valueName}.length > 0) {`);
+      lines.push(`        ${errorsName}.isEmpty = ${JSON.stringify(getErrorMessage(constraint, 'must be empty'))};`);
+      lines.push(`      } else if (Array.isArray(${valueName}) && ${valueName}.length > 0) {`);
+      lines.push(`        ${errorsName}.isEmpty = ${JSON.stringify(getErrorMessage(constraint, 'must be empty'))};`);
+      lines.push(`      } else if (typeof ${valueName} === 'object' && Object.keys(${valueName}).length > 0) {`);
+      lines.push(`        ${errorsName}.isEmpty = ${JSON.stringify(getErrorMessage(constraint, 'must be empty'))};`);
+      lines.push(`      }`);
+      lines.push(`    }`);
+      break;
+
+    // Object validators
+    case 'isNotEmptyObject':
+      lines.push(`    if (typeof ${valueName} === 'object' && ${valueName} !== null && !Array.isArray(${valueName})) {`);
+      lines.push(`      if (Object.keys(${valueName}).length === 0) {`);
+      lines.push(`        ${errorsName}.isNotEmptyObject = ${JSON.stringify(getErrorMessage(constraint, 'must be a non-empty object'))};`);
+      lines.push(`      }`);
+      lines.push(`    }`);
+      break;
+
+    // Geographic validators
+    case 'isLatLong':
+      lines.push(`    if (typeof ${valueName} === 'string') {`);
+      lines.push(`      const latLongRegex = /^[-+]?([1-8]?\\d(\\.\\d+)?|90(\\.0+)?),\\s*[-+]?(180(\\.0+)?|((1[0-7]\\d)|([1-9]?\\d))(\\.\\d+)?)$/;`);
+      lines.push(`      if (!latLongRegex.test(${valueName})) {`);
+      lines.push(`        ${errorsName}.isLatLong = ${JSON.stringify(getErrorMessage(constraint, 'must be a latitude,longitude string'))};`);
+      lines.push(`      }`);
+      lines.push(`    }`);
+      break;
+
+    case 'isLatitude':
+      lines.push(`    if (typeof ${valueName} === 'number') {`);
+      lines.push(`      if (${valueName} < -90 || ${valueName} > 90) {`);
+      lines.push(`        ${errorsName}.isLatitude = ${JSON.stringify(getErrorMessage(constraint, 'latitude must be a number between -90 and 90'))};`);
+      lines.push(`      }`);
+      lines.push(`    } else if (typeof ${valueName} === 'string') {`);
+      lines.push(`      const lat = parseFloat(${valueName});`);
+      lines.push(`      if (isNaN(lat) || lat < -90 || lat > 90) {`);
+      lines.push(`        ${errorsName}.isLatitude = ${JSON.stringify(getErrorMessage(constraint, 'latitude must be a number between -90 and 90'))};`);
+      lines.push(`      }`);
+      lines.push(`    }`);
+      break;
+
+    case 'isLongitude':
+      lines.push(`    if (typeof ${valueName} === 'number') {`);
+      lines.push(`      if (${valueName} < -180 || ${valueName} > 180) {`);
+      lines.push(`        ${errorsName}.isLongitude = ${JSON.stringify(getErrorMessage(constraint, 'longitude must be a number between -180 and 180'))};`);
+      lines.push(`      }`);
+      lines.push(`    } else if (typeof ${valueName} === 'string') {`);
+      lines.push(`      const lon = parseFloat(${valueName});`);
+      lines.push(`      if (isNaN(lon) || lon < -180 || lon > 180) {`);
+      lines.push(`        ${errorsName}.isLongitude = ${JSON.stringify(getErrorMessage(constraint, 'longitude must be a number between -180 and 180'))};`);
+      lines.push(`      }`);
+      lines.push(`    }`);
+      break;
+
     default:
       // For unknown constraint types, skip (will be handled by runtime validators)
       break;
