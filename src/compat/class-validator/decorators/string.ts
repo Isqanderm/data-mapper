@@ -639,3 +639,308 @@ export function Matches(
   };
 }
 
+// ============================================================================
+// High Priority Validators
+// ============================================================================
+
+/**
+ * Checks if string is a fully qualified domain name (e.g., domain.com)
+ *
+ * @param options - Validation options
+ *
+ * @example
+ * ```typescript
+ * class WebsiteDto {
+ *   @IsFQDN()
+ *   domain: string; // e.g., "example.com"
+ * }
+ * ```
+ */
+export function IsFQDN(options?: ValidationDecoratorOptions) {
+  return function (target: undefined, context: ClassFieldDecoratorContext): any {
+    const propertyKey = context.name;
+
+    context.addInitializer(function (this: any) {
+      addValidationConstraint(this.constructor, propertyKey, {
+        type: 'isFQDN',
+        message: options?.message,
+        groups: options?.groups,
+        always: options?.always,
+      });
+    });
+  };
+}
+
+/**
+ * Checks if string is a valid ISO 8601 date
+ *
+ * @param options - Validation options
+ *
+ * @example
+ * ```typescript
+ * class EventDto {
+ *   @IsISO8601()
+ *   startDate: string; // e.g., "2024-01-15T10:30:00Z"
+ * }
+ * ```
+ */
+export function IsISO8601(options?: ValidationDecoratorOptions) {
+  return function (target: undefined, context: ClassFieldDecoratorContext): any {
+    const propertyKey = context.name;
+
+    context.addInitializer(function (this: any) {
+      addValidationConstraint(this.constructor, propertyKey, {
+        type: 'isISO8601',
+        message: options?.message,
+        groups: options?.groups,
+        always: options?.always,
+      });
+    });
+  };
+}
+
+/**
+ * Alias for @IsISO8601()
+ *
+ * @param options - Validation options
+ *
+ * @example
+ * ```typescript
+ * class EventDto {
+ *   @IsDateString()
+ *   createdAt: string;
+ * }
+ * ```
+ */
+export function IsDateString(options?: ValidationDecoratorOptions) {
+  return IsISO8601(options);
+}
+
+/**
+ * Checks if string is a valid mobile phone number
+ *
+ * @param locale - Optional locale (e.g., 'en-US', 'ru-RU')
+ * @param options - Validation options
+ *
+ * @example
+ * ```typescript
+ * class UserDto {
+ *   @IsMobilePhone('en-US')
+ *   phone: string; // e.g., "+1-555-123-4567"
+ * }
+ * ```
+ */
+export function IsMobilePhone(locale?: string, options?: ValidationDecoratorOptions) {
+  return function (target: undefined, context: ClassFieldDecoratorContext): any {
+    const propertyKey = context.name;
+
+    context.addInitializer(function (this: any) {
+      addValidationConstraint(this.constructor, propertyKey, {
+        type: 'isMobilePhone',
+        value: locale,
+        message: options?.message,
+        groups: options?.groups,
+        always: options?.always,
+      });
+    });
+  };
+}
+
+/**
+ * Checks if string is a valid postal code
+ *
+ * @param locale - Optional locale (e.g., 'US', 'RU', 'GB')
+ * @param options - Validation options
+ *
+ * @example
+ * ```typescript
+ * class AddressDto {
+ *   @IsPostalCode('US')
+ *   zipCode: string; // e.g., "12345" or "12345-6789"
+ * }
+ * ```
+ */
+export function IsPostalCode(locale?: string, options?: ValidationDecoratorOptions) {
+  return function (target: undefined, context: ClassFieldDecoratorContext): any {
+    const propertyKey = context.name;
+
+    context.addInitializer(function (this: any) {
+      addValidationConstraint(this.constructor, propertyKey, {
+        type: 'isPostalCode',
+        value: locale,
+        message: options?.message,
+        groups: options?.groups,
+        always: options?.always,
+      });
+    });
+  };
+}
+
+/**
+ * Checks if string is a valid MongoDB ObjectId
+ *
+ * @param options - Validation options
+ *
+ * @example
+ * ```typescript
+ * class EntityDto {
+ *   @IsMongoId()
+ *   id: string; // e.g., "507f1f77bcf86cd799439011"
+ * }
+ * ```
+ */
+export function IsMongoId(options?: ValidationDecoratorOptions) {
+  return function (target: undefined, context: ClassFieldDecoratorContext): any {
+    const propertyKey = context.name;
+
+    context.addInitializer(function (this: any) {
+      addValidationConstraint(this.constructor, propertyKey, {
+        type: 'isMongoId',
+        message: options?.message,
+        groups: options?.groups,
+        always: options?.always,
+      });
+    });
+  };
+}
+
+/**
+ * Checks if string is a valid JWT token
+ *
+ * @param options - Validation options
+ *
+ * @example
+ * ```typescript
+ * class AuthDto {
+ *   @IsJWT()
+ *   token: string;
+ * }
+ * ```
+ */
+export function IsJWT(options?: ValidationDecoratorOptions) {
+  return function (target: undefined, context: ClassFieldDecoratorContext): any {
+    const propertyKey = context.name;
+
+    context.addInitializer(function (this: any) {
+      addValidationConstraint(this.constructor, propertyKey, {
+        type: 'isJWT',
+        message: options?.message,
+        groups: options?.groups,
+        always: options?.always,
+      });
+    });
+  };
+}
+
+/**
+ * Checks if string is a strong password
+ *
+ * @param options - Validation options
+ *
+ * @example
+ * ```typescript
+ * class UserDto {
+ *   @IsStrongPassword()
+ *   password: string; // Must have uppercase, lowercase, number, and special char
+ * }
+ * ```
+ */
+export function IsStrongPassword(options?: ValidationDecoratorOptions) {
+  return function (target: undefined, context: ClassFieldDecoratorContext): any {
+    const propertyKey = context.name;
+
+    context.addInitializer(function (this: any) {
+      addValidationConstraint(this.constructor, propertyKey, {
+        type: 'isStrongPassword',
+        message: options?.message,
+        groups: options?.groups,
+        always: options?.always,
+      });
+    });
+  };
+}
+
+/**
+ * Checks if string is a valid port number
+ *
+ * @param options - Validation options
+ *
+ * @example
+ * ```typescript
+ * class ServerDto {
+ *   @IsPort()
+ *   port: string; // e.g., "8080", "443"
+ * }
+ * ```
+ */
+export function IsPort(options?: ValidationDecoratorOptions) {
+  return function (target: undefined, context: ClassFieldDecoratorContext): any {
+    const propertyKey = context.name;
+
+    context.addInitializer(function (this: any) {
+      addValidationConstraint(this.constructor, propertyKey, {
+        type: 'isPort',
+        message: options?.message,
+        groups: options?.groups,
+        always: options?.always,
+      });
+    });
+  };
+}
+
+/**
+ * Checks if string is a valid MAC address
+ *
+ * @param options - Validation options
+ *
+ * @example
+ * ```typescript
+ * class DeviceDto {
+ *   @IsMACAddress()
+ *   macAddress: string; // e.g., "00:1B:44:11:3A:B7"
+ * }
+ * ```
+ */
+export function IsMACAddress(options?: ValidationDecoratorOptions) {
+  return function (target: undefined, context: ClassFieldDecoratorContext): any {
+    const propertyKey = context.name;
+
+    context.addInitializer(function (this: any) {
+      addValidationConstraint(this.constructor, propertyKey, {
+        type: 'isMACAddress',
+        message: options?.message,
+        groups: options?.groups,
+        always: options?.always,
+      });
+    });
+  };
+}
+
+/**
+ * Checks if string is base64 encoded
+ *
+ * @param options - Validation options
+ *
+ * @example
+ * ```typescript
+ * class FileDto {
+ *   @IsBase64()
+ *   content: string;
+ * }
+ * ```
+ */
+export function IsBase64(options?: ValidationDecoratorOptions) {
+  return function (target: undefined, context: ClassFieldDecoratorContext): any {
+    const propertyKey = context.name;
+
+    context.addInitializer(function (this: any) {
+      addValidationConstraint(this.constructor, propertyKey, {
+        type: 'isBase64',
+        message: options?.message,
+        groups: options?.groups,
+        always: options?.always,
+      });
+    });
+  };
+}
+

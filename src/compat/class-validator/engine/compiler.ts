@@ -766,6 +766,114 @@ function generateConstraintCheck(
       }
       break;
 
+    // High Priority Validators
+    case 'isFQDN':
+      lines.push(`${indent}  if (typeof ${valueName} === 'string') {`);
+      lines.push(`${indent}    const fqdnRegex = /^([a-zA-Z0-9-_]+\\.)*[a-zA-Z0-9][a-zA-Z0-9-_]+\\.[a-zA-Z]{2,11}$/;`);
+      lines.push(`${indent}    if (!fqdnRegex.test(${valueName})) {`);
+      lines.push(`${indent}      ${errorsName}.isFQDN = ${JSON.stringify(getErrorMessage(constraint, 'must be a valid domain name'))};`);
+      lines.push(`${indent}    }`);
+      lines.push(`    }`);
+      break;
+
+    case 'isISO8601':
+      lines.push(`${indent}  if (typeof ${valueName} === 'string') {`);
+      lines.push(`${indent}    const iso8601Regex = /^\\d{4}-\\d{2}-\\d{2}(T\\d{2}:\\d{2}:\\d{2}(\\.\\d{1,3})?(Z|[+-]\\d{2}:\\d{2})?)?$/;`);
+      lines.push(`${indent}    if (!iso8601Regex.test(${valueName})) {`);
+      lines.push(`${indent}      ${errorsName}.isISO8601 = ${JSON.stringify(getErrorMessage(constraint, 'must be a valid ISO 8601 date string'))};`);
+      lines.push(`${indent}    }`);
+      lines.push(`    }`);
+      break;
+
+    case 'isMobilePhone':
+      lines.push(`${indent}  if (typeof ${valueName} === 'string') {`);
+      lines.push(`${indent}    const phoneRegex = /^[+]?[(]?[0-9]{1,4}[)]?[-\\s.()]?[0-9]{1,4}[-\\s.()]?[0-9]{1,4}[-\\s.()]?[0-9]{1,9}$/;`);
+      lines.push(`${indent}    if (!phoneRegex.test(${valueName})) {`);
+      lines.push(`${indent}      ${errorsName}.isMobilePhone = ${JSON.stringify(getErrorMessage(constraint, 'must be a valid phone number'))};`);
+      lines.push(`${indent}    }`);
+      lines.push(`    }`);
+      break;
+
+    case 'isPostalCode':
+      lines.push(`${indent}  if (typeof ${valueName} === 'string') {`);
+      if (constraint.value === 'US') {
+        lines.push(`${indent}    const postalRegex = /^\\d{5}(-\\d{4})?$/;`);
+      } else if (constraint.value === 'RU') {
+        lines.push(`${indent}    const postalRegex = /^\\d{6}$/;`);
+      } else if (constraint.value === 'GB') {
+        lines.push(`${indent}    const postalRegex = /^[A-Z]{1,2}\\d{1,2}[A-Z]?\\s?\\d[A-Z]{2}$/i;`);
+      } else {
+        lines.push(`${indent}    const postalRegex = /^[A-Z0-9]{3,10}$/i;`);
+      }
+      lines.push(`${indent}    if (!postalRegex.test(${valueName})) {`);
+      lines.push(`${indent}      ${errorsName}.isPostalCode = ${JSON.stringify(getErrorMessage(constraint, 'must be a valid postal code'))};`);
+      lines.push(`${indent}    }`);
+      lines.push(`    }`);
+      break;
+
+    case 'isMongoId':
+      lines.push(`${indent}  if (typeof ${valueName} === 'string') {`);
+      lines.push(`${indent}    const mongoIdRegex = /^[0-9a-fA-F]{24}$/;`);
+      lines.push(`${indent}    if (!mongoIdRegex.test(${valueName})) {`);
+      lines.push(`${indent}      ${errorsName}.isMongoId = ${JSON.stringify(getErrorMessage(constraint, 'must be a mongodb id'))};`);
+      lines.push(`${indent}    }`);
+      lines.push(`    }`);
+      break;
+
+    case 'isJWT':
+      lines.push(`${indent}  if (typeof ${valueName} === 'string') {`);
+      lines.push(`${indent}    const parts = ${valueName}.split('.');`);
+      lines.push(`${indent}    if (parts.length !== 3 || !parts[0] || !parts[1]) {`);
+      lines.push(`${indent}      ${errorsName}.isJWT = ${JSON.stringify(getErrorMessage(constraint, 'must be a jwt string'))};`);
+      lines.push(`${indent}    } else {`);
+      lines.push(`${indent}      const jwtRegex = /^[A-Za-z0-9-_]+$/;`);
+      lines.push(`${indent}      if (!jwtRegex.test(parts[0]) || !jwtRegex.test(parts[1]) || (parts[2] && !jwtRegex.test(parts[2]))) {`);
+      lines.push(`${indent}        ${errorsName}.isJWT = ${JSON.stringify(getErrorMessage(constraint, 'must be a jwt string'))};`);
+      lines.push(`${indent}      }`);
+      lines.push(`${indent}    }`);
+      lines.push(`    }`);
+      break;
+
+    case 'isStrongPassword':
+      lines.push(`${indent}  if (typeof ${valueName} === 'string') {`);
+      lines.push(`${indent}    const hasLower = /[a-z]/.test(${valueName});`);
+      lines.push(`${indent}    const hasUpper = /[A-Z]/.test(${valueName});`);
+      lines.push(`${indent}    const hasNumber = /[0-9]/.test(${valueName});`);
+      lines.push(`${indent}    const hasSpecial = /[!@#$%^&*(),.?":{}|<>]/.test(${valueName});`);
+      lines.push(`${indent}    const isLongEnough = ${valueName}.length >= 8;`);
+      lines.push(`${indent}    if (!hasLower || !hasUpper || !hasNumber || !hasSpecial || !isLongEnough) {`);
+      lines.push(`${indent}      ${errorsName}.isStrongPassword = ${JSON.stringify(getErrorMessage(constraint, 'must be a strong password (min 8 chars, uppercase, lowercase, number, special char)'))};`);
+      lines.push(`${indent}    }`);
+      lines.push(`    }`);
+      break;
+
+    case 'isPort':
+      lines.push(`${indent}  if (typeof ${valueName} === 'string') {`);
+      lines.push(`${indent}    const port = parseInt(${valueName}, 10);`);
+      lines.push(`${indent}    if (isNaN(port) || port < 0 || port > 65535) {`);
+      lines.push(`${indent}      ${errorsName}.isPort = ${JSON.stringify(getErrorMessage(constraint, 'must be a valid port number'))};`);
+      lines.push(`${indent}    }`);
+      lines.push(`    }`);
+      break;
+
+    case 'isMACAddress':
+      lines.push(`${indent}  if (typeof ${valueName} === 'string') {`);
+      lines.push(`${indent}    const macRegex = /^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$/;`);
+      lines.push(`${indent}    if (!macRegex.test(${valueName})) {`);
+      lines.push(`${indent}      ${errorsName}.isMACAddress = ${JSON.stringify(getErrorMessage(constraint, 'must be a MAC Address'))};`);
+      lines.push(`${indent}    }`);
+      lines.push(`    }`);
+      break;
+
+    case 'isBase64':
+      lines.push(`${indent}  if (typeof ${valueName} === 'string') {`);
+      lines.push(`${indent}    const base64Regex = /^(?:[A-Za-z0-9+\\/]{4})*(?:[A-Za-z0-9+\\/]{2}==|[A-Za-z0-9+\\/]{3}=|[A-Za-z0-9+\\/]{2,3})?$/;`);
+      lines.push(`${indent}    if (!base64Regex.test(${valueName})) {`);
+      lines.push(`${indent}      ${errorsName}.isBase64 = ${JSON.stringify(getErrorMessage(constraint, 'must be base64 encoded'))};`);
+      lines.push(`${indent}    }`);
+      lines.push(`    }`);
+      break;
+
     // Number validators
     case 'isDivisibleBy':
       lines.push(`${indent}  if (typeof ${valueName} === 'number' && ${valueName} % ${constraint.value} !== 0) {`);

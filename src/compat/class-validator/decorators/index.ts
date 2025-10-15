@@ -41,6 +41,18 @@ export {
   IsLowercase,
   IsUppercase,
   Matches,
+  // High Priority Validators
+  IsFQDN,
+  IsISO8601,
+  IsDateString,
+  IsMobilePhone,
+  IsPostalCode,
+  IsMongoId,
+  IsJWT,
+  IsStrongPassword,
+  IsPort,
+  IsMACAddress,
+  IsBase64,
 } from './string';
 
 // Number decorators
