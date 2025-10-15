@@ -13,6 +13,12 @@ import type {
   AsyncCompiledValidator,
 } from '../types';
 import { getValidationMetadata, hasValidationMetadata } from './metadata';
+import {
+  getValidatorInstance,
+  clearValidatorInstanceCache,
+  isAsyncValidator,
+  getValidatorName,
+} from './validator-registry';
 
 /**
  * Cache for compiled validators
@@ -43,12 +49,14 @@ export function compileValidator(metadata: ClassValidationMetadata): CompiledVal
     'getValidationMetadata',
     'hasValidationMetadata',
     'compileValidator',
+    'getValidatorInstance',
+    'metadata',
     code,
   ) as any;
 
   // Wrap to provide helper functions
   const wrappedFn = (object: any, options?: ValidatorOptions) => {
-    return compiledFn(object, options, getValidationMetadata, hasValidationMetadata, compileValidator);
+    return compiledFn(object, options, getValidationMetadata, hasValidationMetadata, compileValidator, getValidatorInstance, metadata);
   };
 
   // Cache it
@@ -77,13 +85,14 @@ export function compileAsyncValidator(metadata: ClassValidationMetadata): AsyncC
     'hasValidationMetadata',
     'compileValidator',
     'compileAsyncValidator',
+    'getValidatorInstance',
     'metadata',
     code,
   ) as any;
 
   // Wrap to provide helper functions
   const wrappedFn = async (object: any, options?: ValidatorOptions) => {
-    return compiledFn(object, options, getValidationMetadata, hasValidationMetadata, compileValidator, compileAsyncValidator, metadata);
+    return compiledFn(object, options, getValidationMetadata, hasValidationMetadata, compileValidator, compileAsyncValidator, getValidatorInstance, metadata);
   };
 
   // Cache it
@@ -193,18 +202,19 @@ function generatePropertyValidation(
   }
 
   // Generate validation checks for each constraint
-  for (const constraint of metadata.constraints) {
+  for (let i = 0; i < metadata.constraints.length; i++) {
+    const constraint = metadata.constraints[i];
     // Check if constraint should be validated based on groups
     if (constraint.groups && constraint.groups.length > 0) {
       // Constraint has groups - only validate if options.groups matches
       const groupsJson = JSON.stringify(constraint.groups);
       lines.push(`  // Check validation groups`);
       lines.push(`  if (opts.groups && opts.groups.length > 0 && opts.groups.some(g => ${groupsJson}.includes(g))) {`);
-      lines.push(generateConstraintCheck(constraint, 'value', 'propertyErrors', '    '));
+      lines.push(generateConstraintCheck(constraint, i, propertyName, 'value', 'propertyErrors', '    '));
       lines.push(`  }`);
     } else {
       // No groups specified on constraint - always validate
-      lines.push(generateConstraintCheck(constraint, 'value', 'propertyErrors'));
+      lines.push(generateConstraintCheck(constraint, i, propertyName, 'value', 'propertyErrors'));
     }
   }
 
@@ -381,11 +391,14 @@ function generateAsyncPropertyValidation(
  */
 function generateConstraintCheck(
   constraint: ValidationConstraint,
+  constraintIndex: number,
+  propertyName: string,
   valueName: string,
   errorsName: string,
   indent: string = '  ',
 ): string {
   const lines: string[] = [];
+  const safePropName = JSON.stringify(propertyName);
 
   switch (constraint.type) {
     case 'isString':
@@ -828,6 +841,63 @@ function generateConstraintCheck(
       lines.push(`    }`);
       break;
 
+    case 'custom':
+      // Handle @Validate decorator with validator class
+      // Note: validator class is accessed from metadata at runtime
+      if (constraint.value && constraint.value.constraintClass) {
+        const errorMsg = JSON.stringify(getErrorMessage(constraint, 'validation failed'));
+        lines.push(`${indent}// Custom validator class`);
+        lines.push(`${indent}{`);
+        lines.push(`${indent}  const constraint = metadata.properties.get(${safePropName}).constraints[${constraintIndex}];`);
+        lines.push(`${indent}  const constraintValue = constraint.value;`);
+        lines.push(`${indent}  const validatorInstance = getValidatorInstance(constraintValue.constraintClass);`);
+        lines.push(`${indent}  const args = {`);
+        lines.push(`${indent}    value: ${valueName},`);
+        lines.push(`${indent}    constraints: constraintValue.constraints || [],`);
+        lines.push(`${indent}    targetName: object.constructor.name,`);
+        lines.push(`${indent}    object: object,`);
+        lines.push(`${indent}    property: ${safePropName}`);
+        lines.push(`${indent}  };`);
+        lines.push(`${indent}  const result = validatorInstance.validate(${valueName}, args);`);
+        lines.push(`${indent}  if (!result) {`);
+        lines.push(`${indent}    if (validatorInstance.defaultMessage) {`);
+        lines.push(`${indent}      ${errorsName}.custom = validatorInstance.defaultMessage(args);`);
+        lines.push(`${indent}    } else {`);
+        lines.push(`${indent}      ${errorsName}.custom = ${errorMsg};`);
+        lines.push(`${indent}    }`);
+        lines.push(`${indent}  }`);
+        lines.push(`${indent}}`);
+      }
+      break;
+
+    case 'validateBy':
+      // Handle ValidateBy decorator
+      if (constraint.value && constraint.value.validator) {
+        const validatorName = constraint.value.name || 'custom';
+        const defaultMsg = JSON.stringify(getErrorMessage(constraint, 'validation failed'));
+        lines.push(`${indent}// ValidateBy: ${validatorName}`);
+        lines.push(`${indent}{`);
+        lines.push(`${indent}  const constraint = metadata.properties.get(${safePropName}).constraints[${constraintIndex}];`);
+        lines.push(`${indent}  const constraintValue = constraint.value;`);
+        lines.push(`${indent}  const args = {`);
+        lines.push(`${indent}    value: ${valueName},`);
+        lines.push(`${indent}    constraints: constraintValue.constraints || [],`);
+        lines.push(`${indent}    targetName: object.constructor.name,`);
+        lines.push(`${indent}    object: object,`);
+        lines.push(`${indent}    property: ${safePropName}`);
+        lines.push(`${indent}  };`);
+        lines.push(`${indent}  const result = constraintValue.validator(${valueName}, args);`);
+        lines.push(`${indent}  if (!result) {`);
+        lines.push(`${indent}    if (constraintValue.defaultMessage) {`);
+        lines.push(`${indent}      ${errorsName}.${validatorName} = constraintValue.defaultMessage(args);`);
+        lines.push(`${indent}    } else {`);
+        lines.push(`${indent}      ${errorsName}.${validatorName} = ${defaultMsg};`);
+        lines.push(`${indent}    }`);
+        lines.push(`${indent}  }`);
+        lines.push(`${indent}}`);
+      }
+      break;
+
     default:
       // For unknown constraint types, skip (will be handled by runtime validators)
       break;
@@ -852,11 +922,11 @@ function generateAsyncConstraintCheck(
   const lines: string[] = [];
   const safePropName = JSON.stringify(propertyName);
 
-  // For custom validators with async support
+  // For custom validators with async support (inline validator function)
   if (constraint.type === 'custom' && constraint.validator) {
     const taskVarName = `customTask_${asyncTaskCounter++}`;
     const errorMsg = JSON.stringify(getErrorMessage(constraint, 'validation failed'));
-    lines.push(`${indent}// Custom async validator`);
+    lines.push(`${indent}// Custom async validator (inline)`);
     lines.push(`${indent}const ${taskVarName} = (async () => {`);
     lines.push(`${indent}  const constraint = metadata.properties.get(${safePropName}).constraints[${constraintIndex}];`);
     lines.push(`${indent}  if (constraint.validator) {`);
@@ -867,9 +937,61 @@ function generateAsyncConstraintCheck(
     lines.push(`${indent}  }`);
     lines.push(`${indent}})();`);
     lines.push(`${indent}${asyncTasksName}.push(${taskVarName});`);
+  } else if (constraint.type === 'custom' && constraint.value && constraint.value.constraintClass) {
+    // For custom validator classes (may be async)
+    const taskVarName = `customTask_${asyncTaskCounter++}`;
+    const errorMsg = JSON.stringify(getErrorMessage(constraint, 'validation failed'));
+    lines.push(`${indent}// Custom validator class (potentially async)`);
+    lines.push(`${indent}const ${taskVarName} = (async () => {`);
+    lines.push(`${indent}  const constraint = metadata.properties.get(${safePropName}).constraints[${constraintIndex}];`);
+    lines.push(`${indent}  const constraintValue = constraint.value;`);
+    lines.push(`${indent}  const validatorInstance = getValidatorInstance(constraintValue.constraintClass);`);
+    lines.push(`${indent}  const args = {`);
+    lines.push(`${indent}    value: ${valueName},`);
+    lines.push(`${indent}    constraints: constraintValue.constraints || [],`);
+    lines.push(`${indent}    targetName: object.constructor.name,`);
+    lines.push(`${indent}    object: object,`);
+    lines.push(`${indent}    property: ${safePropName}`);
+    lines.push(`${indent}  };`);
+    lines.push(`${indent}  const result = await validatorInstance.validate(${valueName}, args);`);
+    lines.push(`${indent}  if (!result) {`);
+    lines.push(`${indent}    if (validatorInstance.defaultMessage) {`);
+    lines.push(`${indent}      ${errorsName}.custom = validatorInstance.defaultMessage(args);`);
+    lines.push(`${indent}    } else {`);
+    lines.push(`${indent}      ${errorsName}.custom = ${errorMsg};`);
+    lines.push(`${indent}    }`);
+    lines.push(`${indent}  }`);
+    lines.push(`${indent}})();`);
+    lines.push(`${indent}${asyncTasksName}.push(${taskVarName});`);
+  } else if (constraint.type === 'validateBy' && constraint.value && constraint.value.validator) {
+    // For ValidateBy decorators (may be async)
+    const taskVarName = `customTask_${asyncTaskCounter++}`;
+    const validatorName = constraint.value.name || 'custom';
+    const defaultMsg = JSON.stringify(getErrorMessage(constraint, 'validation failed'));
+    lines.push(`${indent}// ValidateBy: ${validatorName} (potentially async)`);
+    lines.push(`${indent}const ${taskVarName} = (async () => {`);
+    lines.push(`${indent}  const constraint = metadata.properties.get(${safePropName}).constraints[${constraintIndex}];`);
+    lines.push(`${indent}  const constraintValue = constraint.value;`);
+    lines.push(`${indent}  const args = {`);
+    lines.push(`${indent}    value: ${valueName},`);
+    lines.push(`${indent}    constraints: constraintValue.constraints || [],`);
+    lines.push(`${indent}    targetName: object.constructor.name,`);
+    lines.push(`${indent}    object: object,`);
+    lines.push(`${indent}    property: ${safePropName}`);
+    lines.push(`${indent}  };`);
+    lines.push(`${indent}  const result = await constraintValue.validator(${valueName}, args);`);
+    lines.push(`${indent}  if (!result) {`);
+    lines.push(`${indent}    if (constraintValue.defaultMessage) {`);
+    lines.push(`${indent}      ${errorsName}.${validatorName} = constraintValue.defaultMessage(args);`);
+    lines.push(`${indent}    } else {`);
+    lines.push(`${indent}      ${errorsName}.${validatorName} = ${defaultMsg};`);
+    lines.push(`${indent}    }`);
+    lines.push(`${indent}  }`);
+    lines.push(`${indent}})();`);
+    lines.push(`${indent}${asyncTasksName}.push(${taskVarName});`);
   } else {
     // For built-in validators, use sync validation (they don't support async)
-    lines.push(generateConstraintCheck(constraint, valueName, errorsName, indent));
+    lines.push(generateConstraintCheck(constraint, constraintIndex, propertyName, valueName, errorsName, indent));
   }
 
   return lines.join('\n');
@@ -891,6 +1013,7 @@ function getErrorMessage(constraint: ValidationConstraint, defaultMessage: strin
 export function clearValidatorCache(): void {
   compiledValidatorsCache.clear();
   compiledAsyncValidatorsCache.clear();
+  clearValidatorInstanceCache();
 }
 
 /**
