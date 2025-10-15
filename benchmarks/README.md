@@ -6,73 +6,107 @@ This directory contains comprehensive performance benchmarks for om-data-mapper.
 
 ```
 benchmarks/
-├── suites/                    # Benchmark test suites
-│   ├── core/                  # Core functionality benchmarks
-│   │   ├── simple.bench.ts    # Simple mapping (Vitest)
-│   │   ├── complex.bench.ts   # Complex transformations (Vitest)
-│   │   ├── nested.bench.ts    # Nested objects (Vitest)
-│   │   └── array.bench.ts     # Array mapping (Vitest)
-│   └── compat/                # Compatibility benchmarks
-│       └── class-transformer-comparison.js  # vs class-transformer (Benchmark.js)
-├── simple/                    # Legacy Benchmark.js tests
-├── complex/                   # Legacy Benchmark.js tests
-├── compare/                   # Library comparison tests
-├── PERFORMANCE_COMPARISON.md  # Detailed performance analysis
+├── core/                      # Core functionality benchmarks
+│   ├── simple.bench.ts        # Simple mapping
+│   ├── complex.bench.ts       # Complex transformations
+│   ├── nested.bench.ts        # Nested objects
+│   ├── array.bench.ts         # Array mapping
+│   └── shared-mappers.ts      # Shared mapper definitions
+├── comparisons/               # Library comparison benchmarks
+│   ├── class-transformer-comparison/  # vs class-transformer
+│   ├── validation-comparison/         # Validation performance
+│   └── library-comparison/            # Multi-library comparison
+├── package.json               # Benchmark dependencies
+├── tsconfig.json              # TypeScript configuration
 └── README.md                  # This file
 ```
 
 ## 🚀 Quick Start
 
-### Run Core Benchmarks (Vitest)
+### Run Core Benchmarks
+
+Core benchmarks test the fundamental performance of om-data-mapper's mapping engine:
 
 ```bash
 # From project root
 npm run bench:core
 
-# Or run all benchmarks
-npm run bench
+# Or run specific benchmarks
+cd benchmarks
+npx vitest bench core/simple.bench.ts
+npx vitest bench core/complex.bench.ts
 ```
 
-### Run Compatibility Benchmarks (Benchmark.js)
+### Run Comparison Benchmarks
+
+Comparison benchmarks test om-data-mapper against other libraries:
 
 ```bash
-# From project root
-npm run bench:compat
+# class-transformer comparison
+cd benchmarks
+npx ts-node comparisons/class-transformer-comparison/class-transformer-comparison.bench.ts
 
-# Or directly
-node benchmarks/suites/compat/class-transformer-comparison.js
+# Validation comparison
+npx ts-node --project comparisons/validation-comparison/tsconfig.json \
+  comparisons/validation-comparison/validation-comparison.bench.ts
 ```
 
 ## 📊 Available Benchmarks
 
-### Core Benchmarks (Vitest)
+### Core Benchmarks
 
-Located in `suites/core/`:
+Located in `core/`:
 
 1. **simple.bench.ts** - Simple property mapping
    - Direct field mapping
    - ~30M ops/sec
+   - Tests basic mapper performance
 
 2. **complex.bench.ts** - Complex transformations
    - Nested objects, arrays, custom functions
    - ~13M ops/sec
+   - Tests advanced mapping features
 
 3. **nested.bench.ts** - Deep nested access
    - Multi-level object traversal
    - ~2.4M ops/sec
+   - Tests nested property access
 
 4. **array.bench.ts** - Array transformations
    - Mapping 100 items
    - ~1M ops/sec
+   - Tests bulk transformation performance
 
-### Compatibility Benchmarks (Benchmark.js)
+5. **shared-mappers.ts** - Shared mapper definitions
+   - Reusable mapper classes for benchmarks
+   - Decorator-based mappers
 
-Located in `suites/compat/`:
+### Comparison Benchmarks
 
-1. **class-transformer-comparison.js** - vs class-transformer
-   - 6 comprehensive scenarios
-   - Average: **4.77x faster** than class-transformer
-   - See [PERFORMANCE_COMPARISON.md](./PERFORMANCE_COMPARISON.md) for details
+Located in `comparisons/`:
+
+#### 1. class-transformer-comparison/
+Compares om-data-mapper's class-transformer compatibility layer with the original library.
+
+- **6 comprehensive scenarios**
+- **Average: 4.77x faster** than class-transformer
+- Tests: Simple, Nested, Arrays, Custom Logic, Exclude/Expose, Large Objects
+- See [comparisons/class-transformer-comparison/](./comparisons/class-transformer-comparison/) for details
+
+#### 2. validation-comparison/
+Compares om-data-mapper's JIT-compiled validation with class-validator.
+
+- **10 comprehensive scenarios**
+- **Average: 20,000-60,000% faster** than class-validator
+- Tests: Simple validation, Optional fields, Arrays, Complex DTOs, Large objects
+- See [comparisons/validation-comparison/README.md](./comparisons/validation-comparison/README.md) for details
+
+#### 3. library-comparison/
+Multi-library comparison benchmark.
+
+- Compares against multiple mapping libraries
+- Provides comprehensive performance analysis
+- See [comparisons/library-comparison/](./comparisons/library-comparison/) for details
 
 ## Understanding Results
 
@@ -102,7 +136,11 @@ Each benchmark also outputs JSON for programmatic analysis:
 ]
 ```
 
-## Why Benchmark.js?
+## Benchmark Tools
+
+### Benchmark.js (Comparison Benchmarks)
+
+Used for library comparisons to provide accurate, statistically significant results.
 
 **Advantages:**
 - ✅ Industry standard for JavaScript benchmarking
@@ -112,76 +150,126 @@ Each benchmark also outputs JSON for programmatic analysis:
 - ✅ Cross-platform consistency
 
 **Use Cases:**
-- 📊 README and documentation
-- 📈 Performance comparisons
+- 📊 Library comparisons
+- 📈 Performance documentation
 - 🎯 Absolute performance numbers
 - 🔬 Deep performance analysis
 
-## Comparison with Vitest Bench
+### Vitest Bench (Core Benchmarks)
+
+Used for core functionality benchmarks and CI/CD integration.
+
+**Advantages:**
+- ✅ Integrated with test suite
+- ✅ Automated CI/CD tracking
+- ✅ Historical performance data
+- ✅ Easy to run alongside tests
+
+**Use Cases:**
+- 🔄 Continuous performance monitoring
+- 📉 Regression detection
+- 🎯 Development workflow integration
+
+### Comparison
 
 | Aspect | Benchmark.js | Vitest Bench |
 |--------|--------------|--------------|
-| **Location** | `/benchmarks` | `/bench` |
+| **Location** | `comparisons/` | `core/` |
 | **Performance** | 946M ops/sec | 30M ops/sec |
 | **Overhead** | Minimal | Framework overhead |
-| **Use Case** | Absolute numbers | CI/CD tracking |
+| **Use Case** | Library comparisons | Core performance tracking |
 | **Automation** | Manual | Automated |
 
 **Both are valuable:**
-- Benchmark.js shows theoretical maximum performance
-- Vitest Bench tracks real-world performance over time
+- Benchmark.js shows theoretical maximum performance for comparisons
+- Vitest Bench tracks real-world performance over time in CI/CD
 
 ## Adding New Benchmarks
 
-1. Create a new `.ts` file in the appropriate directory
-2. Import Benchmark.js and your code:
+### Core Benchmarks (Vitest)
+
+1. Create a new `.bench.ts` file in `core/`:
+   ```typescript
+   import { bench, describe } from 'vitest';
+   import { Mapper } from '../../src/core/Mapper';
+
+   describe('My Benchmark', () => {
+     bench('Test name', () => {
+       // Your benchmark code
+     });
+   });
+   ```
+
+2. Run the benchmark:
+   ```bash
+   npx vitest bench core/your-file.bench.ts
+   ```
+
+### Comparison Benchmarks (Benchmark.js)
+
+1. Create a new directory in `comparisons/`:
+   ```bash
+   mkdir comparisons/my-comparison
+   ```
+
+2. Create a `.bench.ts` file:
    ```typescript
    import { Suite } from 'benchmark';
-   import { Mapper } from '../../src';
-   ```
+   import 'reflect-metadata';
 
-3. Create test data and mappers:
-   ```typescript
-   const sourceData = { /* ... */ };
-   const mapper = Mapper.create({ /* ... */ });
-   ```
-
-4. Set up the benchmark suite:
-   ```typescript
    const suite = new Suite();
-   
+
    suite
-     .add('Test name', function () {
-       mapper.execute(sourceData);
+     .add('om-data-mapper', function () {
+       // Your code
+     })
+     .add('other-library', function () {
+       // Comparison code
      })
      .on('cycle', function (event: any) {
        console.log(String(event.target));
      })
-     .run({ async: true });
+     .run({ async: false });
    ```
 
-5. Build and run:
+3. Add a README.md documenting the comparison
+
+4. Run the benchmark:
    ```bash
-   npm run build
-   node build/benchmarks/your-file.js
+   npx ts-node comparisons/my-comparison/my-comparison.bench.ts
    ```
 
 ## Best Practices
 
-1. **Warm-up**: Benchmark.js automatically handles warm-up
-2. **Sample size**: Let Benchmark.js determine optimal sample size
+### General
+1. **Warm-up**: Both tools automatically handle warm-up cycles
+2. **Sample size**: Let the tools determine optimal sample size
 3. **Consistency**: Run benchmarks multiple times to verify results
 4. **Environment**: Close other applications for accurate results
-5. **Comparison**: Always include a vanilla/baseline implementation
+5. **Comparison**: Always include a baseline implementation
+
+### Core Benchmarks
+- Use Vitest bench for tracking performance over time
+- Run in CI/CD to catch regressions early
+- Keep benchmarks focused and simple
+
+### Comparison Benchmarks
+- Use Benchmark.js for accurate library comparisons
+- Document test scenarios clearly
+- Include both valid and invalid data tests
+- Provide comprehensive README files
 
 ## Troubleshooting
 
-### Build Errors
+### TypeScript Errors
 
 ```bash
-# Clean and rebuild
-npm run clean
-npm run build
+# Make sure dependencies are installed
+cd benchmarks
+npm install
+
+# Check TypeScript configuration
+npx tsc --noEmit
 ```
 
 ### Inconsistent Results
@@ -190,22 +278,47 @@ npm run build
 - Run multiple times and average
 - Check CPU throttling settings
 - Ensure stable power supply (laptops)
+- Disable CPU frequency scaling
 
 ### Module Not Found
 
-Make sure you're running from the `benchmarks` directory:
+Make sure you're in the correct directory:
 ```bash
 cd benchmarks
-node build/benchmarks/simple/Mapper.performance-benchmark.js
+npx ts-node comparisons/validation-comparison/validation-comparison.bench.ts
 ```
+
+### Decorator Errors
+
+Some benchmarks use experimental decorators (class-validator) while others use TC39 Stage 3 decorators (om-data-mapper). Check the tsconfig.json in each directory.
+
+## Performance Results Summary
+
+### Core Performance
+- **Simple mapping**: ~30M ops/sec
+- **Complex transformations**: ~13M ops/sec
+- **Nested objects**: ~2.4M ops/sec
+- **Array mapping (100 items)**: ~1M ops/sec
+
+### vs class-transformer
+- **Average**: 4.77x faster
+- **Best**: 43.6x faster (complex nested)
+- **Consistent**: Faster across all scenarios
+
+### vs class-validator
+- **Average**: 20,000-60,000% faster
+- **Simple validation**: 39,950% faster
+- **Array validation**: 35,756% faster
+- **JIT compilation**: Massive performance advantage
 
 ## Resources
 
 - [Benchmark.js Documentation](https://benchmarkjs.com/)
-- [Main Benchmark Setup Guide](../reports/benchmarks-setup.md)
-- [Vitest Bench Documentation](../bench/)
+- [Vitest Bench Documentation](https://vitest.dev/guide/features.html#benchmarking)
+- [class-transformer Comparison](./comparisons/class-transformer-comparison/)
+- [Validation Comparison](./comparisons/validation-comparison/)
 
 ---
 
-**Note:** These benchmarks are for development and documentation purposes. For automated CI/CD performance tracking, see the `/bench` directory with Vitest Bench integration.
+**Note:** These benchmarks demonstrate om-data-mapper's exceptional performance across all use cases. The library is designed for high-throughput applications where performance is critical.
 
