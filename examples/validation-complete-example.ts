@@ -35,7 +35,6 @@ import {
   ValidatorConstraintInterface,
   ValidationArguments,
   Validate,
-  addValidationConstraint,
 } from '../src/compat/class-validator/decorators/custom';
 
 // ============================================================================
@@ -212,7 +211,7 @@ class UserDto {
   username!: string;
 
   // Create and Update groups: Email validation
-  @IsEmail({}, { groups: ['create', 'update'] })
+  @IsEmail({ groups: ['create', 'update'] })
   @Validate(IsUniqueEmailConstraint, [], { groups: ['create'] })
   email!: string;
 

@@ -48,6 +48,7 @@ export function getPropertyMetadata(
 
 /**
  * Add validation constraint to a property
+ * Prevents duplicate constraints from being added
  */
 export function addValidationConstraint(
   target: any,
@@ -55,7 +56,31 @@ export function addValidationConstraint(
   constraint: ValidationConstraint,
 ): void {
   const propertyMetadata = getPropertyMetadata(target, propertyKey);
-  propertyMetadata.constraints.push(constraint);
+
+  // Check if this exact constraint already exists to prevent duplicates
+  // This can happen because addInitializer runs on every instance creation
+  const isDuplicate = propertyMetadata.constraints.some(existing => {
+    // Compare constraint type and value
+    if (existing.type !== constraint.type) return false;
+    if (existing.value !== constraint.value) return false;
+
+    // Compare groups arrays
+    const existingGroups = existing.groups || [];
+    const newGroups = constraint.groups || [];
+    if (existingGroups.length !== newGroups.length) return false;
+    if (existingGroups.some((g, i) => g !== newGroups[i])) return false;
+
+    // Compare other properties
+    if (existing.message !== constraint.message) return false;
+    if (existing.always !== constraint.always) return false;
+
+    return true;
+  });
+
+  // Only add if not a duplicate
+  if (!isDuplicate) {
+    propertyMetadata.constraints.push(constraint);
+  }
 }
 
 /**

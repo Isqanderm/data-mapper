@@ -9,7 +9,6 @@ import {
   MinLength,
   IsNumber,
   Min,
-  Max,
   validateSync,
 } from '../../../../src/compat/class-validator';
 

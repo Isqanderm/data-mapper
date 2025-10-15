@@ -12,7 +12,6 @@ import {
   ValidateNested,
   IsArray,
   validate,
-  validateSync,
 } from '../../../../src/compat/class-validator';
 import { addValidationConstraint } from '../../../../src/compat/class-validator/engine/metadata';
 

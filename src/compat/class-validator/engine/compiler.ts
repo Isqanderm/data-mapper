@@ -16,8 +16,6 @@ import { getValidationMetadata, hasValidationMetadata } from './metadata';
 import {
   getValidatorInstance,
   clearValidatorInstanceCache,
-  isAsyncValidator,
-  getValidatorName,
 } from './validator-registry';
 
 /**
@@ -284,7 +282,6 @@ function generateAsyncPropertyValidation(
 ): string {
   const lines: string[] = [];
   const safePropName = JSON.stringify(propertyName);
-  const safeVarName = propertyName.replace(/[^a-zA-Z0-9]/g, '_');
 
   lines.push(`  {`);
   lines.push(`    const value = object[${safePropName}];`);
@@ -452,6 +449,12 @@ function generateConstraintCheck(
     case 'isNotEmpty':
       lines.push(`${indent}  if (${valueName} === null || ${valueName} === undefined || ${valueName} === '' || (Array.isArray(${valueName}) && ${valueName}.length === 0)) {`);
       lines.push(`${indent}    ${errorsName}.isNotEmpty = ${JSON.stringify(getErrorMessage(constraint, 'should not be empty'))};`);
+      lines.push(`    }`);
+      break;
+
+    case 'isDefined':
+      lines.push(`${indent}  if (${valueName} === undefined || ${valueName} === null) {`);
+      lines.push(`${indent}    ${errorsName}.isDefined = ${JSON.stringify(getErrorMessage(constraint, 'should not be null or undefined'))};`);
       lines.push(`    }`);
       break;
 

@@ -22,7 +22,6 @@ import {
   Min,
   Max,
   ValidateNested,
-  validate as omValidate,
   validateSync as omValidateSync,
 } from '../src/compat/class-validator';
 

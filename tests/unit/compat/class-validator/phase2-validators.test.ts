@@ -14,10 +14,6 @@ import {
   IsAlphanumeric,
   IsHexColor,
   IsIP,
-  // Specialized
-  IsCreditCard,
-  IsISBN,
-  IsPhoneNumber,
   // String Content
   Contains,
   NotContains,

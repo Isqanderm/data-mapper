@@ -11,9 +11,7 @@ import {
   Min,
   Max,
   ValidateNested,
-  IsNotEmpty,
   IsArray,
-  ArrayMinSize,
   validateSync,
 } from '../../../../src/compat/class-validator';
 
@@ -82,7 +80,7 @@ describe('Nested Validation', () => {
       expect(errors[0].property).toBe('address');
       expect(errors[0].children).toBeDefined();
       expect(errors[0].children).toHaveLength(2);
-      
+
       // Check nested error properties
       const nestedErrors = errors[0].children!;
       expect(nestedErrors.some(e => e.property === 'street')).toBe(true);
@@ -314,11 +312,11 @@ describe('Nested Validation', () => {
 
       const errors = validateSync(invalid);
       expect(errors).toHaveLength(2);
-      
+
       // One error for name, one for contact
       expect(errors.some(e => e.property === 'name')).toBe(true);
       expect(errors.some(e => e.property === 'contact')).toBe(true);
-      
+
       // Contact error should have children
       const contactError = errors.find(e => e.property === 'contact');
       expect(contactError?.children).toBeDefined();

@@ -11,7 +11,6 @@ import {
   Min,
   Max,
   IsOptional,
-  IsNotEmpty,
   validate,
   validateSync,
 } from '../../../../src/compat/class-validator';
