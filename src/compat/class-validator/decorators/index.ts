@@ -3,7 +3,17 @@
  */
 
 // Common decorators
-export { IsOptional, IsDefined, IsNotEmpty } from './common';
+export {
+  IsOptional,
+  IsDefined,
+  IsNotEmpty,
+  // Comparison
+  Equals,
+  NotEquals,
+  IsIn,
+  IsNotIn,
+  IsEmpty,
+} from './common';
 
 // String decorators
 export {
@@ -60,7 +70,17 @@ export {
 } from './array';
 
 // Type checker decorators
-export { IsBoolean, IsDate, IsObject, IsEnum, IsInstance } from './typechecker';
+export {
+  IsBoolean,
+  IsDate,
+  IsObject,
+  IsEnum,
+  IsInstance,
+  IsNotEmptyObject,
+} from './typechecker';
+
+// Geographic validators
+export { IsLatLong, IsLatitude, IsLongitude } from './geo';
 
 // Nested validation decorators
 export { ValidateNested, ValidateIf, ValidatePromise } from './nested';

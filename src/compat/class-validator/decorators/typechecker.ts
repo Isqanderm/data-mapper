@@ -159,3 +159,31 @@ export function IsInstance(targetType: any, options?: ValidationDecoratorOptions
   };
 }
 
+/**
+ * Checks if object is not empty (has at least one property)
+ *
+ * @param options - Validation options
+ *
+ * @example
+ * ```typescript
+ * class ConfigDto {
+ *   @IsNotEmptyObject()
+ *   settings: Record<string, any>;
+ * }
+ * ```
+ */
+export function IsNotEmptyObject(options?: ValidationDecoratorOptions) {
+  return function (target: undefined, context: ClassFieldDecoratorContext): any {
+    const propertyKey = context.name;
+
+    context.addInitializer(function (this: any) {
+      addValidationConstraint(this.constructor, propertyKey, {
+        type: 'isNotEmptyObject',
+        message: options?.message,
+        groups: options?.groups,
+        always: options?.always,
+      });
+    });
+  };
+}
+
