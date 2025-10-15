@@ -244,6 +244,230 @@ function generateConstraintCheck(
       lines.push(`    }`);
       break;
 
+    // String validators - Email & Web
+    case 'isEmail':
+      lines.push(`    if (typeof ${valueName} === 'string') {`);
+      lines.push(`      const emailRegex = /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/;`);
+      lines.push(`      if (!emailRegex.test(${valueName})) {`);
+      lines.push(`        ${errorsName}.isEmail = ${JSON.stringify(getErrorMessage(constraint, 'must be an email'))};`);
+      lines.push(`      }`);
+      lines.push(`    }`);
+      break;
+
+    case 'isURL':
+      lines.push(`    if (typeof ${valueName} === 'string') {`);
+      lines.push(`      try {`);
+      lines.push(`        new URL(${valueName});`);
+      lines.push(`      } catch {`);
+      lines.push(`        ${errorsName}.isURL = ${JSON.stringify(getErrorMessage(constraint, 'must be a URL address'))};`);
+      lines.push(`      }`);
+      lines.push(`    }`);
+      break;
+
+    case 'isUUID':
+      lines.push(`    if (typeof ${valueName} === 'string') {`);
+      if (constraint.value === '3') {
+        lines.push(`      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-3[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;`);
+      } else if (constraint.value === '4') {
+        lines.push(`      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;`);
+      } else if (constraint.value === '5') {
+        lines.push(`      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-5[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;`);
+      } else {
+        lines.push(`      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;`);
+      }
+      lines.push(`      if (!uuidRegex.test(${valueName})) {`);
+      lines.push(`        ${errorsName}.isUUID = ${JSON.stringify(getErrorMessage(constraint, 'must be a UUID'))};`);
+      lines.push(`      }`);
+      lines.push(`    }`);
+      break;
+
+    case 'isJSON':
+      lines.push(`    if (typeof ${valueName} === 'string') {`);
+      lines.push(`      try {`);
+      lines.push(`        JSON.parse(${valueName});`);
+      lines.push(`      } catch {`);
+      lines.push(`        ${errorsName}.isJSON = ${JSON.stringify(getErrorMessage(constraint, 'must be a json string'))};`);
+      lines.push(`      }`);
+      lines.push(`    }`);
+      break;
+
+    // String validators - Format
+    case 'isAlpha':
+      lines.push(`    if (typeof ${valueName} === 'string') {`);
+      lines.push(`      const alphaRegex = /^[a-zA-Z]+$/;`);
+      lines.push(`      if (!alphaRegex.test(${valueName})) {`);
+      lines.push(`        ${errorsName}.isAlpha = ${JSON.stringify(getErrorMessage(constraint, 'must contain only letters (a-zA-Z)'))};`);
+      lines.push(`      }`);
+      lines.push(`    }`);
+      break;
+
+    case 'isAlphanumeric':
+      lines.push(`    if (typeof ${valueName} === 'string') {`);
+      lines.push(`      const alphanumericRegex = /^[a-zA-Z0-9]+$/;`);
+      lines.push(`      if (!alphanumericRegex.test(${valueName})) {`);
+      lines.push(`        ${errorsName}.isAlphanumeric = ${JSON.stringify(getErrorMessage(constraint, 'must contain only letters and numbers'))};`);
+      lines.push(`      }`);
+      lines.push(`    }`);
+      break;
+
+    case 'isHexColor':
+      lines.push(`    if (typeof ${valueName} === 'string') {`);
+      lines.push(`      const hexColorRegex = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i;`);
+      lines.push(`      if (!hexColorRegex.test(${valueName})) {`);
+      lines.push(`        ${errorsName}.isHexColor = ${JSON.stringify(getErrorMessage(constraint, 'must be a hexadecimal color'))};`);
+      lines.push(`      }`);
+      lines.push(`    }`);
+      break;
+
+    case 'isIP':
+      lines.push(`    if (typeof ${valueName} === 'string') {`);
+      if (constraint.value === '4') {
+        lines.push(`      const ipRegex = /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;`);
+      } else if (constraint.value === '6') {
+        lines.push(`      const ipRegex = /^(([0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\\.){3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\\.){3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))$/;`);
+      } else {
+        lines.push(`      const ipv4Regex = /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;`);
+        lines.push(`      const ipv6Regex = /^(([0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4})$/;`);
+        lines.push(`      const ipRegex = { test: (v) => ipv4Regex.test(v) || ipv6Regex.test(v) };`);
+      }
+      lines.push(`      if (!ipRegex.test(${valueName})) {`);
+      lines.push(`        ${errorsName}.isIP = ${JSON.stringify(getErrorMessage(constraint, 'must be an ip address'))};`);
+      lines.push(`      }`);
+      lines.push(`    }`);
+      break;
+
+    // String validators - Specialized
+    case 'isCreditCard':
+      lines.push(`    if (typeof ${valueName} === 'string') {`);
+      lines.push(`      const sanitized = ${valueName}.replace(/[- ]/g, '');`);
+      lines.push(`      if (!/^[0-9]{13,19}$/.test(sanitized)) {`);
+      lines.push(`        ${errorsName}.isCreditCard = ${JSON.stringify(getErrorMessage(constraint, 'must be a credit card'))};`);
+      lines.push(`      } else {`);
+      // Luhn algorithm
+      lines.push(`        let sum = 0;`);
+      lines.push(`        let isEven = false;`);
+      lines.push(`        for (let i = sanitized.length - 1; i >= 0; i--) {`);
+      lines.push(`          let digit = parseInt(sanitized[i], 10);`);
+      lines.push(`          if (isEven) {`);
+      lines.push(`            digit *= 2;`);
+      lines.push(`            if (digit > 9) digit -= 9;`);
+      lines.push(`          }`);
+      lines.push(`          sum += digit;`);
+      lines.push(`          isEven = !isEven;`);
+      lines.push(`        }`);
+      lines.push(`        if (sum % 10 !== 0) {`);
+      lines.push(`          ${errorsName}.isCreditCard = ${JSON.stringify(getErrorMessage(constraint, 'must be a credit card'))};`);
+      lines.push(`        }`);
+      lines.push(`      }`);
+      lines.push(`    }`);
+      break;
+
+    case 'isISBN':
+      lines.push(`    if (typeof ${valueName} === 'string') {`);
+      lines.push(`      const sanitized = ${valueName}.replace(/[- ]/g, '');`);
+      if (constraint.value === '10') {
+        lines.push(`      if (!/^[0-9]{9}[0-9X]$/i.test(sanitized)) {`);
+        lines.push(`        ${errorsName}.isISBN = ${JSON.stringify(getErrorMessage(constraint, 'must be an ISBN'))};`);
+        lines.push(`      }`);
+      } else if (constraint.value === '13') {
+        lines.push(`      if (!/^[0-9]{13}$/.test(sanitized)) {`);
+        lines.push(`        ${errorsName}.isISBN = ${JSON.stringify(getErrorMessage(constraint, 'must be an ISBN'))};`);
+        lines.push(`      }`);
+      } else {
+        lines.push(`      const isbn10 = /^[0-9]{9}[0-9X]$/i.test(sanitized);`);
+        lines.push(`      const isbn13 = /^[0-9]{13}$/.test(sanitized);`);
+        lines.push(`      if (!isbn10 && !isbn13) {`);
+        lines.push(`        ${errorsName}.isISBN = ${JSON.stringify(getErrorMessage(constraint, 'must be an ISBN'))};`);
+        lines.push(`      }`);
+      }
+      lines.push(`    }`);
+      break;
+
+    case 'isPhoneNumber':
+      lines.push(`    if (typeof ${valueName} === 'string') {`);
+      lines.push(`      const phoneRegex = /^[+]?[(]?[0-9]{1,4}[)]?[-\\s.]?[(]?[0-9]{1,4}[)]?[-\\s.]?[0-9]{1,9}$/;`);
+      lines.push(`      if (!phoneRegex.test(${valueName})) {`);
+      lines.push(`        ${errorsName}.isPhoneNumber = ${JSON.stringify(getErrorMessage(constraint, 'must be a valid phone number'))};`);
+      lines.push(`      }`);
+      lines.push(`    }`);
+      break;
+
+    // String validators - Content
+    case 'contains':
+      lines.push(`    if (typeof ${valueName} === 'string' && !${valueName}.includes(${JSON.stringify(constraint.value)})) {`);
+      lines.push(`      ${errorsName}.contains = ${JSON.stringify(getErrorMessage(constraint, `must contain a ${constraint.value} string`))};`);
+      lines.push(`    }`);
+      break;
+
+    case 'notContains':
+      lines.push(`    if (typeof ${valueName} === 'string' && ${valueName}.includes(${JSON.stringify(constraint.value)})) {`);
+      lines.push(`      ${errorsName}.notContains = ${JSON.stringify(getErrorMessage(constraint, `should not contain a ${constraint.value} string`))};`);
+      lines.push(`    }`);
+      break;
+
+    case 'isLowercase':
+      lines.push(`    if (typeof ${valueName} === 'string' && ${valueName} !== ${valueName}.toLowerCase()) {`);
+      lines.push(`      ${errorsName}.isLowercase = ${JSON.stringify(getErrorMessage(constraint, 'must be a lowercase string'))};`);
+      lines.push(`    }`);
+      break;
+
+    case 'isUppercase':
+      lines.push(`    if (typeof ${valueName} === 'string' && ${valueName} !== ${valueName}.toUpperCase()) {`);
+      lines.push(`      ${errorsName}.isUppercase = ${JSON.stringify(getErrorMessage(constraint, 'must be an uppercase string'))};`);
+      lines.push(`    }`);
+      break;
+
+    case 'matches':
+      if (constraint.value && typeof constraint.value === 'object') {
+        const pattern = constraint.value.pattern;
+        const modifiers = constraint.value.modifiers || '';
+        lines.push(`    if (typeof ${valueName} === 'string') {`);
+        lines.push(`      const regex = new RegExp(${JSON.stringify(pattern)}, ${JSON.stringify(modifiers)});`);
+        lines.push(`      if (!regex.test(${valueName})) {`);
+        lines.push(`        ${errorsName}.matches = ${JSON.stringify(getErrorMessage(constraint, `must match ${pattern} regular expression`))};`);
+        lines.push(`      }`);
+        lines.push(`    }`);
+      }
+      break;
+
+    // Number validators
+    case 'isDivisibleBy':
+      lines.push(`    if (typeof ${valueName} === 'number' && ${valueName} % ${constraint.value} !== 0) {`);
+      lines.push(`      ${errorsName}.isDivisibleBy = ${JSON.stringify(getErrorMessage(constraint, `must be divisible by ${constraint.value}`))};`);
+      lines.push(`    }`);
+      break;
+
+    case 'isDecimal':
+      lines.push(`    if (typeof ${valueName} === 'number') {`);
+      lines.push(`      if (Number.isInteger(${valueName})) {`);
+      lines.push(`        ${errorsName}.isDecimal = ${JSON.stringify(getErrorMessage(constraint, 'must be a decimal number'))};`);
+      lines.push(`      }`);
+      lines.push(`    }`);
+      break;
+
+    // Date validators
+    case 'minDate':
+      if (constraint.value instanceof Date) {
+        const minTime = constraint.value.getTime();
+        lines.push(`    if (${valueName} instanceof Date) {`);
+        lines.push(`      if (${valueName}.getTime() < ${minTime}) {`);
+        lines.push(`        ${errorsName}.minDate = ${JSON.stringify(getErrorMessage(constraint, `minimal allowed date is ${constraint.value.toISOString()}`))};`);
+        lines.push(`      }`);
+        lines.push(`    }`);
+      }
+      break;
+
+    case 'maxDate':
+      if (constraint.value instanceof Date) {
+        const maxTime = constraint.value.getTime();
+        lines.push(`    if (${valueName} instanceof Date) {`);
+        lines.push(`      if (${valueName}.getTime() > ${maxTime}) {`);
+        lines.push(`        ${errorsName}.maxDate = ${JSON.stringify(getErrorMessage(constraint, `maximal allowed date is ${constraint.value.toISOString()}`))};`);
+        lines.push(`      }`);
+        lines.push(`    }`);
+      }
+      break;
+
     default:
       // For unknown constraint types, skip (will be handled by runtime validators)
       break;
