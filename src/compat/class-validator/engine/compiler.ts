@@ -874,6 +874,187 @@ function generateConstraintCheck(
       lines.push(`    }`);
       break;
 
+    // Medium Priority Validators - Banking & Financial
+    case 'isIBAN':
+      lines.push(`${indent}  if (typeof ${valueName} === 'string') {`);
+      lines.push(`${indent}    const ibanRegex = /^[A-Z]{2}[0-9]{2}[A-Z0-9]{1,30}$/;`);
+      lines.push(`${indent}    if (!ibanRegex.test(${valueName})) {`);
+      lines.push(`${indent}      ${errorsName}.isIBAN = ${JSON.stringify(getErrorMessage(constraint, 'must be a valid IBAN'))};`);
+      lines.push(`${indent}    }`);
+      lines.push(`    }`);
+      break;
+
+    case 'isBIC':
+      lines.push(`${indent}  if (typeof ${valueName} === 'string') {`);
+      lines.push(`${indent}    const bicRegex = /^[A-Z]{6}[A-Z0-9]{2}([A-Z0-9]{3})?$/;`);
+      lines.push(`${indent}    if (!bicRegex.test(${valueName})) {`);
+      lines.push(`${indent}      ${errorsName}.isBIC = ${JSON.stringify(getErrorMessage(constraint, 'must be a valid BIC or SWIFT code'))};`);
+      lines.push(`${indent}    }`);
+      lines.push(`    }`);
+      break;
+
+    case 'isCurrency':
+      lines.push(`${indent}  if (typeof ${valueName} === 'string') {`);
+      lines.push(`${indent}    const currencyRegex = /^[\\$€£¥₽]?\\s?[0-9]{1,3}(,[0-9]{3})*(\\.\\d{2})?$/;`);
+      lines.push(`${indent}    if (!currencyRegex.test(${valueName})) {`);
+      lines.push(`${indent}      ${errorsName}.isCurrency = ${JSON.stringify(getErrorMessage(constraint, 'must be a valid currency amount'))};`);
+      lines.push(`${indent}    }`);
+      lines.push(`    }`);
+      break;
+
+    case 'isISO4217CurrencyCode':
+      lines.push(`${indent}  if (typeof ${valueName} === 'string') {`);
+      lines.push(`${indent}    const currencyCodeRegex = /^[A-Z]{3}$/;`);
+      lines.push(`${indent}    if (!currencyCodeRegex.test(${valueName})) {`);
+      lines.push(`${indent}      ${errorsName}.isISO4217CurrencyCode = ${JSON.stringify(getErrorMessage(constraint, 'must be a valid ISO 4217 currency code'))};`);
+      lines.push(`${indent}    }`);
+      lines.push(`    }`);
+      break;
+
+    // Medium Priority Validators - Cryptocurrency
+    case 'isEthereumAddress':
+      lines.push(`${indent}  if (typeof ${valueName} === 'string') {`);
+      lines.push(`${indent}    const ethRegex = /^0x[a-fA-F0-9]{39,40}$/;`);
+      lines.push(`${indent}    if (!ethRegex.test(${valueName})) {`);
+      lines.push(`${indent}      ${errorsName}.isEthereumAddress = ${JSON.stringify(getErrorMessage(constraint, 'must be a valid Ethereum address'))};`);
+      lines.push(`${indent}    }`);
+      lines.push(`    }`);
+      break;
+
+    case 'isBtcAddress':
+      lines.push(`${indent}  if (typeof ${valueName} === 'string') {`);
+      lines.push(`${indent}    const btcRegex = /^(bc1|[13])[a-zA-HJ-NP-Z0-9]{25,62}$/;`);
+      lines.push(`${indent}    if (!btcRegex.test(${valueName})) {`);
+      lines.push(`${indent}      ${errorsName}.isBtcAddress = ${JSON.stringify(getErrorMessage(constraint, 'must be a valid Bitcoin address'))};`);
+      lines.push(`${indent}    }`);
+      lines.push(`    }`);
+      break;
+
+    // Medium Priority Validators - Documents & Identifiers
+    case 'isPassportNumber':
+      lines.push(`${indent}  if (typeof ${valueName} === 'string') {`);
+      if (constraint.value === 'US') {
+        lines.push(`${indent}    const passportRegex = /^[0-9]{9}$/;`);
+      } else {
+        lines.push(`${indent}    const passportRegex = /^[A-Z0-9]{6,12}$/;`);
+      }
+      lines.push(`${indent}    if (!passportRegex.test(${valueName})) {`);
+      lines.push(`${indent}      ${errorsName}.isPassportNumber = ${JSON.stringify(getErrorMessage(constraint, 'must be a valid passport number'))};`);
+      lines.push(`${indent}    }`);
+      lines.push(`    }`);
+      break;
+
+    case 'isIdentityCard':
+      lines.push(`${indent}  if (typeof ${valueName} === 'string') {`);
+      lines.push(`${indent}    const idRegex = /^[A-Z0-9]{5,20}$/;`);
+      lines.push(`${indent}    if (!idRegex.test(${valueName})) {`);
+      lines.push(`${indent}      ${errorsName}.isIdentityCard = ${JSON.stringify(getErrorMessage(constraint, 'must be a valid identity card'))};`);
+      lines.push(`${indent}    }`);
+      lines.push(`    }`);
+      break;
+
+    case 'isEAN':
+      lines.push(`${indent}  if (typeof ${valueName} === 'string') {`);
+      lines.push(`${indent}    const eanRegex = /^[0-9]{8}$|^[0-9]{13}$/;`);
+      lines.push(`${indent}    if (!eanRegex.test(${valueName})) {`);
+      lines.push(`${indent}      ${errorsName}.isEAN = ${JSON.stringify(getErrorMessage(constraint, 'must be a valid EAN'))};`);
+      lines.push(`${indent}    }`);
+      lines.push(`    }`);
+      break;
+
+    case 'isISIN':
+      lines.push(`${indent}  if (typeof ${valueName} === 'string') {`);
+      lines.push(`${indent}    const isinRegex = /^[A-Z]{2}[A-Z0-9]{9}[0-9]$/;`);
+      lines.push(`${indent}    if (!isinRegex.test(${valueName})) {`);
+      lines.push(`${indent}      ${errorsName}.isISIN = ${JSON.stringify(getErrorMessage(constraint, 'must be a valid ISIN'))};`);
+      lines.push(`${indent}    }`);
+      lines.push(`    }`);
+      break;
+
+    // Medium Priority Validators - Network & URI
+    case 'isMagnetURI':
+      lines.push(`${indent}  if (typeof ${valueName} === 'string') {`);
+      lines.push(`${indent}    const magnetRegex = /^magnet:\\?xt=urn:[a-z0-9]+:[a-z0-9]{32,40}/i;`);
+      lines.push(`${indent}    if (!magnetRegex.test(${valueName})) {`);
+      lines.push(`${indent}      ${errorsName}.isMagnetURI = ${JSON.stringify(getErrorMessage(constraint, 'must be a valid Magnet URI'))};`);
+      lines.push(`${indent}    }`);
+      lines.push(`    }`);
+      break;
+
+    case 'isDataURI':
+      lines.push(`${indent}  if (typeof ${valueName} === 'string') {`);
+      lines.push(`${indent}    const dataUriRegex = /^data:([a-z]+\\/[a-z0-9-+.]+)?;base64,/i;`);
+      lines.push(`${indent}    if (!dataUriRegex.test(${valueName})) {`);
+      lines.push(`${indent}      ${errorsName}.isDataURI = ${JSON.stringify(getErrorMessage(constraint, 'must be a valid Data URI'))};`);
+      lines.push(`${indent}    }`);
+      lines.push(`    }`);
+      break;
+
+    // Medium Priority Validators - Localization
+    case 'isISO31661Alpha2':
+      lines.push(`${indent}  if (typeof ${valueName} === 'string') {`);
+      lines.push(`${indent}    const alpha2Regex = /^[A-Z]{2}$/;`);
+      lines.push(`${indent}    if (!alpha2Regex.test(${valueName})) {`);
+      lines.push(`${indent}      ${errorsName}.isISO31661Alpha2 = ${JSON.stringify(getErrorMessage(constraint, 'must be a valid ISO 3166-1 alpha-2 country code'))};`);
+      lines.push(`${indent}    }`);
+      lines.push(`    }`);
+      break;
+
+    case 'isISO31661Alpha3':
+      lines.push(`${indent}  if (typeof ${valueName} === 'string') {`);
+      lines.push(`${indent}    const alpha3Regex = /^[A-Z]{3}$/;`);
+      lines.push(`${indent}    if (!alpha3Regex.test(${valueName})) {`);
+      lines.push(`${indent}      ${errorsName}.isISO31661Alpha3 = ${JSON.stringify(getErrorMessage(constraint, 'must be a valid ISO 3166-1 alpha-3 country code'))};`);
+      lines.push(`${indent}    }`);
+      lines.push(`    }`);
+      break;
+
+    case 'isLocale':
+      lines.push(`${indent}  if (typeof ${valueName} === 'string') {`);
+      lines.push(`${indent}    const localeRegex = /^[a-z]{2}(-[A-Z]{2})?$/;`);
+      lines.push(`${indent}    if (!localeRegex.test(${valueName})) {`);
+      lines.push(`${indent}      ${errorsName}.isLocale = ${JSON.stringify(getErrorMessage(constraint, 'must be a valid locale'))};`);
+      lines.push(`${indent}    }`);
+      lines.push(`    }`);
+      break;
+
+    // Medium Priority Validators - Formats & Standards
+    case 'isSemVer':
+      lines.push(`${indent}  if (typeof ${valueName} === 'string') {`);
+      lines.push(`${indent}    const semverRegex = /^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$/;`);
+      lines.push(`${indent}    if (!semverRegex.test(${valueName})) {`);
+      lines.push(`${indent}      ${errorsName}.isSemVer = ${JSON.stringify(getErrorMessage(constraint, 'must be a valid semantic version'))};`);
+      lines.push(`${indent}    }`);
+      lines.push(`    }`);
+      break;
+
+    case 'isMimeType':
+      lines.push(`${indent}  if (typeof ${valueName} === 'string') {`);
+      lines.push(`${indent}    const mimeRegex = /^[a-z]+\\/[a-z0-9\\-+.]+$/i;`);
+      lines.push(`${indent}    if (!mimeRegex.test(${valueName})) {`);
+      lines.push(`${indent}      ${errorsName}.isMimeType = ${JSON.stringify(getErrorMessage(constraint, 'must be a valid MIME type'))};`);
+      lines.push(`${indent}    }`);
+      lines.push(`    }`);
+      break;
+
+    case 'isTimeZone':
+      lines.push(`${indent}  if (typeof ${valueName} === 'string') {`);
+      lines.push(`${indent}    const timezoneRegex = /^[A-Z][a-zA-Z]+\\/[A-Z][a-zA-Z_]+$/;`);
+      lines.push(`${indent}    if (!timezoneRegex.test(${valueName}) && ${valueName} !== 'UTC') {`);
+      lines.push(`${indent}      ${errorsName}.isTimeZone = ${JSON.stringify(getErrorMessage(constraint, 'must be a valid timezone'))};`);
+      lines.push(`${indent}    }`);
+      lines.push(`    }`);
+      break;
+
+    case 'isRFC3339':
+      lines.push(`${indent}  if (typeof ${valueName} === 'string') {`);
+      lines.push(`${indent}    const rfc3339Regex = /^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?(Z|[+-]\\d{2}:\\d{2})$/;`);
+      lines.push(`${indent}    if (!rfc3339Regex.test(${valueName})) {`);
+      lines.push(`${indent}      ${errorsName}.isRFC3339 = ${JSON.stringify(getErrorMessage(constraint, 'must be a valid RFC 3339 date'))};`);
+      lines.push(`${indent}    }`);
+      lines.push(`    }`);
+      break;
+
     // Number validators
     case 'isDivisibleBy':
       lines.push(`${indent}  if (typeof ${valueName} === 'number' && ${valueName} % ${constraint.value} !== 0) {`);

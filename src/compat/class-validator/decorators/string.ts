@@ -944,3 +944,572 @@ export function IsBase64(options?: ValidationDecoratorOptions) {
   };
 }
 
+// ============================================================================
+// Medium Priority Validators - Banking & Financial
+// ============================================================================
+
+/**
+ * Checks if the string is a valid IBAN (International Bank Account Number).
+ *
+ * @param options - Validation options
+ *
+ * @example
+ * ```typescript
+ * class BankAccountDto {
+ *   @IsIBAN()
+ *   accountNumber: string;
+ * }
+ * ```
+ */
+export function IsIBAN(options?: ValidationDecoratorOptions) {
+  return function (target: undefined, context: ClassFieldDecoratorContext): any {
+    const propertyKey = context.name;
+
+    context.addInitializer(function (this: any) {
+      addValidationConstraint(this.constructor, propertyKey, {
+        type: 'isIBAN',
+        message: options?.message,
+        groups: options?.groups,
+        always: options?.always,
+      });
+    });
+  };
+}
+
+/**
+ * Checks if the string is a valid BIC (Bank Identifier Code) or SWIFT code.
+ *
+ * @param options - Validation options
+ *
+ * @example
+ * ```typescript
+ * class BankDto {
+ *   @IsBIC()
+ *   swiftCode: string;
+ * }
+ * ```
+ */
+export function IsBIC(options?: ValidationDecoratorOptions) {
+  return function (target: undefined, context: ClassFieldDecoratorContext): any {
+    const propertyKey = context.name;
+
+    context.addInitializer(function (this: any) {
+      addValidationConstraint(this.constructor, propertyKey, {
+        type: 'isBIC',
+        message: options?.message,
+        groups: options?.groups,
+        always: options?.always,
+      });
+    });
+  };
+}
+
+/**
+ * Checks if the string is a valid currency amount.
+ *
+ * @param options - Validation options
+ *
+ * @example
+ * ```typescript
+ * class PriceDto {
+ *   @IsCurrency()
+ *   price: string; // e.g., "$100.00", "€50.99"
+ * }
+ * ```
+ */
+export function IsCurrency(options?: ValidationDecoratorOptions) {
+  return function (target: undefined, context: ClassFieldDecoratorContext): any {
+    const propertyKey = context.name;
+
+    context.addInitializer(function (this: any) {
+      addValidationConstraint(this.constructor, propertyKey, {
+        type: 'isCurrency',
+        message: options?.message,
+        groups: options?.groups,
+        always: options?.always,
+      });
+    });
+  };
+}
+
+/**
+ * Checks if the string is a valid ISO 4217 currency code.
+ *
+ * @param options - Validation options
+ *
+ * @example
+ * ```typescript
+ * class CurrencyDto {
+ *   @IsISO4217CurrencyCode()
+ *   code: string; // e.g., "USD", "EUR", "RUB"
+ * }
+ * ```
+ */
+export function IsISO4217CurrencyCode(options?: ValidationDecoratorOptions) {
+  return function (target: undefined, context: ClassFieldDecoratorContext): any {
+    const propertyKey = context.name;
+
+    context.addInitializer(function (this: any) {
+      addValidationConstraint(this.constructor, propertyKey, {
+        type: 'isISO4217CurrencyCode',
+        message: options?.message,
+        groups: options?.groups,
+        always: options?.always,
+      });
+    });
+  };
+}
+
+// ============================================================================
+// Medium Priority Validators - Cryptocurrency
+// ============================================================================
+
+/**
+ * Checks if the string is a valid Ethereum address.
+ *
+ * @param options - Validation options
+ *
+ * @example
+ * ```typescript
+ * class WalletDto {
+ *   @IsEthereumAddress()
+ *   address: string;
+ * }
+ * ```
+ */
+export function IsEthereumAddress(options?: ValidationDecoratorOptions) {
+  return function (target: undefined, context: ClassFieldDecoratorContext): any {
+    const propertyKey = context.name;
+
+    context.addInitializer(function (this: any) {
+      addValidationConstraint(this.constructor, propertyKey, {
+        type: 'isEthereumAddress',
+        message: options?.message,
+        groups: options?.groups,
+        always: options?.always,
+      });
+    });
+  };
+}
+
+/**
+ * Checks if the string is a valid Bitcoin address.
+ *
+ * @param options - Validation options
+ *
+ * @example
+ * ```typescript
+ * class WalletDto {
+ *   @IsBtcAddress()
+ *   address: string;
+ * }
+ * ```
+ */
+export function IsBtcAddress(options?: ValidationDecoratorOptions) {
+  return function (target: undefined, context: ClassFieldDecoratorContext): any {
+    const propertyKey = context.name;
+
+    context.addInitializer(function (this: any) {
+      addValidationConstraint(this.constructor, propertyKey, {
+        type: 'isBtcAddress',
+        message: options?.message,
+        groups: options?.groups,
+        always: options?.always,
+      });
+    });
+  };
+}
+
+
+
+// ============================================================================
+// Medium Priority Validators - Documents & Identifiers
+// ============================================================================
+
+/**
+ * Checks if the string is a valid passport number.
+ *
+ * @param locale - Optional locale for country-specific validation
+ * @param options - Validation options
+ *
+ * @example
+ * ```typescript
+ * class PersonDto {
+ *   @IsPassportNumber('US')
+ *   passportNumber: string;
+ * }
+ * ```
+ */
+export function IsPassportNumber(
+  locale?: string,
+  options?: ValidationDecoratorOptions,
+) {
+  return function (target: undefined, context: ClassFieldDecoratorContext): any {
+    const propertyKey = context.name;
+
+    context.addInitializer(function (this: any) {
+      addValidationConstraint(this.constructor, propertyKey, {
+        type: 'isPassportNumber',
+        value: locale,
+        message: options?.message,
+        groups: options?.groups,
+        always: options?.always,
+      });
+    });
+  };
+}
+
+/**
+ * Checks if the string is a valid identity card number.
+ *
+ * @param locale - Optional locale for country-specific validation
+ * @param options - Validation options
+ *
+ * @example
+ * ```typescript
+ * class PersonDto {
+ *   @IsIdentityCard('US')
+ *   idCard: string;
+ * }
+ * ```
+ */
+export function IsIdentityCard(
+  locale?: string,
+  options?: ValidationDecoratorOptions,
+) {
+  return function (target: undefined, context: ClassFieldDecoratorContext): any {
+    const propertyKey = context.name;
+
+    context.addInitializer(function (this: any) {
+      addValidationConstraint(this.constructor, propertyKey, {
+        type: 'isIdentityCard',
+        value: locale,
+        message: options?.message,
+        groups: options?.groups,
+        always: options?.always,
+      });
+    });
+  };
+}
+
+/**
+ * Checks if the string is a valid EAN (European Article Number).
+ *
+ * @param options - Validation options
+ *
+ * @example
+ * ```typescript
+ * class ProductDto {
+ *   @IsEAN()
+ *   barcode: string;
+ * }
+ * ```
+ */
+export function IsEAN(options?: ValidationDecoratorOptions) {
+  return function (target: undefined, context: ClassFieldDecoratorContext): any {
+    const propertyKey = context.name;
+
+    context.addInitializer(function (this: any) {
+      addValidationConstraint(this.constructor, propertyKey, {
+        type: 'isEAN',
+        message: options?.message,
+        groups: options?.groups,
+        always: options?.always,
+      });
+    });
+  };
+}
+
+/**
+ * Checks if the string is a valid ISIN (International Securities Identification Number).
+ *
+ * @param options - Validation options
+ *
+ * @example
+ * ```typescript
+ * class SecurityDto {
+ *   @IsISIN()
+ *   isin: string;
+ * }
+ * ```
+ */
+export function IsISIN(options?: ValidationDecoratorOptions) {
+  return function (target: undefined, context: ClassFieldDecoratorContext): any {
+    const propertyKey = context.name;
+
+    context.addInitializer(function (this: any) {
+      addValidationConstraint(this.constructor, propertyKey, {
+        type: 'isISIN',
+        message: options?.message,
+        groups: options?.groups,
+        always: options?.always,
+      });
+    });
+  };
+}
+
+// ============================================================================
+// Medium Priority Validators - Network & URI
+// ============================================================================
+
+/**
+ * Checks if the string is a valid Magnet URI.
+ *
+ * @param options - Validation options
+ *
+ * @example
+ * ```typescript
+ * class TorrentDto {
+ *   @IsMagnetURI()
+ *   magnetLink: string;
+ * }
+ * ```
+ */
+export function IsMagnetURI(options?: ValidationDecoratorOptions) {
+  return function (target: undefined, context: ClassFieldDecoratorContext): any {
+    const propertyKey = context.name;
+
+    context.addInitializer(function (this: any) {
+      addValidationConstraint(this.constructor, propertyKey, {
+        type: 'isMagnetURI',
+        message: options?.message,
+        groups: options?.groups,
+        always: options?.always,
+      });
+    });
+  };
+}
+
+/**
+ * Checks if the string is a valid Data URI.
+ *
+ * @param options - Validation options
+ *
+ * @example
+ * ```typescript
+ * class ImageDto {
+ *   @IsDataURI()
+ *   dataUri: string;
+ * }
+ * ```
+ */
+export function IsDataURI(options?: ValidationDecoratorOptions) {
+  return function (target: undefined, context: ClassFieldDecoratorContext): any {
+    const propertyKey = context.name;
+
+    context.addInitializer(function (this: any) {
+      addValidationConstraint(this.constructor, propertyKey, {
+        type: 'isDataURI',
+        message: options?.message,
+        groups: options?.groups,
+        always: options?.always,
+      });
+    });
+  };
+}
+
+
+// ============================================================================
+// Medium Priority Validators - Localization
+// ============================================================================
+
+/**
+ * Checks if the string is a valid ISO 3166-1 alpha-2 country code.
+ *
+ * @param options - Validation options
+ *
+ * @example
+ * ```typescript
+ * class AddressDto {
+ *   @IsISO31661Alpha2()
+ *   countryCode: string; // e.g., "US", "RU", "GB"
+ * }
+ * ```
+ */
+export function IsISO31661Alpha2(options?: ValidationDecoratorOptions) {
+  return function (target: undefined, context: ClassFieldDecoratorContext): any {
+    const propertyKey = context.name;
+
+    context.addInitializer(function (this: any) {
+      addValidationConstraint(this.constructor, propertyKey, {
+        type: 'isISO31661Alpha2',
+        message: options?.message,
+        groups: options?.groups,
+        always: options?.always,
+      });
+    });
+  };
+}
+
+/**
+ * Checks if the string is a valid ISO 3166-1 alpha-3 country code.
+ *
+ * @param options - Validation options
+ *
+ * @example
+ * ```typescript
+ * class AddressDto {
+ *   @IsISO31661Alpha3()
+ *   countryCode: string; // e.g., "USA", "RUS", "GBR"
+ * }
+ * ```
+ */
+export function IsISO31661Alpha3(options?: ValidationDecoratorOptions) {
+  return function (target: undefined, context: ClassFieldDecoratorContext): any {
+    const propertyKey = context.name;
+
+    context.addInitializer(function (this: any) {
+      addValidationConstraint(this.constructor, propertyKey, {
+        type: 'isISO31661Alpha3',
+        message: options?.message,
+        groups: options?.groups,
+        always: options?.always,
+      });
+    });
+  };
+}
+
+/**
+ * Checks if the string is a valid locale.
+ *
+ * @param options - Validation options
+ *
+ * @example
+ * ```typescript
+ * class UserDto {
+ *   @IsLocale()
+ *   locale: string; // e.g., "en-US", "ru-RU", "fr-FR"
+ * }
+ * ```
+ */
+export function IsLocale(options?: ValidationDecoratorOptions) {
+  return function (target: undefined, context: ClassFieldDecoratorContext): any {
+    const propertyKey = context.name;
+
+    context.addInitializer(function (this: any) {
+      addValidationConstraint(this.constructor, propertyKey, {
+        type: 'isLocale',
+        message: options?.message,
+        groups: options?.groups,
+        always: options?.always,
+      });
+    });
+  };
+}
+
+// ============================================================================
+// Medium Priority Validators - Formats & Standards
+// ============================================================================
+
+/**
+ * Checks if the string is a valid semantic version.
+ *
+ * @param options - Validation options
+ *
+ * @example
+ * ```typescript
+ * class PackageDto {
+ *   @IsSemVer()
+ *   version: string; // e.g., "1.2.3", "2.0.0-beta.1"
+ * }
+ * ```
+ */
+export function IsSemVer(options?: ValidationDecoratorOptions) {
+  return function (target: undefined, context: ClassFieldDecoratorContext): any {
+    const propertyKey = context.name;
+
+    context.addInitializer(function (this: any) {
+      addValidationConstraint(this.constructor, propertyKey, {
+        type: 'isSemVer',
+        message: options?.message,
+        groups: options?.groups,
+        always: options?.always,
+      });
+    });
+  };
+}
+
+/**
+ * Checks if the string is a valid MIME type.
+ *
+ * @param options - Validation options
+ *
+ * @example
+ * ```typescript
+ * class FileDto {
+ *   @IsMimeType()
+ *   contentType: string; // e.g., "text/html", "application/json"
+ * }
+ * ```
+ */
+export function IsMimeType(options?: ValidationDecoratorOptions) {
+  return function (target: undefined, context: ClassFieldDecoratorContext): any {
+    const propertyKey = context.name;
+
+    context.addInitializer(function (this: any) {
+      addValidationConstraint(this.constructor, propertyKey, {
+        type: 'isMimeType',
+        message: options?.message,
+        groups: options?.groups,
+        always: options?.always,
+      });
+    });
+  };
+}
+
+/**
+ * Checks if the string is a valid timezone.
+ *
+ * @param options - Validation options
+ *
+ * @example
+ * ```typescript
+ * class EventDto {
+ *   @IsTimeZone()
+ *   timezone: string; // e.g., "America/New_York", "Europe/Moscow"
+ * }
+ * ```
+ */
+export function IsTimeZone(options?: ValidationDecoratorOptions) {
+  return function (target: undefined, context: ClassFieldDecoratorContext): any {
+    const propertyKey = context.name;
+
+    context.addInitializer(function (this: any) {
+      addValidationConstraint(this.constructor, propertyKey, {
+        type: 'isTimeZone',
+        message: options?.message,
+        groups: options?.groups,
+        always: options?.always,
+      });
+    });
+  };
+}
+
+/**
+ * Checks if the string is a valid RFC 3339 date.
+ *
+ * @param options - Validation options
+ *
+ * @example
+ * ```typescript
+ * class EventDto {
+ *   @IsRFC3339()
+ *   timestamp: string;
+ * }
+ * ```
+ */
+export function IsRFC3339(options?: ValidationDecoratorOptions) {
+  return function (target: undefined, context: ClassFieldDecoratorContext): any {
+    const propertyKey = context.name;
+
+    context.addInitializer(function (this: any) {
+      addValidationConstraint(this.constructor, propertyKey, {
+        type: 'isRFC3339',
+        message: options?.message,
+        groups: options?.groups,
+        always: options?.always,
+      });
+    });
+  };
+}
+

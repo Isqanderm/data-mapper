@@ -53,6 +53,31 @@ export {
   IsPort,
   IsMACAddress,
   IsBase64,
+  // Medium Priority Validators - Banking & Financial
+  IsIBAN,
+  IsBIC,
+  IsCurrency,
+  IsISO4217CurrencyCode,
+  // Medium Priority Validators - Cryptocurrency
+  IsEthereumAddress,
+  IsBtcAddress,
+  // Medium Priority Validators - Documents & Identifiers
+  IsPassportNumber,
+  IsIdentityCard,
+  IsEAN,
+  IsISIN,
+  // Medium Priority Validators - Network & URI
+  IsMagnetURI,
+  IsDataURI,
+  // Medium Priority Validators - Localization
+  IsISO31661Alpha2,
+  IsISO31661Alpha3,
+  IsLocale,
+  // Medium Priority Validators - Formats & Standards
+  IsSemVer,
+  IsMimeType,
+  IsTimeZone,
+  IsRFC3339,
 } from './string';
 
 // Number decorators
