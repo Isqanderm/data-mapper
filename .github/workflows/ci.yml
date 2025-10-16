@@ -1,6 +1,26 @@
 name: CI
 
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - main
+      - 'feat/**'
+      - 'fix/**'
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches:
+      - main
+
+# Cancel in-progress runs when a new workflow with the same group name is triggered
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pull-requests: write
+  checks: write
+  statuses: write
 
 jobs:
   test:
@@ -728,3 +748,17 @@ jobs:
               });
             }
 
+  # Final job to ensure all checks passed before allowing merge
+  require-successful-checks:
+    name: All Checks Passed
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    needs:
+      - test
+      - coverage-check
+      - esm-validation-summary
+    steps:
+      - name: Verify all checks passed
+        run: |
+          echo "✅ All required checks have passed successfully!"
+          echo "This PR is ready for review and merge."
