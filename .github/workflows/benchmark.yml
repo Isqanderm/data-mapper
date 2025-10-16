@@ -71,24 +71,20 @@ jobs:
             echo "Complex benchmark not available (file not found)" > benchmark-complex.txt
           fi
 
-      - name: Generate JSON benchmark results for tracking
-        run: |
-          node benchmarks/suites/compat/comparison-json.js > bench-results.json 2>&1 || echo "[]" > bench-results.json
-          echo "Benchmark results for tracking:"
-          cat bench-results.json
+      - name: Build validation benchmarks
+        run: npm run bench:validation:build
 
-      - name: Generate JSON validation benchmark results
+      - name: Generate JSON validation benchmark results for tracking
         run: |
-          node benchmarks/suites/compat/validation-comparison-json.js > bench-validation-results.json 2>&1 || echo "[]" > bench-validation-results.json
+          node benchmarks/suites/compat/validation-benchmark-action.js > bench-results.json 2>&1 || echo "[]" > bench-results.json
           echo "Validation benchmark results for tracking:"
-          cat bench-validation-results.json
+          cat bench-results.json
 
       - name: Save benchmark JSON files before cleanup
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: |
           mkdir -p /tmp/benchmark-data
           cp bench-results.json /tmp/benchmark-data/ || echo "[]" > /tmp/benchmark-data/bench-results.json
-          cp bench-validation-results.json /tmp/benchmark-data/ || echo "[]" > /tmp/benchmark-data/bench-validation-results.json
 
       - name: Clean up benchmark text files before switching branches
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
@@ -100,7 +96,6 @@ jobs:
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: |
           cp /tmp/benchmark-data/bench-results.json .
-          cp /tmp/benchmark-data/bench-validation-results.json .
 
       - name: Store benchmark result (main branch only)
         uses: benchmark-action/github-action-benchmark@v1
@@ -125,7 +120,6 @@ jobs:
           name: benchmark-results
           path: |
             bench-results.json
-            bench-validation-results.json
             benchmark-simple.txt
             benchmark-complex.txt
             benchmark-compat.txt
