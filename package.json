@@ -25,12 +25,6 @@
       "import": "./build/esm/compat/class-validator/index.js",
       "require": "./build/cjs/compat/class-validator/index.js",
       "default": "./build/cjs/compat/class-validator/index.js"
-    },
-    "./nestjs": {
-      "types": "./build/cjs/integrations/nestjs/index.d.ts",
-      "import": "./build/esm/integrations/nestjs/index.js",
-      "require": "./build/cjs/integrations/nestjs/index.js",
-      "default": "./build/cjs/integrations/nestjs/index.js"
     }
   },
   "scripts": {
