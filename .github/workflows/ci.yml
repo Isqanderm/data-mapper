@@ -84,13 +84,14 @@ jobs:
           if [ -f coverage/coverage-summary.json ]; then
             cp coverage/coverage-summary.json coverage-main.json
             echo "✅ Main branch coverage summary found"
+            echo "MAIN_BRANCH_NO_COVERAGE=false" >> "$GITHUB_ENV"
           else
             echo "⚠️ Coverage summary not found for main branch"
             echo "This is expected if main branch doesn't have json-summary reporter yet."
             echo "Creating a fallback coverage file with 0% coverage to allow the check to pass."
             # Create a minimal coverage file with 0% to ensure PR doesn't fail
             echo '{"total":{"lines":{"total":0,"covered":0,"skipped":0,"pct":0},"statements":{"total":0,"covered":0,"skipped":0,"pct":0},"functions":{"total":0,"covered":0,"skipped":0,"pct":0},"branches":{"total":0,"covered":0,"skipped":0,"pct":0}}}' > coverage-main.json
-            echo "MAIN_BRANCH_NO_COVERAGE=true" >> $GITHUB_ENV
+            echo "MAIN_BRANCH_NO_COVERAGE=true" >> "$GITHUB_ENV"
           fi
 
       - name: Compare coverage and fail if decreased
@@ -98,16 +99,26 @@ jobs:
           echo "📊 Comparing coverage between main and PR..."
 
           # Extract coverage percentages from main branch
-          MAIN_LINES=$(cat coverage-main.json | grep -o '"lines":{"total":[0-9]*,"covered":[0-9]*,"skipped":[0-9]*,"pct":[0-9.]*' | grep -o 'pct":[0-9.]*' | cut -d':' -f2)
-          MAIN_STATEMENTS=$(cat coverage-main.json | grep -o '"statements":{"total":[0-9]*,"covered":[0-9]*,"skipped":[0-9]*,"pct":[0-9.]*' | grep -o 'pct":[0-9.]*' | cut -d':' -f2)
-          MAIN_FUNCTIONS=$(cat coverage-main.json | grep -o '"functions":{"total":[0-9]*,"covered":[0-9]*,"skipped":[0-9]*,"pct":[0-9.]*' | grep -o 'pct":[0-9.]*' | cut -d':' -f2)
-          MAIN_BRANCHES=$(cat coverage-main.json | grep -o '"branches":{"total":[0-9]*,"covered":[0-9]*,"skipped":[0-9]*,"pct":[0-9.]*' | grep -o 'pct":[0-9.]*' | cut -d':' -f2)
+          MAIN_LINES=$(cat coverage-main.json | grep -o '"lines":{"total":[0-9]*,"covered":[0-9]*,"skipped":[0-9]*,"pct":[0-9.]*' | grep -o 'pct":[0-9.]*' | cut -d':' -f2 || echo "0")
+          MAIN_STATEMENTS=$(cat coverage-main.json | grep -o '"statements":{"total":[0-9]*,"covered":[0-9]*,"skipped":[0-9]*,"pct":[0-9.]*' | grep -o 'pct":[0-9.]*' | cut -d':' -f2 || echo "0")
+          MAIN_FUNCTIONS=$(cat coverage-main.json | grep -o '"functions":{"total":[0-9]*,"covered":[0-9]*,"skipped":[0-9]*,"pct":[0-9.]*' | grep -o 'pct":[0-9.]*' | cut -d':' -f2 || echo "0")
+          MAIN_BRANCHES=$(cat coverage-main.json | grep -o '"branches":{"total":[0-9]*,"covered":[0-9]*,"skipped":[0-9]*,"pct":[0-9.]*' | grep -o 'pct":[0-9.]*' | cut -d':' -f2 || echo "0")
 
           # Extract coverage percentages from PR branch
-          PR_LINES=$(cat coverage-pr.json | grep -o '"lines":{"total":[0-9]*,"covered":[0-9]*,"skipped":[0-9]*,"pct":[0-9.]*' | grep -o 'pct":[0-9.]*' | cut -d':' -f2)
-          PR_STATEMENTS=$(cat coverage-pr.json | grep -o '"statements":{"total":[0-9]*,"covered":[0-9]*,"skipped":[0-9]*,"pct":[0-9.]*' | grep -o 'pct":[0-9.]*' | cut -d':' -f2)
-          PR_FUNCTIONS=$(cat coverage-pr.json | grep -o '"functions":{"total":[0-9]*,"covered":[0-9]*,"skipped":[0-9]*,"pct":[0-9.]*' | grep -o 'pct":[0-9.]*' | cut -d':' -f2)
-          PR_BRANCHES=$(cat coverage-pr.json | grep -o '"branches":{"total":[0-9]*,"covered":[0-9]*,"skipped":[0-9]*,"pct":[0-9.]*' | grep -o 'pct":[0-9.]*' | cut -d':' -f2)
+          PR_LINES=$(cat coverage-pr.json | grep -o '"lines":{"total":[0-9]*,"covered":[0-9]*,"skipped":[0-9]*,"pct":[0-9.]*' | grep -o 'pct":[0-9.]*' | cut -d':' -f2 || echo "0")
+          PR_STATEMENTS=$(cat coverage-pr.json | grep -o '"statements":{"total":[0-9]*,"covered":[0-9]*,"skipped":[0-9]*,"pct":[0-9.]*' | grep -o 'pct":[0-9.]*' | cut -d':' -f2 || echo "0")
+          PR_FUNCTIONS=$(cat coverage-pr.json | grep -o '"functions":{"total":[0-9]*,"covered":[0-9]*,"skipped":[0-9]*,"pct":[0-9.]*' | grep -o 'pct":[0-9.]*' | cut -d':' -f2 || echo "0")
+          PR_BRANCHES=$(cat coverage-pr.json | grep -o '"branches":{"total":[0-9]*,"covered":[0-9]*,"skipped":[0-9]*,"pct":[0-9.]*' | grep -o 'pct":[0-9.]*' | cut -d':' -f2 || echo "0")
+
+          # Set defaults if empty
+          MAIN_LINES=${MAIN_LINES:-0}
+          MAIN_STATEMENTS=${MAIN_STATEMENTS:-0}
+          MAIN_FUNCTIONS=${MAIN_FUNCTIONS:-0}
+          MAIN_BRANCHES=${MAIN_BRANCHES:-0}
+          PR_LINES=${PR_LINES:-0}
+          PR_STATEMENTS=${PR_STATEMENTS:-0}
+          PR_FUNCTIONS=${PR_FUNCTIONS:-0}
+          PR_BRANCHES=${PR_BRANCHES:-0}
 
           echo "Main branch coverage:"
           echo "  Lines: ${MAIN_LINES}%"
@@ -123,30 +134,32 @@ jobs:
           echo ""
 
           # Compare coverage (using bc for floating point comparison)
+          # Note: 0% change is acceptable (no decrease)
           FAILED=0
 
-          if (( $(echo "$PR_LINES < $MAIN_LINES" | bc -l) )); then
+          # Use bc -l for comparison, result is 1 if true, 0 if false
+          if [ $(echo "$PR_LINES < $MAIN_LINES" | bc -l) -eq 1 ]; then
             echo "❌ Lines coverage decreased from ${MAIN_LINES}% to ${PR_LINES}%"
             FAILED=1
           else
             echo "✅ Lines coverage: ${PR_LINES}% (main: ${MAIN_LINES}%)"
           fi
 
-          if (( $(echo "$PR_STATEMENTS < $MAIN_STATEMENTS" | bc -l) )); then
+          if [ $(echo "$PR_STATEMENTS < $MAIN_STATEMENTS" | bc -l) -eq 1 ]; then
             echo "❌ Statements coverage decreased from ${MAIN_STATEMENTS}% to ${PR_STATEMENTS}%"
             FAILED=1
           else
             echo "✅ Statements coverage: ${PR_STATEMENTS}% (main: ${MAIN_STATEMENTS}%)"
           fi
 
-          if (( $(echo "$PR_FUNCTIONS < $MAIN_FUNCTIONS" | bc -l) )); then
-            echo "❌ Functions coverage decreased from ${MAIN_FUNCTIONS}% to ${PR_FUNCTIONS}%"
+          if [ $(echo "$PR_FUNCTIONS < $MAIN_FUNCTIONS" | bc -l) -eq 1 ]; then
+            echo "❌ Functions coverage decreased from ${MAIN_FUNCTIONS}% to ${MAIN_FUNCTIONS}%"
             FAILED=1
           else
             echo "✅ Functions coverage: ${PR_FUNCTIONS}% (main: ${MAIN_FUNCTIONS}%)"
           fi
 
-          if (( $(echo "$PR_BRANCHES < $MAIN_BRANCHES" | bc -l) )); then
+          if [ $(echo "$PR_BRANCHES < $MAIN_BRANCHES" | bc -l) -eq 1 ]; then
             echo "❌ Branches coverage decreased from ${MAIN_BRANCHES}% to ${PR_BRANCHES}%"
             FAILED=1
           else
@@ -157,24 +170,24 @@ jobs:
             echo ""
             echo "❌ Coverage check FAILED: Coverage has decreased compared to main branch"
             echo "Please add tests to maintain or improve code coverage."
-            echo "COVERAGE_STATUS=failed" >> $GITHUB_ENV
-            echo "COVERAGE_FAILED=1" >> $GITHUB_ENV
+            echo "COVERAGE_STATUS=failed" >> "$GITHUB_ENV"
+            echo "COVERAGE_FAILED=1" >> "$GITHUB_ENV"
           else
             echo ""
             echo "✅ Coverage check PASSED: Coverage maintained or improved"
-            echo "COVERAGE_STATUS=passed" >> $GITHUB_ENV
-            echo "COVERAGE_FAILED=0" >> $GITHUB_ENV
+            echo "COVERAGE_STATUS=passed" >> "$GITHUB_ENV"
+            echo "COVERAGE_FAILED=0" >> "$GITHUB_ENV"
           fi
 
           # Save coverage values for PR comment
-          echo "MAIN_LINES=${MAIN_LINES}" >> $GITHUB_ENV
-          echo "MAIN_STATEMENTS=${MAIN_STATEMENTS}" >> $GITHUB_ENV
-          echo "MAIN_FUNCTIONS=${MAIN_FUNCTIONS}" >> $GITHUB_ENV
-          echo "MAIN_BRANCHES=${MAIN_BRANCHES}" >> $GITHUB_ENV
-          echo "PR_LINES=${PR_LINES}" >> $GITHUB_ENV
-          echo "PR_STATEMENTS=${PR_STATEMENTS}" >> $GITHUB_ENV
-          echo "PR_FUNCTIONS=${PR_FUNCTIONS}" >> $GITHUB_ENV
-          echo "PR_BRANCHES=${PR_BRANCHES}" >> $GITHUB_ENV
+          echo "MAIN_LINES=${MAIN_LINES}" >> "$GITHUB_ENV"
+          echo "MAIN_STATEMENTS=${MAIN_STATEMENTS}" >> "$GITHUB_ENV"
+          echo "MAIN_FUNCTIONS=${MAIN_FUNCTIONS}" >> "$GITHUB_ENV"
+          echo "MAIN_BRANCHES=${MAIN_BRANCHES}" >> "$GITHUB_ENV"
+          echo "PR_LINES=${PR_LINES}" >> "$GITHUB_ENV"
+          echo "PR_STATEMENTS=${PR_STATEMENTS}" >> "$GITHUB_ENV"
+          echo "PR_FUNCTIONS=${PR_FUNCTIONS}" >> "$GITHUB_ENV"
+          echo "PR_BRANCHES=${PR_BRANCHES}" >> "$GITHUB_ENV"
 
       - name: Comment PR with coverage comparison
         if: always()
