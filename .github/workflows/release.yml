@@ -13,18 +13,41 @@ jobs:
   release:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
           persist-credentials: false
-      - uses: actions/setup-node@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: 'npm'
-      - run: npm ci
-      - run: npm run build --if-present
-      - run: npm test
-      - run: npx semantic-release
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build project (CJS + ESM)
+        run: npm run build
+
+      - name: Run unit tests
+        run: npm test
+
+      - name: Run ESM integration tests
+        run: npm run test:esm
+
+      - name: Verify package integrity before release
+        run: |
+          echo "Verifying package structure..."
+          test -d build/cjs || (echo "❌ CJS build missing" && exit 1)
+          test -d build/esm || (echo "❌ ESM build missing" && exit 1)
+          test -f build/esm/package.json || (echo "❌ ESM package.json missing" && exit 1)
+          grep -q '"type".*"module"' build/esm/package.json || (echo "❌ ESM type marker missing" && exit 1)
+          echo "✅ Package structure verified"
+
+      - name: Semantic Release
+        run: npx semantic-release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}

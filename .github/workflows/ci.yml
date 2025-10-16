@@ -4,20 +4,25 @@ on: [push, pull_request]
 
 jobs:
   test:
+    name: Unit Tests & Coverage
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0  # Fetch all history for better coverage comparison
 
-      - uses: actions/setup-node@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: 'npm'
 
-      - run: npm ci
-      - run: npm run build --if-present
-      - run: npm test
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run unit tests with coverage
+        run: npm test
 
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v5
@@ -28,4 +33,142 @@ jobs:
           name: codecov-umbrella
           fail_ci_if_error: false
           verbose: true
+
+  esm-validation:
+    name: ESM Build Validation
+    runs-on: ubuntu-latest
+    needs: test  # Run after unit tests pass
+    strategy:
+      matrix:
+        node-version: [18, 20, 22]  # Test on multiple Node.js versions
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build project (CJS + ESM)
+        run: npm run build
+
+      - name: Verify ESM build artifacts exist
+        run: |
+          echo "Checking ESM build artifacts..."
+          test -d build/esm || (echo "❌ ESM build directory not found" && exit 1)
+          test -f build/esm/index.js || (echo "❌ ESM entry point not found" && exit 1)
+          test -f build/esm/package.json || (echo "❌ ESM package.json marker not found" && exit 1)
+          echo "✅ ESM build artifacts verified"
+
+      - name: Verify ESM package.json type marker
+        run: |
+          echo "Checking ESM package.json marker..."
+          grep -q '"type".*"module"' build/esm/package.json || (echo "❌ ESM package.json missing type:module" && exit 1)
+          echo "✅ ESM package.json type marker verified"
+
+      - name: Run ESM integration tests
+        run: npm run test:esm
+
+      - name: Test ESM import in Node.js (smoke test)
+        run: |
+          echo "Testing direct ESM import..."
+          node -e "import('./build/esm/index.js').then(m => { console.log('✅ ESM import successful'); console.log('Exports:', Object.keys(m).join(', ')); }).catch(e => { console.error('❌ ESM import failed:', e.message); process.exit(1); })"
+
+      - name: Upload ESM test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: esm-test-results-node-${{ matrix.node-version }}
+          path: |
+            build/esm/**/*.js
+            build/esm/package.json
+          retention-days: 7
+
+  esm-validation-summary:
+    name: ESM Validation Summary
+    runs-on: ubuntu-latest
+    needs: esm-validation
+    if: always() && github.event_name == 'pull_request'
+    steps:
+      - name: Comment PR with ESM validation results
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const conclusion = '${{ needs.esm-validation.result }}';
+            const nodeVersions = ['18', '20', '22'];
+
+            let statusIcon = conclusion === 'success' ? '✅' : '❌';
+            let statusText = conclusion === 'success' ? 'All ESM validation checks passed!' : 'ESM validation failed!';
+
+            const body = `## ${statusIcon} ESM Build Validation
+
+            **Status:** ${statusText}
+
+            ### Test Matrix Results
+
+            | Node.js Version | Status |
+            |-----------------|--------|
+            ${nodeVersions.map(v => `| ${v} | ${conclusion === 'success' ? '✅ Passed' : '❌ Failed'} |`).join('\n')}
+
+            ### Validation Steps
+
+            - ${conclusion === 'success' ? '✅' : '❌'} ESM build artifacts generated
+            - ${conclusion === 'success' ? '✅' : '❌'} \`package.json\` type marker present
+            - ${conclusion === 'success' ? '✅' : '❌'} All imports have proper \`.js\` extensions
+            - ${conclusion === 'success' ? '✅' : '❌'} Runtime import tests passed
+            - ${conclusion === 'success' ? '✅' : '❌'} Functionality tests passed
+
+            ### What This Validates
+
+            The ESM validation suite ensures:
+
+            1. **Import Resolution**: All relative imports have proper \`.js\` extensions for Node.js ESM compatibility
+            2. **Directory Imports**: Directory imports correctly resolve to \`/index.js\`
+            3. **Package Structure**: ESM build includes \`package.json\` with \`"type": "module"\`
+            4. **Runtime Compatibility**: Package can be imported and used in Node.js 18, 20, and 22
+            5. **Export Completeness**: All expected exports are accessible
+            6. **Functionality**: Imported code executes correctly
+
+            ${conclusion === 'success'
+              ? '✅ **The package is ready for ESM consumption!**'
+              : '❌ **Please fix ESM issues before merging.**'}
+
+            ---
+
+            *This validation prevents issues like missing \`.js\` extensions, broken directory imports, and \`ERR_MODULE_NOT_FOUND\` errors.*`;
+
+            // Find existing ESM validation comment
+            const { data: comments } = await github.rest.issues.listComments({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+            });
+
+            const botComment = comments.find(comment =>
+              comment.user.type === 'Bot' &&
+              comment.body.includes('ESM Build Validation')
+            );
+
+            if (botComment) {
+              // Update existing comment
+              await github.rest.issues.updateComment({
+                comment_id: botComment.id,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: body
+              });
+            } else {
+              // Create new comment
+              await github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: body
+              });
+            }
 
