@@ -217,50 +217,50 @@ jobs:
 
             if (mainBranchNoCoverage) {
               // Special message for first-time setup
-              body = \`## ℹ️ Code Coverage Protection - First Time Setup
+              body = `## ℹ️ Code Coverage Protection - First Time Setup
 
-              **Status:** ✅ PASSED (Initial Setup)
+            **Status:** ✅ PASSED (Initial Setup)
 
-              ### PR Coverage
+            ### PR Coverage
 
-              | Metric | This PR |
-              |--------|---------|
-              | Lines | \${prLines}% |
-              | Statements | \${prStatements}% |
-              | Functions | \${prFunctions}% |
-              | Branches | \${prBranches}% |
+            | Metric | This PR |
+            |--------|---------|
+            | Lines | ${prLines}% |
+            | Statements | ${prStatements}% |
+            | Functions | ${prFunctions}% |
+            | Branches | ${prBranches}% |
 
-              ### 📝 Note
+            ### 📝 Note
 
-              This is the first PR with coverage protection enabled. The main branch doesn't have the \`json-summary\` reporter configured yet, so we can't compare coverage.
+            This is the first PR with coverage protection enabled. The main branch doesn't have the \`json-summary\` reporter configured yet, so we can't compare coverage.
 
-              **Once this PR is merged**, all future PRs will be compared against the main branch coverage and will be blocked if coverage decreases.
+            **Once this PR is merged**, all future PRs will be compared against the main branch coverage and will be blocked if coverage decreases.
 
-              ---
+            ---
 
-              *Coverage protection will be fully active after this PR is merged.*\`;
+            *Coverage protection will be fully active after this PR is merged.*`;
             } else {
               // Normal coverage comparison
-              body = \`## \${statusIcon} Code Coverage Check
+              body = `## ${statusIcon} Code Coverage Check
 
-              **Status:** \${statusText}
+            **Status:** ${statusText}
 
-              ### Coverage Comparison
+            ### Coverage Comparison
 
-              | Metric | Main Branch | This PR | Change | Status |
-              |--------|-------------|---------|--------|--------|
-              | Lines | \${mainLines}% | \${prLines}% | \${getIcon(prLines, mainLines)} \${(parseFloat(prLines) - parseFloat(mainLines)).toFixed(2)}% | \${getStatus(prLines, mainLines)} |
-              | Statements | \${mainStatements}% | \${prStatements}% | \${getIcon(prStatements, mainStatements)} \${(parseFloat(prStatements) - parseFloat(mainStatements)).toFixed(2)}% | \${getStatus(prStatements, mainStatements)} |
-              | Functions | \${mainFunctions}% | \${prFunctions}% | \${getIcon(prFunctions, mainFunctions)} \${(parseFloat(prFunctions) - parseFloat(mainFunctions)).toFixed(2)}% | \${getStatus(prFunctions, mainFunctions)} |
-              | Branches | \${mainBranches}% | \${prBranches}% | \${getIcon(prBranches, mainBranches)} \${(parseFloat(prBranches) - parseFloat(mainBranches)).toFixed(2)}% | \${getStatus(prBranches, mainBranches)} |
+            | Metric | Main Branch | This PR | Change | Status |
+            |--------|-------------|---------|--------|--------|
+            | Lines | ${mainLines}% | ${prLines}% | ${getIcon(prLines, mainLines)} ${(parseFloat(prLines) - parseFloat(mainLines)).toFixed(2)}% | ${getStatus(prLines, mainLines)} |
+            | Statements | ${mainStatements}% | ${prStatements}% | ${getIcon(prStatements, mainStatements)} ${(parseFloat(prStatements) - parseFloat(mainStatements)).toFixed(2)}% | ${getStatus(prStatements, mainStatements)} |
+            | Functions | ${mainFunctions}% | ${prFunctions}% | ${getIcon(prFunctions, mainFunctions)} ${(parseFloat(prFunctions) - parseFloat(mainFunctions)).toFixed(2)}% | ${getStatus(prFunctions, mainFunctions)} |
+            | Branches | ${mainBranches}% | ${prBranches}% | ${getIcon(prBranches, mainBranches)} ${(parseFloat(prBranches) - parseFloat(mainBranches)).toFixed(2)}% | ${getStatus(prBranches, mainBranches)} |
 
-              \${failed
-                ? '### ⚠️ Action Required\\n\\nThis PR decreases code coverage. Please add tests to cover the new/modified code before merging.\\n\\n**This check is blocking the PR from being merged.**'
-                : '### ✅ Great Job!\\n\\nCode coverage has been maintained or improved. This PR is ready for review.'}
+            ${failed
+              ? '### ⚠️ Action Required\\n\\nThis PR decreases code coverage. Please add tests to cover the new/modified code before merging.\\n\\n**This check is blocking the PR from being merged.**'
+              : '### ✅ Great Job!\\n\\nCode coverage has been maintained or improved. This PR is ready for review.'}
 
-              ---
+            ---
 
-              *Coverage protection is enabled. PRs that decrease coverage will be blocked from merging.*\`;
+            *Coverage protection is enabled. PRs that decrease coverage will be blocked from merging.*`;
             }
 
             // Find existing coverage comment
