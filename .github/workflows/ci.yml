@@ -38,12 +38,40 @@ jobs:
     name: Coverage Protection Check
     runs-on: ubuntu-latest
     needs: test
-    if: github.event_name == 'pull_request'
+    # Run on pull_request events and on pushes to branches with open PRs
+    if: github.event_name == 'pull_request' || (github.event_name == 'push' && github.ref != 'refs/heads/main')
     steps:
       - name: Checkout PR code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
+      - name: Get PR number
+        id: pr
+        uses: actions/github-script@v7
+        with:
+          script: |
+            let prNumber;
+            if (context.eventName === 'pull_request') {
+              prNumber = context.issue.number;
+            } else {
+              // For push events, find PR by branch
+              const { data: pulls } = await github.rest.pulls.list({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                state: 'open',
+                head: `${context.repo.owner}:${context.ref.replace('refs/heads/', '')}`
+              });
+              if (pulls.length > 0) {
+                prNumber = pulls[0].number;
+              } else {
+                core.setFailed('No open PR found for this branch');
+                return;
+              }
+            }
+            core.setOutput('number', prNumber);
+            core.exportVariable('PR_NUMBER', prNumber);
+            console.log(`PR Number: ${prNumber}`);
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -267,8 +295,9 @@ jobs:
             }
 
             // Find existing coverage comment
+            const prNumber = parseInt(process.env.PR_NUMBER);
             const { data: comments } = await github.rest.issues.listComments({
-              issue_number: context.issue.number,
+              issue_number: prNumber,
               owner: context.repo.owner,
               repo: context.repo.repo,
             });
@@ -289,7 +318,7 @@ jobs:
             } else {
               // Create new comment
               await github.rest.issues.createComment({
-                issue_number: context.issue.number,
+                issue_number: prNumber,
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 body: body
@@ -361,8 +390,36 @@ jobs:
     name: ESM Validation Summary
     runs-on: ubuntu-latest
     needs: esm-validation
-    if: always() && github.event_name == 'pull_request'
+    # Run on pull_request events and on pushes to branches with open PRs
+    if: always() && (github.event_name == 'pull_request' || (github.event_name == 'push' && github.ref != 'refs/heads/main'))
     steps:
+      - name: Get PR number
+        id: pr
+        uses: actions/github-script@v7
+        with:
+          script: |
+            let prNumber;
+            if (context.eventName === 'pull_request') {
+              prNumber = context.issue.number;
+            } else {
+              // For push events, find PR by branch
+              const { data: pulls } = await github.rest.pulls.list({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                state: 'open',
+                head: `${context.repo.owner}:${context.ref.replace('refs/heads/', '')}`
+              });
+              if (pulls.length > 0) {
+                prNumber = pulls[0].number;
+              } else {
+                core.setFailed('No open PR found for this branch');
+                return;
+              }
+            }
+            core.setOutput('number', prNumber);
+            core.exportVariable('PR_NUMBER', prNumber);
+            console.log(`PR Number: ${prNumber}`);
+
       - name: Comment PR with ESM validation results
         uses: actions/github-script@v7
         with:
@@ -411,8 +468,9 @@ jobs:
             *This validation prevents issues like missing \`.js\` extensions, broken directory imports, and \`ERR_MODULE_NOT_FOUND\` errors.*`;
 
             // Find existing ESM validation comment
+            const prNumber = parseInt(process.env.PR_NUMBER);
             const { data: comments } = await github.rest.issues.listComments({
-              issue_number: context.issue.number,
+              issue_number: prNumber,
               owner: context.repo.owner,
               repo: context.repo.repo,
             });
@@ -433,7 +491,7 @@ jobs:
             } else {
               // Create new comment
               await github.rest.issues.createComment({
-                issue_number: context.issue.number,
+                issue_number: prNumber,
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 body: body
