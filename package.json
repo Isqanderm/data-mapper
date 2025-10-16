@@ -36,7 +36,7 @@
   "scripts": {
     "build": "npm run clean && npm run build:cjs && npm run build:esm",
     "build:cjs": "tsc",
-    "build:esm": "tsc -p tsconfig.esm.json && echo '{\"type\":\"module\"}' > build/esm/package.json",
+    "build:esm": "tsc -p tsconfig.esm.json && node scripts/fix-esm-imports.js && echo '{\"type\":\"module\"}' > build/esm/package.json",
     "build:watch": "tsc --watch",
     "clean": "rm -rf build",
     "format": "prettier --write .",
