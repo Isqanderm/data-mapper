@@ -91,6 +91,7 @@
     "chalk": "^4.1.2",
     "class-validator": "^0.14.2",
     "eslint": "^9.37.0",
+    "fast-check": "^4.3.0",
     "prettier": "3.6.2",
     "reflect-metadata": "^0.2.2",
     "semantic-release": "^24.2.9",
