@@ -1,5 +1,3 @@
-[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/Isqanderm/data-mapper)
-
 # om-data-mapper
 
 [![CI](https://github.com/Isqanderm/data-mapper/workflows/CI/badge.svg)](https://github.com/Isqanderm/data-mapper/actions)
@@ -12,8 +10,49 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.3-blue.svg)](https://www.typescriptlang.org/)
 [![Downloads](https://img.shields.io/npm/dm/om-data-mapper.svg)](https://www.npmjs.com/package/om-data-mapper)
 [![Documentation](https://img.shields.io/badge/docs-English%20%7C%20Russian-blue)](./docs/README.md)
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/Isqanderm/data-mapper)
 
-`om-data-mapper` is a high-performance, type-safe object mapping library for TypeScript and JavaScript. It features a modern **Decorator API** with JIT compilation that delivers **up to 42.7x better performance** than class-transformer, while providing a clean, declarative syntax and zero runtime dependencies.
+High-performance TypeScript/JavaScript data mapper with JIT compilation for ultra-fast object transformations. Features a modern **Decorator API** with JIT compilation that delivers **up to 42.7x better performance** than class-transformer, while providing a clean, declarative syntax and zero runtime dependencies.
+
+---
+
+## 📑 Table of Contents
+
+- [Quick Comparison](#-quick-comparison)
+- [Performance](#-performance)
+- [Features](#-features)
+- [Installation](#installation)
+- [Quick Start](#quick-start)
+- [Why om-data-mapper?](#why-om-data-mapper)
+  - [Performance That Matters](#-performance-that-matters)
+  - [Modern, Clean API](#-modern-clean-api)
+  - [Key Advantages](#-key-advantages)
+  - [Developer Experience](#-developer-experience)
+  - [Production Ready](#-production-ready)
+- [Migrating from class-transformer](#migrating-from-class-transformer)
+- [Performance Benchmarks](#performance-benchmarks)
+  - [vs class-transformer](#vs-class-transformer)
+  - [vs Vanilla JavaScript](#vs-vanilla-javascript)
+  - [Continuous Performance Tracking](#continuous-performance-tracking)
+- [Core Features](#core-features)
+  - [Simple Property Mapping](#-simple-property-mapping)
+  - [Nested Object Mapping](#-nested-object-mapping)
+  - [Nested Mapper Composition](#-nested-mapper-composition)
+  - [Array Transformations](#-array-transformations)
+  - [Advanced Transformations](#-advanced-transformations)
+  - [Error Handling](#️-error-handling)
+- [class-transformer Compatibility Layer](#class-transformer-compatibility-layer)
+- [Real-World Examples](#real-world-examples)
+  - [REST API Response Transformation](#rest-api-response-transformation)
+  - [Database Entity to DTO](#database-entity-to-dto)
+  - [Form Data Validation & Transformation](#form-data-validation--transformation)
+- [Documentation](#-documentation)
+- [API Quick Reference](#api-quick-reference)
+- [Contributing](#contributing)
+- [Security](#security)
+- [License](#license)
+
+---
 
 ## 🎯 Quick Comparison
 
@@ -306,7 +345,7 @@ console.log(result); // { fullName: 'John Doe', isAdult: true }
 
 </details>
 
-## Performance
+## Performance Benchmarks
 
 om-data-mapper delivers **exceptional performance** through JIT compilation and modern decorator implementation.
 
