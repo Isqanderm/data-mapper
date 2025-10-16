@@ -400,45 +400,48 @@ jobs:
                   // Take top 10 files with biggest changes
                   const topFiles = diffReport.slice(0, 10);
 
+                  const fileRows = topFiles.map(f => {
+                    const icon = f.diff > 0 ? '📈' : f.diff < 0 ? '📉' : '➡️';
+                    const sign = f.diff > 0 ? '+' : '';
+                    return `| ${f.file} | ${f.main.toFixed(2)}% | ${f.pr.toFixed(2)}% | ${icon} ${sign}${f.diff.toFixed(2)}% |`;
+                  }).join('\n            ');
+
+                  const showingText = diffReport.length > 10 ? `\n            *Showing top 10 of ${diffReport.length} files with coverage changes*` : '';
+
                   fileDiffSection = `
 
             ### 📊 Coverage Changes by File
 
             | File | Main | This PR | Change |
             |------|------|---------|--------|
-            ${topFiles.map(f => {
-              const icon = f.diff > 0 ? '📈' : f.diff < 0 ? '📉' : '➡️';
-              const sign = f.diff > 0 ? '+' : '';
-              return \`| \${f.file} | \${f.main.toFixed(2)}% | \${f.pr.toFixed(2)}% | \${icon} \${sign}\${f.diff.toFixed(2)}% |\`;
-            }).join('\\n            ')}
-            ${diffReport.length > 10 ? \`\\n            *Showing top 10 of \${diffReport.length} files with coverage changes*\` : ''}
+            ${fileRows}${showingText}
             `;
                 }
               } catch (e) {
                 console.log('No per-file diff report found');
               }
 
-              body = \`## \${statusIcon} Code Coverage Check
+              body = `## ${statusIcon} Code Coverage Check
 
-            **Status:** \${statusText}
+            **Status:** ${statusText}
 
             ### Coverage Comparison
 
             | Metric | Main Branch | This PR | Change | Status |
             |--------|-------------|---------|--------|--------|
-            | Lines | \${mainLines}% | \${prLines}% | \${getIcon(prLines, mainLines)} \${(parseFloat(prLines) - parseFloat(mainLines)).toFixed(2)}% | \${getStatus(prLines, mainLines)} |
-            | Statements | \${mainStatements}% | \${prStatements}% | \${getIcon(prStatements, mainStatements)} \${(parseFloat(prStatements) - parseFloat(mainStatements)).toFixed(2)}% | \${getStatus(prStatements, mainStatements)} |
-            | Functions | \${mainFunctions}% | \${prFunctions}% | \${getIcon(prFunctions, mainFunctions)} \${(parseFloat(prFunctions) - parseFloat(mainFunctions)).toFixed(2)}% | \${getStatus(prFunctions, mainFunctions)} |
-            | Branches | \${mainBranches}% | \${prBranches}% | \${getIcon(prBranches, mainBranches)} \${(parseFloat(prBranches) - parseFloat(mainBranches)).toFixed(2)}% | \${getStatus(prBranches, mainBranches)} |
-            \${fileDiffSection}
+            | Lines | ${mainLines}% | ${prLines}% | ${getIcon(prLines, mainLines)} ${(parseFloat(prLines) - parseFloat(mainLines)).toFixed(2)}% | ${getStatus(prLines, mainLines)} |
+            | Statements | ${mainStatements}% | ${prStatements}% | ${getIcon(prStatements, mainStatements)} ${(parseFloat(prStatements) - parseFloat(mainStatements)).toFixed(2)}% | ${getStatus(prStatements, mainStatements)} |
+            | Functions | ${mainFunctions}% | ${prFunctions}% | ${getIcon(prFunctions, mainFunctions)} ${(parseFloat(prFunctions) - parseFloat(mainFunctions)).toFixed(2)}% | ${getStatus(prFunctions, mainFunctions)} |
+            | Branches | ${mainBranches}% | ${prBranches}% | ${getIcon(prBranches, mainBranches)} ${(parseFloat(prBranches) - parseFloat(mainBranches)).toFixed(2)}% | ${getStatus(prBranches, mainBranches)} |
+            ${fileDiffSection}
 
-            \${failed
+            ${failed
               ? '### ⚠️ Action Required\\n\\nThis PR decreases code coverage. Please add tests to cover the new/modified code before merging.\\n\\n**This check is blocking the PR from being merged.**'
               : '### ✅ Great Job!\\n\\nCode coverage has been maintained or improved. This PR is ready for review.'}
 
             ---
 
-            *Coverage protection is enabled. PRs that decrease coverage will be blocked from merging.*\`;
+            *Coverage protection is enabled. PRs that decrease coverage will be blocked from merging.*`;
             }
 
             // Find existing coverage comment
