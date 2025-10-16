@@ -314,12 +314,12 @@ jobs:
               conclusion: annotations.length > 0 ? 'neutral' : 'success',
               output: {
                 title: 'Coverage Changes by File',
-                summary: \`Found \${annotations.length} file(s) with decreased coverage\`,
+                summary: `Found ${annotations.length} file(s) with decreased coverage`,
                 annotations: annotations.slice(0, 50) // GitHub limits to 50 annotations per request
               }
             });
 
-            console.log(\`Created check run with \${annotations.length} annotations\`);
+            console.log(`Created check run with ${annotations.length} annotations`);
 
       - name: Comment PR with coverage comparison
         if: always()
