@@ -14,7 +14,7 @@
  */
 
 import { strict as assert } from 'assert';
-import { readdir, readFile, stat } from 'fs/promises';
+import { readdir, readFile } from 'fs/promises';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 

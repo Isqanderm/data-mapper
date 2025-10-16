@@ -27,19 +27,6 @@ console.log('Simulating: npm install om-data-mapper\n');
 let testsPassed = 0;
 let testsFailed = 0;
 
-function test(name, fn) {
-  process.stdout.write(`  ${name}... `);
-  try {
-    fn();
-    console.log('✓');
-    testsPassed++;
-  } catch (error) {
-    console.log('✗');
-    console.error(`    Error: ${error.message}`);
-    testsFailed++;
-  }
-}
-
 async function asyncTest(name, fn) {
   process.stdout.write(`  ${name}... `);
   try {
