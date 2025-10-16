@@ -2,12 +2,14 @@
 
 ## Supported Versions
 
-We release patches for security vulnerabilities in the following versions:
+We provide security updates **only for version 4.0.0 and above**. Versions below 4.0.0 are no longer supported and will not receive security patches.
 
 | Version | Supported          |
 | ------- | ------------------ |
-| 2.x.x   | :white_check_mark: |
-| < 2.0   | :x:                |
+| 4.x.x   | :white_check_mark: |
+| < 4.0.0 | :x:                |
+
+**Note:** If you are using a version below 4.0.0, we strongly recommend upgrading to the latest 4.x.x version to receive security updates and bug fixes.
 
 ## Reporting a Vulnerability
 
