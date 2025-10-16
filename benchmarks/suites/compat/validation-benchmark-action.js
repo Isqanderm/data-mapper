@@ -104,7 +104,7 @@ const results = [];
 let completedSuites = 0;
 const totalSuites = 6;
 
-function runBenchmark(name, cvFn, omFn, data, Model) {
+function runBenchmark(name, cvFn, omFn, data, cvModel, omModel) {
   return new Promise((resolve) => {
     const suite = new Benchmark.Suite(name);
 
@@ -112,13 +112,13 @@ function runBenchmark(name, cvFn, omFn, data, Model) {
       .add('class-validator', {
         defer: true,
         fn: function (deferred) {
-          cvFn(Model, data).then(() => deferred.resolve());
+          cvFn(cvModel, data).then(() => deferred.resolve());
         },
       })
       .add('om-data-mapper', {
         defer: true,
         fn: function (deferred) {
-          omFn(Model, data).then(() => deferred.resolve());
+          omFn(omModel, data).then(() => deferred.resolve());
         },
       })
       .on('complete', function () {
@@ -156,7 +156,8 @@ async function runAllBenchmarks() {
       return om.validate(instance);
     },
     simpleUserDataValid,
-    { cv: cvModels.SimpleUserDto, om: omModels.SimpleUserDto },
+    cvModels.SimpleUserDto,
+    omModels.SimpleUserDto,
   );
 
   await runBenchmark(
@@ -170,7 +171,8 @@ async function runAllBenchmarks() {
       return om.validate(instance);
     },
     simpleUserDataInvalid,
-    { cv: cvModels.SimpleUserDto, om: omModels.SimpleUserDto },
+    cvModels.SimpleUserDto,
+    omModels.SimpleUserDto,
   );
 
   await runBenchmark(
@@ -184,7 +186,8 @@ async function runAllBenchmarks() {
       return om.validate(instance);
     },
     productDataValid,
-    { cv: cvModels.ProductDto, om: omModels.ProductDto },
+    cvModels.ProductDto,
+    omModels.ProductDto,
   );
 
   await runBenchmark(
@@ -198,7 +201,8 @@ async function runAllBenchmarks() {
       return om.validate(instance);
     },
     mixedDataValid,
-    { cv: cvModels.MixedDto, om: omModels.MixedDto },
+    cvModels.MixedDto,
+    omModels.MixedDto,
   );
 
   await runBenchmark(
@@ -212,7 +216,8 @@ async function runAllBenchmarks() {
       return om.validate(instance);
     },
     complexUserDataValid,
-    { cv: cvModels.ComplexUserDto, om: omModels.ComplexUserDto },
+    cvModels.ComplexUserDto,
+    omModels.ComplexUserDto,
   );
 
   await runBenchmark(
@@ -226,7 +231,8 @@ async function runAllBenchmarks() {
       return om.validate(instance);
     },
     complexUserDataInvalid,
-    { cv: cvModels.ComplexUserDto, om: omModels.ComplexUserDto },
+    cvModels.ComplexUserDto,
+    omModels.ComplexUserDto,
   );
 }
 

@@ -30,7 +30,6 @@ ignore:
   - "build/**/*"
   - "coverage/**/*"
   - "node_modules/**/*"
-  - "src/compat/**/*"  # Compatibility layer tested via integration tests
   - "src/**/types.ts"  # Type definitions only
   - "src/**/interfaces.ts"  # Interface definitions only
 
