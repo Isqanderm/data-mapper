@@ -1,6 +1,6 @@
 {
   "name": "om-data-mapper",
-  "version": "4.2.0",
+  "version": "4.2.1",
   "description": "High-performance TypeScript/JavaScript data mapper and validator with JIT compilation faster than class-transformer/class-validator, zero dependencies, TC39 decorators, drop-in replacement for class-transformer and class-validator",
   "private": false,
   "main": "build/cjs/index.js",
