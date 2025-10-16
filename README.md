@@ -840,6 +840,15 @@ We welcome contributions! Please see our [Contributing Guide](./CONTRIBUTING.md)
 - Submitting pull requests
 - Code of conduct
 
+### 🛡️ Code Coverage Protection
+
+This repository has **automated code coverage protection** enabled. All pull requests must maintain or improve the current code coverage percentage to be merged.
+
+- ✅ Coverage maintained or improved → PR can be merged
+- ❌ Coverage decreased → PR is blocked
+
+See the [Coverage Protection Guide](./docs/COVERAGE_PROTECTION.md) for details on how to ensure your PR passes coverage checks.
+
 ## Security
 
 If you discover a security vulnerability, please follow our [Security Policy](./SECURITY.md) for responsible disclosure.

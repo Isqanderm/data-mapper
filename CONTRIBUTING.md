@@ -206,6 +206,7 @@ git commit -m "feat(mapper): add caching support"
 ### PR Requirements
 
 - ✅ All tests pass
+- ✅ **Code coverage maintained or improved** (blocking requirement)
 - ✅ Code is linted and formatted
 - ✅ Documentation is updated
 - ✅ Commit messages follow conventions
@@ -242,13 +243,33 @@ src/
 
 ## Testing
 
+### 🛡️ Code Coverage Protection
+
+**Important:** This repository has automated code coverage protection enabled. All pull requests must maintain or improve the current code coverage percentage.
+
+- ✅ **Coverage maintained or improved** → PR can be merged
+- ❌ **Coverage decreased** → PR is automatically blocked
+
+When you submit a PR, the CI will:
+1. Run tests on your branch and collect coverage
+2. Run tests on the main branch and collect coverage
+3. Compare the coverage metrics
+4. Post a detailed comparison comment on your PR
+5. **Block the PR from merging** if coverage decreases
+
+See the [Coverage Protection Guide](./docs/COVERAGE_PROTECTION.md) for detailed information on:
+- How to check coverage locally
+- How to identify uncovered code
+- How to fix coverage issues
+- Best practices for writing tests
+
 ### Writing Tests
 
 - Write tests for all new features
 - Write tests for bug fixes
 - Use descriptive test names
 - Follow AAA pattern (Arrange, Act, Assert)
-- Aim for high code coverage
+- **Ensure your tests cover all new/modified code**
 
 ### Test Structure
 
@@ -273,7 +294,7 @@ describe('Feature Name', () => {
 ### Running Tests
 
 ```bash
-# Run all tests
+# Run all tests with coverage
 npm test
 
 # Run tests in watch mode
@@ -282,6 +303,32 @@ npm run test:watch
 # Run specific test file
 npx vitest tests/smoke.test.ts
 ```
+
+### Checking Coverage Locally
+
+Before submitting your PR, verify that coverage is maintained:
+
+```bash
+# Run tests with coverage
+npm test
+
+# Open the HTML coverage report
+open coverage/index.html
+
+# Check coverage summary in terminal
+# The output will show coverage percentages for:
+# - Lines
+# - Statements
+# - Functions
+# - Branches
+```
+
+The HTML report will highlight:
+- ✅ **Green**: Covered lines
+- ❌ **Red**: Uncovered lines
+- ⚠️ **Yellow**: Partially covered branches
+
+Focus on covering the red and yellow lines in your tests.
 
 ## Documentation
 
