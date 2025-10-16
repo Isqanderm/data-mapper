@@ -23,8 +23,6 @@ import {
   // Number
   IsDivisibleBy,
   IsDecimal,
-  IsPositive,
-  IsNegative,
   // Date
   MinDate,
   MaxDate,

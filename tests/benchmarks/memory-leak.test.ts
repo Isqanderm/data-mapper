@@ -3,7 +3,7 @@
  * Ensures that validation and transformation operations don't cause memory leaks
  */
 
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { validateSync } from '../../src/compat/class-validator';
 import { plainToInstance } from '../../src/compat/class-transformer';
 import {

@@ -10,13 +10,7 @@ import {
   IsMobilePhone,
   IsPostalCode,
   IsMongoId,
-  IsJWT,
-  IsStrongPassword,
-  IsPort,
-  IsMACAddress,
-  IsBase64,
   validate,
-  validateSync,
 } from '../../../../src/compat/class-validator';
 
 describe('class-validator-compat - High Priority Validators', () => {

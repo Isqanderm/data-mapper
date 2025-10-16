@@ -12,6 +12,10 @@ import { getValueByPath, PathObject } from './utils';
  * - Backward compatibility with existing code
  * - Dynamic mapping scenarios where decorators can't be used
  *
+ * ⚠️ **SECURITY NOTICE**: This mapper uses dynamic code generation (`new Function()`)
+ * for performance optimization. Mapping configurations MUST come from trusted sources only.
+ * Never pass user-controlled data as mapping configuration to prevent code injection attacks.
+ *
  * See docs/DECORATOR_API.md for the recommended approach.
  * See docs/MIGRATION_GUIDE.md for migration instructions.
  *
@@ -37,6 +41,43 @@ export class Mapper<Source, Target> {
     this.createCompiler = this.createCompiler.bind(this);
   }
 
+  /**
+   * Creates a new Mapper instance with the specified configuration.
+   *
+   * ⚠️ **SECURITY WARNING**: The `mappingConfig` parameter MUST come from a trusted source.
+   * This mapper uses dynamic code generation for performance. Passing user-controlled data
+   * as mapping configuration can lead to arbitrary code execution vulnerabilities.
+   *
+   * **Safe usage examples**:
+   * ```typescript
+   * // ✅ Safe: Configuration defined by developer
+   * const mapper = Mapper.create({
+   *   name: 'user.fullName',
+   *   email: 'user.email'
+   * });
+   *
+   * // ✅ Safe: Configuration from trusted internal source
+   * const mapper = Mapper.create(TRUSTED_MAPPING_CONFIGS.userMapper);
+   * ```
+   *
+   * **Unsafe usage examples**:
+   * ```typescript
+   * // ❌ UNSAFE: User input as mapping config
+   * const userConfig = JSON.parse(request.body);
+   * const mapper = Mapper.create(userConfig); // DANGEROUS!
+   *
+   * // ❌ UNSAFE: External untrusted source
+   * const externalConfig = await fetch('untrusted-api.com/config');
+   * const mapper = Mapper.create(externalConfig); // DANGEROUS!
+   * ```
+   *
+   * @param mappingConfig - Mapping configuration (MUST be from trusted source)
+   * @param defaultValues - Optional default values for target properties
+   * @param config - Optional mapper configuration
+   * @returns A new Mapper instance
+   *
+   * @public
+   */
   public static create<Source, Target>(
     mappingConfig: MappingConfiguration<Source, Target>,
     defaultValues?: DefaultValues<Target>,
@@ -268,6 +309,36 @@ export class Mapper<Source, Target> {
       .join('\n');
   }
 
+  /**
+   * Compiles mapping configuration into an optimized function using dynamic code generation.
+   *
+   * ⚠️ **SECURITY WARNING**: This method uses `new Function()` for performance optimization.
+   * The mapping configuration MUST come from trusted sources only (developer-defined code).
+   * DO NOT pass user-controlled data as mapping configuration, as this could lead to
+   * arbitrary code execution.
+   *
+   * **Safe usage**: Mapping configuration is defined by developers at compile-time
+   * ```typescript
+   * const mapper = Mapper.create({
+   *   name: 'user.fullName',  // ✅ Safe: developer-defined
+   *   age: 'user.age'
+   * });
+   * ```
+   *
+   * **Unsafe usage**: DO NOT DO THIS
+   * ```typescript
+   * const userConfig = JSON.parse(request.body); // ❌ UNSAFE: user input
+   * const mapper = Mapper.create(userConfig);
+   * ```
+   *
+   * @param mappingConfig - Mapping configuration (MUST be from trusted source)
+   * @param parentTarget - Optional parent target path for nested mappings
+   * @returns Compiled mapping function optimized for performance
+   *
+   * @internal
+   * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function
+   * @see https://owasp.org/www-community/attacks/Code_Injection
+   */
   private getCompiledFn(
     mappingConfig: MappingConfiguration<Source, Target>,
     parentTarget?: string,
@@ -278,6 +349,7 @@ export class Mapper<Source, Target> {
     cache: { [key: string]: any },
   ) => MappingResult<Target> {
     const body = this.getCompiledFnBody(mappingConfig, parentTarget, undefined, this.config);
+    // Using new Function for performance optimization - mapping config MUST be from trusted source
     const func = new Function(`source, target, __errors, cache`, `${body}`);
 
     return func as (

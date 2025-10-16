@@ -82,6 +82,45 @@ When using `om-data-mapper`:
 4. Follow the principle of least privilege when processing untrusted data
 5. Validate and sanitize all input data before mapping
 
+### ⚠️ Critical: Dynamic Code Generation Security
+
+This library uses dynamic code generation (`new Function()`) for performance optimization. **Mapping configurations MUST come from trusted sources only.**
+
+#### ✅ Safe Usage
+
+```typescript
+// ✅ SAFE: Developer-defined configuration
+const userMapper = Mapper.create({
+  name: 'user.fullName',
+  email: 'user.email'
+});
+
+// ✅ SAFE: Using Decorator API (recommended)
+@Mapper()
+class UserDTO {
+  @Map('user.fullName')
+  name: string;
+}
+```
+
+#### ❌ Unsafe Usage - NEVER DO THIS
+
+```typescript
+// ❌ DANGEROUS: User input as mapping config
+const userConfig = JSON.parse(request.body.mappingConfig);
+const mapper = Mapper.create(userConfig); // CODE INJECTION RISK!
+
+// ❌ DANGEROUS: External untrusted source
+const externalConfig = await fetch('https://untrusted-api.com/config');
+const mapper = Mapper.create(externalConfig); // CODE INJECTION RISK!
+```
+
+**Why this matters**: If an attacker can control the mapping configuration, they could inject arbitrary JavaScript code that executes with your application's privileges.
+
+**Recommended approach**: Use the Decorator API (`@Mapper`, `@Map`, `@Transform`) which is compile-time safe and provides better performance (112-474% faster).
+
+See the class documentation and `docs/DECORATOR_API.md` for more details.
+
 ## Additional Resources
 
 - [GitHub Security Advisories](https://github.com/Isqanderm/data-mapper/security/advisories)
