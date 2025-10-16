@@ -3,3 +3,8 @@ node_modules
 coverage
 build
 bench-results.json
+
+# Ignore compiled JavaScript files in src directory
+# (TypeScript source files only, compiled output goes to dist/)
+src/**/*.js
+src/**/*.js.map

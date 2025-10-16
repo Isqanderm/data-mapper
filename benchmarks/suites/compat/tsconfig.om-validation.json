@@ -1,0 +1,17 @@
+{
+  "extends": "../../../tsconfig.json",
+  "compilerOptions": {
+    "outDir": "./build-om-validation",
+    "rootDir": ".",
+    "declaration": false,
+    "declarationMap": false,
+    "sourceMap": false,
+    "skipLibCheck": true,
+    "baseUrl": ".",
+    "paths": {
+      "../../../../build/compat/class-validator": ["../../../build/compat/class-validator"]
+    }
+  },
+  "include": ["models-validation-om.ts"]
+}
+

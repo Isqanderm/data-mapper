@@ -5,8 +5,8 @@
   "private": false,
   "main": "build/index.js",
   "scripts": {
-    "build": "tsc",
-    "build:watch": "tsc --watch",
+    "build": "echo 'Benchmarks do not require compilation - they use the main project build'",
+    "build:watch": "echo 'Benchmarks do not require compilation'",
     "clean": "rm -rf build",
     "prepublishOnly": "npm run clean && npm run test && npm run build",
     "test": "jest",
@@ -56,6 +56,7 @@
     "@cookbook/mapper-js": "^1.1.1",
     "automapper-ts": "^1.9.0",
     "class-transformer": "^0.5.1",
+    "class-validator": "^0.14.2",
     "morphism": "^1.12.3",
     "object-mapper": "^6.2.0",
     "reflect-metadata": "^0.2.2"

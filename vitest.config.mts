@@ -18,7 +18,8 @@ export default defineConfig({
         'src/**/*.d.ts',
         'src/**/types.ts',
         'src/**/interfaces.ts',
-        'src/compat/**/*',  // Compatibility layer tested via integration tests
+        'src/compat/class-transformer/**/*',  // class-transformer compat tested via integration tests
+        // class-validator compat is now included for 100% coverage goal
       ],
       all: true,
       thresholds: {

@@ -11,6 +11,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.3-blue.svg)](https://www.typescriptlang.org/)
 [![Downloads](https://img.shields.io/npm/dm/om-data-mapper.svg)](https://www.npmjs.com/package/om-data-mapper)
+[![Documentation](https://img.shields.io/badge/docs-English%20%7C%20Russian-blue)](./docs/README.md)
 
 `om-data-mapper` is a high-performance, type-safe object mapping library for TypeScript and JavaScript. It features a modern **Decorator API** with JIT compilation that delivers **up to 42.7x better performance** than class-transformer, while providing a clean, declarative syntax and zero runtime dependencies.
 
@@ -67,7 +68,7 @@ const user = plainToInstance(UserMapper, data);  // 4.3M ops/sec (13.2x faster!)
 | Array (100 items) | 5.2K ops/sec | 69K ops/sec | **12.3x faster** |
 | Custom Logic | 333K ops/sec | 4.8M ops/sec | **13.4x faster** |
 
-[📊 See full comparison](./docs/COMPARISON.md)
+📊 See [Transformer Usage Guide](./docs/transformer-usage.md) for detailed performance comparisons
 
 ## ✨ Features
 
@@ -266,7 +267,7 @@ Your existing code works exactly the same, but **17.28x faster** on average!
 - ✅ 70% smaller bundle size
 - ✅ TC39 Stage 3 decorators
 
-[📖 Full migration guide](./docs/COMPARISON.md#migration-guide)
+[📖 Full migration guide](./docs/transformer-usage.md#migration-from-class-transformer)
 
 ### Legacy API (Still Supported)
 
@@ -311,7 +312,7 @@ om-data-mapper delivers **exceptional performance** through JIT compilation and 
 
 ### vs class-transformer
 
-**17.28x faster on average!** See [full comparison](./docs/COMPARISON.md).
+**17.28x faster on average!** See [Transformer Usage Guide](./docs/transformer-usage.md) for detailed comparisons.
 
 | Scenario | class-transformer | om-data-mapper | Improvement |
 |----------|-------------------|----------------|-------------|
@@ -365,7 +366,6 @@ We use automated benchmarks to track performance regressions:
 - 📊 **PR Comments**: Results posted automatically to pull requests
 - 📈 **Historical Tracking**: Performance trends on [GitHub Pages](https://isqanderm.github.io/data-mapper/dev/bench/)
 - 🔔 **Alerts**: Automatic notifications on regressions >150%
-- 📚 **Documentation**: See [Benchmark Setup Guide](./docs/BENCHMARK_SETUP.md) for details
 
 **Run benchmarks locally:**
 ```bash
@@ -596,11 +596,6 @@ console.log(user.password); // undefined
 - ✅ **Type Safe** - Full TypeScript support
 - ✅ **Zero Breaking Changes** - Works exactly like class-transformer
 
-### Documentation
-
-- [Class-Transformer Compatibility Guide](./docs/CLASS_TRANSFORMER_COMPATIBILITY.md) - Complete API reference
-- [TC39 Decorators Migration Guide](./docs/TC39_DECORATORS_MIGRATION.md) - Migration from legacy decorators
-
 ---
 
 ## Real-World Examples
@@ -745,7 +740,37 @@ const formData = new FormData(form);
 const registration = plainToInstance(RegistrationMapper, Object.fromEntries(formData));
 ```
 
-## API Documentation
+## 📚 Documentation
+
+Complete documentation is available in both **English** and **Russian**:
+
+### English Documentation
+
+📖 **[Documentation Index](./docs/README.md)** - Start here for complete guides
+
+**User Guides:**
+- [Validation Module - User Guide](./docs/validation-usage.md) - Complete guide to validation decorators and functions
+- [Transformer Module - User Guide](./docs/transformer-usage.md) - Complete guide to transformation APIs (Decorator API & class-transformer compatibility)
+
+**Internal Architecture:**
+- [Validation JIT Compilation Internals](./docs/validation-jit-internals.md) - Deep dive into validation JIT compilation
+- [Transformer JIT Compilation Internals](./docs/transformer-jit-internals.md) - Deep dive into transformer JIT compilation
+
+### Russian Documentation (Русская документация)
+
+📖 **[Индекс документации](./docs-ru/README.md)** - Начните отсюда для полных руководств
+
+**Руководства пользователя:**
+- [Модуль валидации - Руководство пользователя](./docs-ru/validation-usage.md) - Полное руководство по декораторам и функциям валидации
+- [Модуль трансформации - Руководство пользователя](./docs-ru/transformer-usage.md) - Полное руководство по API трансформации
+
+**Внутренняя архитектура:**
+- [Внутреннее устройство JIT-компиляции валидации](./docs-ru/validation-jit-internals.md) - Глубокое погружение в JIT-компиляцию валидации
+- [Внутреннее устройство JIT-компиляции трансформации](./docs-ru/transformer-jit-internals.md) - Глубокое погружение в JIT-компиляцию трансформации
+
+---
+
+## API Quick Reference
 
 ### Decorators
 
@@ -765,14 +790,7 @@ const registration = plainToInstance(RegistrationMapper, Object.fromEntries(form
 - **`tryPlainToInstance<S, T>(MapperClass, source)`** - Safe transformation with error handling
 - **`createMapper<S, T>(MapperClass)`** - Create reusable mapper instance
 
-### Advanced Usage
-
-For more detailed examples and advanced patterns:
-
-- [📖 Decorator API Guide](./docs/DECORATOR_API.md) - Complete decorator reference
-- [🔄 Migration Guide](./docs/MIGRATION_GUIDE.md) - Migrating from class-transformer
-- [🏗️ Nested Mapper Composition](./docs/nested-mapper-composition.md) - Complex mapping patterns
-- [📁 Examples Directory](./examples) - Real-world code examples
+For complete API documentation, see the [Transformer Usage Guide](./docs/transformer-usage.md).
 
 ## Contributing
 

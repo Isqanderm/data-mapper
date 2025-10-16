@@ -48,6 +48,11 @@ jobs:
           npm run bench:compat > benchmark-compat.txt 2>&1 || echo "Comparison benchmark failed" > benchmark-compat.txt
           cat benchmark-compat.txt
 
+      - name: Run class-validator comparison benchmark
+        run: |
+          npm run bench:validation > benchmark-validation.txt 2>&1 || echo "Validation benchmark failed" > benchmark-validation.txt
+          cat benchmark-validation.txt
+
       - name: Run simple benchmark
         continue-on-error: true
         run: |
@@ -71,6 +76,12 @@ jobs:
           node benchmarks/suites/compat/comparison-json.js > bench-results.json 2>&1 || echo "[]" > bench-results.json
           echo "Benchmark results for tracking:"
           cat bench-results.json
+
+      - name: Generate JSON validation benchmark results
+        run: |
+          node benchmarks/suites/compat/validation-comparison-json.js > bench-validation-results.json 2>&1 || echo "[]" > bench-validation-results.json
+          echo "Validation benchmark results for tracking:"
+          cat bench-validation-results.json
 
       - name: Clean up benchmark text files before switching branches
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
@@ -101,9 +112,11 @@ jobs:
           name: benchmark-results
           path: |
             bench-results.json
+            bench-validation-results.json
             benchmark-simple.txt
             benchmark-complex.txt
             benchmark-compat.txt
+            benchmark-validation.txt
           retention-days: 30
 
       - name: Comment PR with comparison results
@@ -115,6 +128,7 @@ jobs:
 
             // Read all benchmark results
             let compatResults = '';
+            let validationResults = '';
             let simpleResults = '';
             let complexResults = '';
 
@@ -122,6 +136,12 @@ jobs:
               compatResults = fs.readFileSync('benchmark-compat.txt', 'utf8');
             } catch (e) {
               compatResults = 'Comparison benchmark not available';
+            }
+
+            try {
+              validationResults = fs.readFileSync('benchmark-validation.txt', 'utf8');
+            } catch (e) {
+              validationResults = 'Validation benchmark not available';
             }
 
             try {
@@ -182,9 +202,14 @@ jobs:
             }
 
             const body = '## 🚀 Performance Benchmark Results\n\n' +
+              '### 📦 class-transformer Compatibility\n\n' +
               improvedSummary +
-              '<details>\n<summary>📋 Full Benchmark Output</summary>\n\n' +
+              '<details>\n<summary>📋 Full class-transformer Benchmark Output</summary>\n\n' +
               '```\n' + compatResults + '\n```\n\n</details>\n\n' +
+              '### ✅ class-validator Compatibility\n\n' +
+              '<details>\n<summary>📋 Full class-validator Benchmark Output</summary>\n\n' +
+              '```\n' + validationResults + '\n```\n\n</details>\n\n' +
+              '### 🎯 Core Performance\n\n' +
               '<details>\n<summary>⚡ Simple Mapping Benchmark</summary>\n\n' +
               '```\n' + simpleResults + '\n```\n\n</details>\n\n' +
               '<details>\n<summary>🔧 Complex Transformations Benchmark</summary>\n\n' +
