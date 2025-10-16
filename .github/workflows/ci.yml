@@ -207,6 +207,86 @@ jobs:
           echo "PR_FUNCTIONS=${PR_FUNCTIONS}" >> "$GITHUB_ENV"
           echo "PR_BRANCHES=${PR_BRANCHES}" >> "$GITHUB_ENV"
 
+          # Calculate coverage diff for display
+          LINES_DIFF=$(echo "$PR_LINES - $MAIN_LINES" | bc -l)
+          echo "COVERAGE_DIFF=${LINES_DIFF}" >> "$GITHUB_ENV"
+
+      - name: Create coverage status check
+        if: always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const prNumber = parseInt(process.env.PR_NUMBER);
+            const { data: pr } = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: prNumber
+            });
+
+            const mainLines = parseFloat(process.env.MAIN_LINES || '0');
+            const prLines = parseFloat(process.env.PR_LINES || '0');
+            const diff = prLines - mainLines;
+            const failed = process.env.COVERAGE_FAILED === '1';
+            const mainBranchNoCoverage = process.env.MAIN_BRANCH_NO_COVERAGE === 'true';
+
+            // Format diff with sign
+            const sign = diff > 0 ? '+' : '';
+            const diffStr = `${sign}${diff.toFixed(2)}%`;
+
+            // Determine emoji and conclusion
+            let emoji = '➡️';
+            let conclusion = 'success';
+            if (diff > 0) {
+              emoji = '📈';
+              conclusion = 'success';
+            } else if (diff < 0) {
+              emoji = '📉';
+              conclusion = failed ? 'failure' : 'neutral';
+            }
+
+            // Create title based on scenario
+            let title, summary;
+            if (mainBranchNoCoverage) {
+              title = `Coverage: ${prLines.toFixed(2)}% (First PR)`;
+              summary = `**Initial Coverage:** ${prLines.toFixed(2)}%\n\nThis is the first PR with coverage protection. Future PRs will show coverage diff.`;
+            } else {
+              title = `Coverage: ${diffStr} ${emoji}`;
+              summary = `**Coverage Change:** ${diffStr}\n**Main Branch:** ${mainLines.toFixed(2)}%\n**This PR:** ${prLines.toFixed(2)}%`;
+            }
+
+            // Create check run with coverage diff in title
+            await github.rest.checks.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              name: title,
+              head_sha: pr.head.sha,
+              status: 'completed',
+              conclusion: conclusion,
+              output: {
+                title: title,
+                summary: summary,
+                text: failed
+                  ? '⚠️ Coverage decreased. Please add tests to maintain or improve coverage.'
+                  : '✅ Coverage maintained or improved.'
+              }
+            });
+
+            // Also create a commit status for additional visibility
+            const state = failed ? 'failure' : 'success';
+            const description = mainBranchNoCoverage
+              ? `Coverage: ${prLines.toFixed(2)}% (initial)`
+              : `Coverage: ${diffStr} (${mainLines.toFixed(2)}% → ${prLines.toFixed(2)}%)`;
+
+            await github.rest.repos.createCommitStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              sha: pr.head.sha,
+              state: state,
+              context: 'Coverage Change',
+              description: description,
+              target_url: `https://github.com/${context.repo.owner}/${context.repo.repo}/pull/${prNumber}`
+            });
+
       - name: Generate per-file coverage diff
         id: coverage-diff
         run: |
