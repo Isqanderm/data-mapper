@@ -11,13 +11,15 @@ coverage:
     project:
       default:
         target: auto
-        threshold: 1%
+        threshold: 0%  # No coverage drops allowed - any decrease will fail the check
         base: auto
+        if_ci_failed: error  # Fail if CI fails
     patch:
       default:
         target: auto
-        threshold: 1%
+        threshold: 0%  # New code must maintain or improve coverage
         base: auto
+        if_ci_failed: error
 
 ignore:
   - "benchmarks/**/*"
