@@ -83,11 +83,24 @@ jobs:
           echo "Validation benchmark results for tracking:"
           cat bench-validation-results.json
 
+      - name: Save benchmark JSON files before cleanup
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          mkdir -p /tmp/benchmark-data
+          cp bench-results.json /tmp/benchmark-data/ || echo "[]" > /tmp/benchmark-data/bench-results.json
+          cp bench-validation-results.json /tmp/benchmark-data/ || echo "[]" > /tmp/benchmark-data/bench-validation-results.json
+
       - name: Clean up benchmark text files before switching branches
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: |
           git clean -fd
           git reset --hard HEAD
+
+      - name: Restore benchmark JSON files after cleanup
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          cp /tmp/benchmark-data/bench-results.json .
+          cp /tmp/benchmark-data/bench-validation-results.json .
 
       - name: Store benchmark result (main branch only)
         uses: benchmark-action/github-action-benchmark@v1
