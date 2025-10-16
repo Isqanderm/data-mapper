@@ -408,7 +408,7 @@ jobs:
             await github.rest.checks.create({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              name: 'Coverage Diff',
+              name: 'Per-File Coverage Changes',
               head_sha: pr.head.sha,
               status: 'completed',
               conclusion: annotations.length > 0 ? 'neutral' : 'success',
