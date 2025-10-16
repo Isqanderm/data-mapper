@@ -83,9 +83,14 @@ jobs:
         run: |
           if [ -f coverage/coverage-summary.json ]; then
             cp coverage/coverage-summary.json coverage-main.json
+            echo "✅ Main branch coverage summary found"
           else
             echo "⚠️ Coverage summary not found for main branch"
-            exit 1
+            echo "This is expected if main branch doesn't have json-summary reporter yet."
+            echo "Creating a fallback coverage file with 0% coverage to allow the check to pass."
+            # Create a minimal coverage file with 0% to ensure PR doesn't fail
+            echo '{"total":{"lines":{"total":0,"covered":0,"skipped":0,"pct":0},"statements":{"total":0,"covered":0,"skipped":0,"pct":0},"functions":{"total":0,"covered":0,"skipped":0,"pct":0},"branches":{"total":0,"covered":0,"skipped":0,"pct":0}}}' > coverage-main.json
+            echo "MAIN_BRANCH_NO_COVERAGE=true" >> $GITHUB_ENV
           fi
 
       - name: Compare coverage and fail if decreased
@@ -178,16 +183,17 @@ jobs:
           script: |
             const status = process.env.COVERAGE_STATUS;
             const failed = process.env.COVERAGE_FAILED === '1';
+            const mainBranchNoCoverage = process.env.MAIN_BRANCH_NO_COVERAGE === 'true';
 
-            const mainLines = process.env.MAIN_LINES;
-            const mainStatements = process.env.MAIN_STATEMENTS;
-            const mainFunctions = process.env.MAIN_FUNCTIONS;
-            const mainBranches = process.env.MAIN_BRANCHES;
+            const mainLines = process.env.MAIN_LINES || '0';
+            const mainStatements = process.env.MAIN_STATEMENTS || '0';
+            const mainFunctions = process.env.MAIN_FUNCTIONS || '0';
+            const mainBranches = process.env.MAIN_BRANCHES || '0';
 
-            const prLines = process.env.PR_LINES;
-            const prStatements = process.env.PR_STATEMENTS;
-            const prFunctions = process.env.PR_FUNCTIONS;
-            const prBranches = process.env.PR_BRANCHES;
+            const prLines = process.env.PR_LINES || '0';
+            const prStatements = process.env.PR_STATEMENTS || '0';
+            const prFunctions = process.env.PR_FUNCTIONS || '0';
+            const prBranches = process.env.PR_BRANCHES || '0';
 
             const getIcon = (pr, main) => {
               const prNum = parseFloat(pr);
@@ -207,26 +213,55 @@ jobs:
             const statusIcon = failed ? '❌' : '✅';
             const statusText = failed ? 'FAILED - Coverage Decreased' : 'PASSED - Coverage Maintained';
 
-            const body = \`## \${statusIcon} Code Coverage Check
+            let body;
 
-            **Status:** \${statusText}
+            if (mainBranchNoCoverage) {
+              // Special message for first-time setup
+              body = \`## ℹ️ Code Coverage Protection - First Time Setup
 
-            ### Coverage Comparison
+              **Status:** ✅ PASSED (Initial Setup)
 
-            | Metric | Main Branch | This PR | Change | Status |
-            |--------|-------------|---------|--------|--------|
-            | Lines | \${mainLines}% | \${prLines}% | \${getIcon(prLines, mainLines)} \${(parseFloat(prLines) - parseFloat(mainLines)).toFixed(2)}% | \${getStatus(prLines, mainLines)} |
-            | Statements | \${mainStatements}% | \${prStatements}% | \${getIcon(prStatements, mainStatements)} \${(parseFloat(prStatements) - parseFloat(mainStatements)).toFixed(2)}% | \${getStatus(prStatements, mainStatements)} |
-            | Functions | \${mainFunctions}% | \${prFunctions}% | \${getIcon(prFunctions, mainFunctions)} \${(parseFloat(prFunctions) - parseFloat(mainFunctions)).toFixed(2)}% | \${getStatus(prFunctions, mainFunctions)} |
-            | Branches | \${mainBranches}% | \${prBranches}% | \${getIcon(prBranches, mainBranches)} \${(parseFloat(prBranches) - parseFloat(mainBranches)).toFixed(2)}% | \${getStatus(prBranches, mainBranches)} |
+              ### PR Coverage
 
-            \${failed
-              ? '### ⚠️ Action Required\\n\\nThis PR decreases code coverage. Please add tests to cover the new/modified code before merging.\\n\\n**This check is blocking the PR from being merged.**'
-              : '### ✅ Great Job!\\n\\nCode coverage has been maintained or improved. This PR is ready for review.'}
+              | Metric | This PR |
+              |--------|---------|
+              | Lines | \${prLines}% |
+              | Statements | \${prStatements}% |
+              | Functions | \${prFunctions}% |
+              | Branches | \${prBranches}% |
 
-            ---
+              ### 📝 Note
 
-            *Coverage protection is enabled. PRs that decrease coverage will be blocked from merging.*\`;
+              This is the first PR with coverage protection enabled. The main branch doesn't have the \`json-summary\` reporter configured yet, so we can't compare coverage.
+
+              **Once this PR is merged**, all future PRs will be compared against the main branch coverage and will be blocked if coverage decreases.
+
+              ---
+
+              *Coverage protection will be fully active after this PR is merged.*\`;
+            } else {
+              // Normal coverage comparison
+              body = \`## \${statusIcon} Code Coverage Check
+
+              **Status:** \${statusText}
+
+              ### Coverage Comparison
+
+              | Metric | Main Branch | This PR | Change | Status |
+              |--------|-------------|---------|--------|--------|
+              | Lines | \${mainLines}% | \${prLines}% | \${getIcon(prLines, mainLines)} \${(parseFloat(prLines) - parseFloat(mainLines)).toFixed(2)}% | \${getStatus(prLines, mainLines)} |
+              | Statements | \${mainStatements}% | \${prStatements}% | \${getIcon(prStatements, mainStatements)} \${(parseFloat(prStatements) - parseFloat(mainStatements)).toFixed(2)}% | \${getStatus(prStatements, mainStatements)} |
+              | Functions | \${mainFunctions}% | \${prFunctions}% | \${getIcon(prFunctions, mainFunctions)} \${(parseFloat(prFunctions) - parseFloat(mainFunctions)).toFixed(2)}% | \${getStatus(prFunctions, mainFunctions)} |
+              | Branches | \${mainBranches}% | \${prBranches}% | \${getIcon(prBranches, mainBranches)} \${(parseFloat(prBranches) - parseFloat(mainBranches)).toFixed(2)}% | \${getStatus(prBranches, mainBranches)} |
+
+              \${failed
+                ? '### ⚠️ Action Required\\n\\nThis PR decreases code coverage. Please add tests to cover the new/modified code before merging.\\n\\n**This check is blocking the PR from being merged.**'
+                : '### ✅ Great Job!\\n\\nCode coverage has been maintained or improved. This PR is ready for review.'}
+
+              ---
+
+              *Coverage protection is enabled. PRs that decrease coverage will be blocked from merging.*\`;
+            }
 
             // Find existing coverage comment
             const { data: comments } = await github.rest.issues.listComments({
