@@ -1,6 +1,26 @@
 name: CI
 
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - main
+      - 'feat/**'
+      - 'fix/**'
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches:
+      - main
+
+# Cancel in-progress runs when a new workflow with the same group name is triggered
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pull-requests: write
+  checks: write
+  statuses: write
 
 jobs:
   test:
@@ -31,8 +51,535 @@ jobs:
           files: ./coverage/lcov.info
           flags: unittests
           name: codecov-umbrella
-          fail_ci_if_error: false
+          fail_ci_if_error: true  # Fail CI if coverage upload fails
           verbose: true
+
+  coverage-check:
+    name: Coverage Protection Check
+    runs-on: ubuntu-latest
+    needs: test
+    # Run on pull_request events and on pushes to branches with open PRs
+    if: github.event_name == 'pull_request' || (github.event_name == 'push' && github.ref != 'refs/heads/main')
+    steps:
+      - name: Checkout PR code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get PR number
+        id: pr
+        uses: actions/github-script@v7
+        with:
+          script: |
+            let prNumber;
+            if (context.eventName === 'pull_request') {
+              prNumber = context.issue.number;
+            } else {
+              // For push events, find PR by branch
+              const { data: pulls } = await github.rest.pulls.list({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                state: 'open',
+                head: `${context.repo.owner}:${context.ref.replace('refs/heads/', '')}`
+              });
+              if (pulls.length > 0) {
+                prNumber = pulls[0].number;
+              } else {
+                core.setFailed('No open PR found for this branch');
+                return;
+              }
+            }
+            core.setOutput('number', prNumber);
+            core.exportVariable('PR_NUMBER', prNumber);
+            console.log(`PR Number: ${prNumber}`);
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests with coverage on PR branch
+        run: npm test
+        continue-on-error: true
+
+      - name: Save PR coverage
+        run: |
+          if [ -f coverage/coverage-summary.json ]; then
+            cp coverage/coverage-summary.json coverage-pr.json
+          else
+            echo "⚠️ Coverage summary not found for PR branch"
+            exit 1
+          fi
+
+      - name: Checkout main branch
+        run: |
+          git fetch origin main
+          git checkout main
+
+      - name: Install dependencies on main
+        run: npm ci
+
+      - name: Run tests with coverage on main branch
+        run: npm test
+        continue-on-error: true
+
+      - name: Save main coverage
+        run: |
+          if [ -f coverage/coverage-summary.json ]; then
+            cp coverage/coverage-summary.json coverage-main.json
+            echo "✅ Main branch coverage summary found"
+            echo "MAIN_BRANCH_NO_COVERAGE=false" >> "$GITHUB_ENV"
+          else
+            echo "⚠️ Coverage summary not found for main branch"
+            echo "This is expected if main branch doesn't have json-summary reporter yet."
+            echo "Creating a fallback coverage file with 0% coverage to allow the check to pass."
+            # Create a minimal coverage file with 0% to ensure PR doesn't fail
+            echo '{"total":{"lines":{"total":0,"covered":0,"skipped":0,"pct":0},"statements":{"total":0,"covered":0,"skipped":0,"pct":0},"functions":{"total":0,"covered":0,"skipped":0,"pct":0},"branches":{"total":0,"covered":0,"skipped":0,"pct":0}}}' > coverage-main.json
+            echo "MAIN_BRANCH_NO_COVERAGE=true" >> "$GITHUB_ENV"
+          fi
+
+      - name: Compare coverage and fail if decreased
+        run: |
+          echo "📊 Comparing coverage between main and PR..."
+
+          # Extract coverage percentages from main branch using jq
+          MAIN_LINES=$(jq -r '.total.lines.pct // 0' coverage-main.json)
+          MAIN_STATEMENTS=$(jq -r '.total.statements.pct // 0' coverage-main.json)
+          MAIN_FUNCTIONS=$(jq -r '.total.functions.pct // 0' coverage-main.json)
+          MAIN_BRANCHES=$(jq -r '.total.branches.pct // 0' coverage-main.json)
+
+          # Extract coverage percentages from PR branch using jq
+          PR_LINES=$(jq -r '.total.lines.pct // 0' coverage-pr.json)
+          PR_STATEMENTS=$(jq -r '.total.statements.pct // 0' coverage-pr.json)
+          PR_FUNCTIONS=$(jq -r '.total.functions.pct // 0' coverage-pr.json)
+          PR_BRANCHES=$(jq -r '.total.branches.pct // 0' coverage-pr.json)
+
+          echo "Main branch coverage:"
+          echo "  Lines: ${MAIN_LINES}%"
+          echo "  Statements: ${MAIN_STATEMENTS}%"
+          echo "  Functions: ${MAIN_FUNCTIONS}%"
+          echo "  Branches: ${MAIN_BRANCHES}%"
+          echo ""
+          echo "PR branch coverage:"
+          echo "  Lines: ${PR_LINES}%"
+          echo "  Statements: ${PR_STATEMENTS}%"
+          echo "  Functions: ${PR_FUNCTIONS}%"
+          echo "  Branches: ${PR_BRANCHES}%"
+          echo ""
+
+          # Compare coverage (using bc for floating point comparison)
+          # Note: 0% change is acceptable (no decrease)
+          FAILED=0
+
+          # Use bc -l for comparison, result is 1 if true, 0 if false
+          if [ $(echo "$PR_LINES < $MAIN_LINES" | bc -l) -eq 1 ]; then
+            echo "❌ Lines coverage decreased from ${MAIN_LINES}% to ${PR_LINES}%"
+            FAILED=1
+          else
+            echo "✅ Lines coverage: ${PR_LINES}% (main: ${MAIN_LINES}%)"
+          fi
+
+          if [ $(echo "$PR_STATEMENTS < $MAIN_STATEMENTS" | bc -l) -eq 1 ]; then
+            echo "❌ Statements coverage decreased from ${MAIN_STATEMENTS}% to ${PR_STATEMENTS}%"
+            FAILED=1
+          else
+            echo "✅ Statements coverage: ${PR_STATEMENTS}% (main: ${MAIN_STATEMENTS}%)"
+          fi
+
+          if [ $(echo "$PR_FUNCTIONS < $MAIN_FUNCTIONS" | bc -l) -eq 1 ]; then
+            echo "❌ Functions coverage decreased from ${MAIN_FUNCTIONS}% to ${MAIN_FUNCTIONS}%"
+            FAILED=1
+          else
+            echo "✅ Functions coverage: ${PR_FUNCTIONS}% (main: ${MAIN_FUNCTIONS}%)"
+          fi
+
+          if [ $(echo "$PR_BRANCHES < $MAIN_BRANCHES" | bc -l) -eq 1 ]; then
+            echo "❌ Branches coverage decreased from ${MAIN_BRANCHES}% to ${PR_BRANCHES}%"
+            FAILED=1
+          else
+            echo "✅ Branches coverage: ${PR_BRANCHES}% (main: ${MAIN_BRANCHES}%)"
+          fi
+
+          if [ $FAILED -eq 1 ]; then
+            echo ""
+            echo "❌ Coverage check FAILED: Coverage has decreased compared to main branch"
+            echo "Please add tests to maintain or improve code coverage."
+            echo "COVERAGE_STATUS=failed" >> "$GITHUB_ENV"
+            echo "COVERAGE_FAILED=1" >> "$GITHUB_ENV"
+          else
+            echo ""
+            echo "✅ Coverage check PASSED: Coverage maintained or improved"
+            echo "COVERAGE_STATUS=passed" >> "$GITHUB_ENV"
+            echo "COVERAGE_FAILED=0" >> "$GITHUB_ENV"
+          fi
+
+          # Save coverage values for PR comment
+          echo "MAIN_LINES=${MAIN_LINES}" >> "$GITHUB_ENV"
+          echo "MAIN_STATEMENTS=${MAIN_STATEMENTS}" >> "$GITHUB_ENV"
+          echo "MAIN_FUNCTIONS=${MAIN_FUNCTIONS}" >> "$GITHUB_ENV"
+          echo "MAIN_BRANCHES=${MAIN_BRANCHES}" >> "$GITHUB_ENV"
+          echo "PR_LINES=${PR_LINES}" >> "$GITHUB_ENV"
+          echo "PR_STATEMENTS=${PR_STATEMENTS}" >> "$GITHUB_ENV"
+          echo "PR_FUNCTIONS=${PR_FUNCTIONS}" >> "$GITHUB_ENV"
+          echo "PR_BRANCHES=${PR_BRANCHES}" >> "$GITHUB_ENV"
+
+          # Calculate coverage diff for display
+          LINES_DIFF=$(echo "$PR_LINES - $MAIN_LINES" | bc -l)
+          echo "COVERAGE_DIFF=${LINES_DIFF}" >> "$GITHUB_ENV"
+
+      - name: Create coverage status check
+        if: always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const prNumber = parseInt(process.env.PR_NUMBER);
+            const { data: pr } = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: prNumber
+            });
+
+            const mainLines = parseFloat(process.env.MAIN_LINES || '0');
+            const prLines = parseFloat(process.env.PR_LINES || '0');
+            const diff = prLines - mainLines;
+            const failed = process.env.COVERAGE_FAILED === '1';
+            const mainBranchNoCoverage = process.env.MAIN_BRANCH_NO_COVERAGE === 'true';
+
+            // Format diff with sign
+            const sign = diff > 0 ? '+' : '';
+            const diffStr = `${sign}${diff.toFixed(2)}%`;
+
+            // Determine emoji and conclusion
+            let emoji = '➡️';
+            let conclusion = 'success';
+            if (diff > 0) {
+              emoji = '📈';
+              conclusion = 'success';
+            } else if (diff < 0) {
+              emoji = '📉';
+              conclusion = failed ? 'failure' : 'neutral';
+            }
+
+            // Create title based on scenario
+            let title, summary;
+            if (mainBranchNoCoverage) {
+              title = `Coverage: ${prLines.toFixed(2)}% (First PR)`;
+              summary = `**Initial Coverage:** ${prLines.toFixed(2)}%\n\nThis is the first PR with coverage protection. Future PRs will show coverage diff.`;
+            } else {
+              title = `Coverage: ${diffStr} ${emoji}`;
+              summary = `**Coverage Change:** ${diffStr}\n**Main Branch:** ${mainLines.toFixed(2)}%\n**This PR:** ${prLines.toFixed(2)}%`;
+            }
+
+            // Create check run with coverage diff in title
+            await github.rest.checks.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              name: title,
+              head_sha: pr.head.sha,
+              status: 'completed',
+              conclusion: conclusion,
+              output: {
+                title: title,
+                summary: summary,
+                text: failed
+                  ? '⚠️ Coverage decreased. Please add tests to maintain or improve coverage.'
+                  : '✅ Coverage maintained or improved.'
+              }
+            });
+
+            // Also create a commit status for additional visibility
+            const state = failed ? 'failure' : 'success';
+            const description = mainBranchNoCoverage
+              ? `Coverage: ${prLines.toFixed(2)}% (initial)`
+              : `Coverage: ${diffStr} (${mainLines.toFixed(2)}% → ${prLines.toFixed(2)}%)`;
+
+            await github.rest.repos.createCommitStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              sha: pr.head.sha,
+              state: state,
+              context: 'Coverage Change',
+              description: description,
+              target_url: `https://github.com/${context.repo.owner}/${context.repo.repo}/pull/${prNumber}`
+            });
+
+      - name: Generate per-file coverage diff
+        id: coverage-diff
+        run: |
+          echo "Generating per-file coverage diff..."
+
+          # Create coverage diff report using heredoc to avoid shell interpolation
+          node << 'EOF'
+          const fs = require('fs');
+          const path = require('path');
+
+          // Read coverage files
+          const mainCoverage = JSON.parse(fs.readFileSync('coverage-main.json', 'utf8'));
+          const prCoverage = JSON.parse(fs.readFileSync('coverage-pr.json', 'utf8'));
+
+          const annotations = [];
+          const diffReport = [];
+
+          // Compare per-file coverage
+          for (const [filePath, prData] of Object.entries(prCoverage)) {
+            if (filePath === 'total') continue;
+
+            const mainData = mainCoverage[filePath];
+            if (!mainData) {
+              // New file - no comparison needed
+              continue;
+            }
+
+            const prLines = prData.lines.pct;
+            const mainLines = mainData.lines.pct;
+            const diff = prLines - mainLines;
+
+            if (diff < 0) {
+              // Coverage decreased for this file
+              const relativePath = filePath.replace(process.cwd() + '/', '');
+
+              annotations.push({
+                path: relativePath,
+                start_line: 1,
+                end_line: 1,
+                annotation_level: 'warning',
+                message: `Coverage decreased by ${Math.abs(diff).toFixed(2)}% (from ${mainLines}% to ${prLines}%)`,
+                title: 'Coverage Decreased'
+              });
+
+              diffReport.push({
+                file: relativePath,
+                main: mainLines,
+                pr: prLines,
+                diff: diff
+              });
+            } else if (diff > 0) {
+              const relativePath = filePath.replace(process.cwd() + '/', '');
+              diffReport.push({
+                file: relativePath,
+                main: mainLines,
+                pr: prLines,
+                diff: diff
+              });
+            }
+          }
+
+          // Save annotations and diff report
+          fs.writeFileSync('coverage-annotations.json', JSON.stringify(annotations, null, 2));
+          fs.writeFileSync('coverage-diff-report.json', JSON.stringify(diffReport, null, 2));
+
+          console.log(`Generated ${annotations.length} annotations for files with decreased coverage`);
+          console.log(`Total files with coverage changes: ${diffReport.length}`);
+          EOF
+
+      - name: Create coverage annotations
+        if: always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+
+            // Read annotations
+            let annotations = [];
+            try {
+              annotations = JSON.parse(fs.readFileSync('coverage-annotations.json', 'utf8'));
+            } catch (e) {
+              console.log('No annotations file found');
+              return;
+            }
+
+            if (annotations.length === 0) {
+              console.log('No coverage annotations to create');
+              return;
+            }
+
+            // Create check run with annotations
+            const prNumber = parseInt(process.env.PR_NUMBER);
+            const { data: pr } = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: prNumber
+            });
+
+            await github.rest.checks.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              name: 'Per-File Coverage Changes',
+              head_sha: pr.head.sha,
+              status: 'completed',
+              conclusion: annotations.length > 0 ? 'neutral' : 'success',
+              output: {
+                title: 'Coverage Changes by File',
+                summary: `Found ${annotations.length} file(s) with decreased coverage`,
+                annotations: annotations.slice(0, 50) // GitHub limits to 50 annotations per request
+              }
+            });
+
+            console.log(`Created check run with ${annotations.length} annotations`);
+
+      - name: Comment PR with coverage comparison
+        if: always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const status = process.env.COVERAGE_STATUS;
+            const failed = process.env.COVERAGE_FAILED === '1';
+            const mainBranchNoCoverage = process.env.MAIN_BRANCH_NO_COVERAGE === 'true';
+
+            const mainLines = process.env.MAIN_LINES || '0';
+            const mainStatements = process.env.MAIN_STATEMENTS || '0';
+            const mainFunctions = process.env.MAIN_FUNCTIONS || '0';
+            const mainBranches = process.env.MAIN_BRANCHES || '0';
+
+            const prLines = process.env.PR_LINES || '0';
+            const prStatements = process.env.PR_STATEMENTS || '0';
+            const prFunctions = process.env.PR_FUNCTIONS || '0';
+            const prBranches = process.env.PR_BRANCHES || '0';
+
+            const getIcon = (pr, main) => {
+              const prNum = parseFloat(pr);
+              const mainNum = parseFloat(main);
+              if (prNum > mainNum) return '📈';
+              if (prNum < mainNum) return '📉';
+              return '➡️';
+            };
+
+            const getStatus = (pr, main) => {
+              const prNum = parseFloat(pr);
+              const mainNum = parseFloat(main);
+              if (prNum < mainNum) return '❌';
+              return '✅';
+            };
+
+            const statusIcon = failed ? '❌' : '✅';
+            const statusText = failed ? 'FAILED - Coverage Decreased' : 'PASSED - Coverage Maintained';
+
+            let body;
+
+            if (mainBranchNoCoverage) {
+              // Special message for first-time setup
+              body = `## ℹ️ Code Coverage Protection - First Time Setup
+
+            **Status:** ✅ PASSED (Initial Setup)
+
+            ### PR Coverage
+
+            | Metric | This PR |
+            |--------|---------|
+            | Lines | ${prLines}% |
+            | Statements | ${prStatements}% |
+            | Functions | ${prFunctions}% |
+            | Branches | ${prBranches}% |
+
+            ### 📝 Note
+
+            This is the first PR with coverage protection enabled. The main branch doesn't have the \`json-summary\` reporter configured yet, so we can't compare coverage.
+
+            **Once this PR is merged**, all future PRs will be compared against the main branch coverage and will be blocked if coverage decreases.
+
+            ---
+
+            *Coverage protection will be fully active after this PR is merged.*`;
+            } else {
+              // Normal coverage comparison
+
+              // Read per-file diff report
+              const fs = require('fs');
+              let fileDiffSection = '';
+              try {
+                const diffReport = JSON.parse(fs.readFileSync('coverage-diff-report.json', 'utf8'));
+
+                if (diffReport.length > 0) {
+                  // Sort by diff (worst first)
+                  diffReport.sort((a, b) => a.diff - b.diff);
+
+                  // Take top 10 files with biggest changes
+                  const topFiles = diffReport.slice(0, 10);
+
+                  const fileRows = topFiles.map(f => {
+                    const icon = f.diff > 0 ? '📈' : f.diff < 0 ? '📉' : '➡️';
+                    const sign = f.diff > 0 ? '+' : '';
+                    return `| ${f.file} | ${f.main.toFixed(2)}% | ${f.pr.toFixed(2)}% | ${icon} ${sign}${f.diff.toFixed(2)}% |`;
+                  }).join('\n            ');
+
+                  const showingText = diffReport.length > 10 ? `\n            *Showing top 10 of ${diffReport.length} files with coverage changes*` : '';
+
+                  fileDiffSection = `
+
+            ### 📊 Coverage Changes by File
+
+            | File | Main | This PR | Change |
+            |------|------|---------|--------|
+            ${fileRows}${showingText}
+            `;
+                }
+              } catch (e) {
+                console.log('No per-file diff report found');
+              }
+
+              body = `## ${statusIcon} Code Coverage Check
+
+            **Status:** ${statusText}
+
+            ### Coverage Comparison
+
+            | Metric | Main Branch | This PR | Change | Status |
+            |--------|-------------|---------|--------|--------|
+            | Lines | ${mainLines}% | ${prLines}% | ${getIcon(prLines, mainLines)} ${(parseFloat(prLines) - parseFloat(mainLines)).toFixed(2)}% | ${getStatus(prLines, mainLines)} |
+            | Statements | ${mainStatements}% | ${prStatements}% | ${getIcon(prStatements, mainStatements)} ${(parseFloat(prStatements) - parseFloat(mainStatements)).toFixed(2)}% | ${getStatus(prStatements, mainStatements)} |
+            | Functions | ${mainFunctions}% | ${prFunctions}% | ${getIcon(prFunctions, mainFunctions)} ${(parseFloat(prFunctions) - parseFloat(mainFunctions)).toFixed(2)}% | ${getStatus(prFunctions, mainFunctions)} |
+            | Branches | ${mainBranches}% | ${prBranches}% | ${getIcon(prBranches, mainBranches)} ${(parseFloat(prBranches) - parseFloat(mainBranches)).toFixed(2)}% | ${getStatus(prBranches, mainBranches)} |
+            ${fileDiffSection}
+
+            ${failed
+              ? '### ⚠️ Action Required\\n\\nThis PR decreases code coverage. Please add tests to cover the new/modified code before merging.\\n\\n**This check is blocking the PR from being merged.**'
+              : '### ✅ Great Job!\\n\\nCode coverage has been maintained or improved. This PR is ready for review.'}
+
+            ---
+
+            *Coverage protection is enabled. PRs that decrease coverage will be blocked from merging.*`;
+            }
+
+            // Find existing coverage comment
+            const prNumber = parseInt(process.env.PR_NUMBER);
+            const { data: comments } = await github.rest.issues.listComments({
+              issue_number: prNumber,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+            });
+
+            const botComment = comments.find(comment =>
+              comment.user.type === 'Bot' &&
+              comment.body.includes('Code Coverage Check')
+            );
+
+            if (botComment) {
+              // Update existing comment
+              await github.rest.issues.updateComment({
+                comment_id: botComment.id,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: body
+              });
+            } else {
+              // Create new comment
+              await github.rest.issues.createComment({
+                issue_number: prNumber,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: body
+              });
+            }
+
+      - name: Fail if coverage decreased
+        if: env.COVERAGE_FAILED == '1'
+        run: |
+          echo "❌ Coverage check failed - blocking PR merge"
+          exit 1
 
   esm-validation:
     name: ESM Build Validation
@@ -93,8 +640,36 @@ jobs:
     name: ESM Validation Summary
     runs-on: ubuntu-latest
     needs: esm-validation
-    if: always() && github.event_name == 'pull_request'
+    # Run on pull_request events and on pushes to branches with open PRs
+    if: always() && (github.event_name == 'pull_request' || (github.event_name == 'push' && github.ref != 'refs/heads/main'))
     steps:
+      - name: Get PR number
+        id: pr
+        uses: actions/github-script@v7
+        with:
+          script: |
+            let prNumber;
+            if (context.eventName === 'pull_request') {
+              prNumber = context.issue.number;
+            } else {
+              // For push events, find PR by branch
+              const { data: pulls } = await github.rest.pulls.list({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                state: 'open',
+                head: `${context.repo.owner}:${context.ref.replace('refs/heads/', '')}`
+              });
+              if (pulls.length > 0) {
+                prNumber = pulls[0].number;
+              } else {
+                core.setFailed('No open PR found for this branch');
+                return;
+              }
+            }
+            core.setOutput('number', prNumber);
+            core.exportVariable('PR_NUMBER', prNumber);
+            console.log(`PR Number: ${prNumber}`);
+
       - name: Comment PR with ESM validation results
         uses: actions/github-script@v7
         with:
@@ -143,8 +718,9 @@ jobs:
             *This validation prevents issues like missing \`.js\` extensions, broken directory imports, and \`ERR_MODULE_NOT_FOUND\` errors.*`;
 
             // Find existing ESM validation comment
+            const prNumber = parseInt(process.env.PR_NUMBER);
             const { data: comments } = await github.rest.issues.listComments({
-              issue_number: context.issue.number,
+              issue_number: prNumber,
               owner: context.repo.owner,
               repo: context.repo.repo,
             });
@@ -165,10 +741,24 @@ jobs:
             } else {
               // Create new comment
               await github.rest.issues.createComment({
-                issue_number: context.issue.number,
+                issue_number: prNumber,
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 body: body
               });
             }
 
+  # Final job to ensure all checks passed before allowing merge
+  require-successful-checks:
+    name: All Checks Passed
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    needs:
+      - test
+      - coverage-check
+      - esm-validation-summary
+    steps:
+      - name: Verify all checks passed
+        run: |
+          echo "✅ All required checks have passed successfully!"
+          echo "This PR is ready for review and merge."
