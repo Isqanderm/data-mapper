@@ -207,6 +207,120 @@ jobs:
           echo "PR_FUNCTIONS=${PR_FUNCTIONS}" >> "$GITHUB_ENV"
           echo "PR_BRANCHES=${PR_BRANCHES}" >> "$GITHUB_ENV"
 
+      - name: Generate per-file coverage diff
+        id: coverage-diff
+        run: |
+          echo "Generating per-file coverage diff..."
+
+          # Create coverage diff report
+          node -e "
+          const fs = require('fs');
+          const path = require('path');
+
+          // Read coverage files
+          const mainCoverage = JSON.parse(fs.readFileSync('coverage-main.json', 'utf8'));
+          const prCoverage = JSON.parse(fs.readFileSync('coverage-pr.json', 'utf8'));
+
+          const annotations = [];
+          const diffReport = [];
+
+          // Compare per-file coverage
+          for (const [filePath, prData] of Object.entries(prCoverage)) {
+            if (filePath === 'total') continue;
+
+            const mainData = mainCoverage[filePath];
+            if (!mainData) {
+              // New file - no comparison needed
+              continue;
+            }
+
+            const prLines = prData.lines.pct;
+            const mainLines = mainData.lines.pct;
+            const diff = prLines - mainLines;
+
+            if (diff < 0) {
+              // Coverage decreased for this file
+              const relativePath = filePath.replace(process.cwd() + '/', '');
+
+              annotations.push({
+                path: relativePath,
+                start_line: 1,
+                end_line: 1,
+                annotation_level: 'warning',
+                message: \`Coverage decreased by \${Math.abs(diff).toFixed(2)}% (from \${mainLines}% to \${prLines}%)\`,
+                title: 'Coverage Decreased'
+              });
+
+              diffReport.push({
+                file: relativePath,
+                main: mainLines,
+                pr: prLines,
+                diff: diff
+              });
+            } else if (diff > 0) {
+              const relativePath = filePath.replace(process.cwd() + '/', '');
+              diffReport.push({
+                file: relativePath,
+                main: mainLines,
+                pr: prLines,
+                diff: diff
+              });
+            }
+          }
+
+          // Save annotations and diff report
+          fs.writeFileSync('coverage-annotations.json', JSON.stringify(annotations, null, 2));
+          fs.writeFileSync('coverage-diff-report.json', JSON.stringify(diffReport, null, 2));
+
+          console.log(\`Generated \${annotations.length} annotations for files with decreased coverage\`);
+          console.log(\`Total files with coverage changes: \${diffReport.length}\`);
+          " || echo "Failed to generate coverage diff"
+
+      - name: Create coverage annotations
+        if: always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+
+            // Read annotations
+            let annotations = [];
+            try {
+              annotations = JSON.parse(fs.readFileSync('coverage-annotations.json', 'utf8'));
+            } catch (e) {
+              console.log('No annotations file found');
+              return;
+            }
+
+            if (annotations.length === 0) {
+              console.log('No coverage annotations to create');
+              return;
+            }
+
+            // Create check run with annotations
+            const prNumber = parseInt(process.env.PR_NUMBER);
+            const { data: pr } = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: prNumber
+            });
+
+            await github.rest.checks.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              name: 'Coverage Diff',
+              head_sha: pr.head.sha,
+              status: 'completed',
+              conclusion: annotations.length > 0 ? 'neutral' : 'success',
+              output: {
+                title: 'Coverage Changes by File',
+                summary: \`Found \${annotations.length} file(s) with decreased coverage\`,
+                annotations: annotations.slice(0, 50) // GitHub limits to 50 annotations per request
+              }
+            });
+
+            console.log(\`Created check run with \${annotations.length} annotations\`);
+
       - name: Comment PR with coverage comparison
         if: always()
         uses: actions/github-script@v7
@@ -272,26 +386,59 @@ jobs:
             *Coverage protection will be fully active after this PR is merged.*`;
             } else {
               // Normal coverage comparison
-              body = `## ${statusIcon} Code Coverage Check
 
-            **Status:** ${statusText}
+              // Read per-file diff report
+              const fs = require('fs');
+              let fileDiffSection = '';
+              try {
+                const diffReport = JSON.parse(fs.readFileSync('coverage-diff-report.json', 'utf8'));
+
+                if (diffReport.length > 0) {
+                  // Sort by diff (worst first)
+                  diffReport.sort((a, b) => a.diff - b.diff);
+
+                  // Take top 10 files with biggest changes
+                  const topFiles = diffReport.slice(0, 10);
+
+                  fileDiffSection = `
+
+            ### 📊 Coverage Changes by File
+
+            | File | Main | This PR | Change |
+            |------|------|---------|--------|
+            ${topFiles.map(f => {
+              const icon = f.diff > 0 ? '📈' : f.diff < 0 ? '📉' : '➡️';
+              const sign = f.diff > 0 ? '+' : '';
+              return \`| \${f.file} | \${f.main.toFixed(2)}% | \${f.pr.toFixed(2)}% | \${icon} \${sign}\${f.diff.toFixed(2)}% |\`;
+            }).join('\\n            ')}
+            ${diffReport.length > 10 ? \`\\n            *Showing top 10 of \${diffReport.length} files with coverage changes*\` : ''}
+            `;
+                }
+              } catch (e) {
+                console.log('No per-file diff report found');
+              }
+
+              body = \`## \${statusIcon} Code Coverage Check
+
+            **Status:** \${statusText}
 
             ### Coverage Comparison
 
             | Metric | Main Branch | This PR | Change | Status |
             |--------|-------------|---------|--------|--------|
-            | Lines | ${mainLines}% | ${prLines}% | ${getIcon(prLines, mainLines)} ${(parseFloat(prLines) - parseFloat(mainLines)).toFixed(2)}% | ${getStatus(prLines, mainLines)} |
-            | Statements | ${mainStatements}% | ${prStatements}% | ${getIcon(prStatements, mainStatements)} ${(parseFloat(prStatements) - parseFloat(mainStatements)).toFixed(2)}% | ${getStatus(prStatements, mainStatements)} |
-            | Functions | ${mainFunctions}% | ${prFunctions}% | ${getIcon(prFunctions, mainFunctions)} ${(parseFloat(prFunctions) - parseFloat(mainFunctions)).toFixed(2)}% | ${getStatus(prFunctions, mainFunctions)} |
-            | Branches | ${mainBranches}% | ${prBranches}% | ${getIcon(prBranches, mainBranches)} ${(parseFloat(prBranches) - parseFloat(mainBranches)).toFixed(2)}% | ${getStatus(prBranches, mainBranches)} |
+            | Lines | \${mainLines}% | \${prLines}% | \${getIcon(prLines, mainLines)} \${(parseFloat(prLines) - parseFloat(mainLines)).toFixed(2)}% | \${getStatus(prLines, mainLines)} |
+            | Statements | \${mainStatements}% | \${prStatements}% | \${getIcon(prStatements, mainStatements)} \${(parseFloat(prStatements) - parseFloat(mainStatements)).toFixed(2)}% | \${getStatus(prStatements, mainStatements)} |
+            | Functions | \${mainFunctions}% | \${prFunctions}% | \${getIcon(prFunctions, mainFunctions)} \${(parseFloat(prFunctions) - parseFloat(mainFunctions)).toFixed(2)}% | \${getStatus(prFunctions, mainFunctions)} |
+            | Branches | \${mainBranches}% | \${prBranches}% | \${getIcon(prBranches, mainBranches)} \${(parseFloat(prBranches) - parseFloat(mainBranches)).toFixed(2)}% | \${getStatus(prBranches, mainBranches)} |
+            \${fileDiffSection}
 
-            ${failed
+            \${failed
               ? '### ⚠️ Action Required\\n\\nThis PR decreases code coverage. Please add tests to cover the new/modified code before merging.\\n\\n**This check is blocking the PR from being merged.**'
               : '### ✅ Great Job!\\n\\nCode coverage has been maintained or improved. This PR is ready for review.'}
 
             ---
 
-            *Coverage protection is enabled. PRs that decrease coverage will be blocked from merging.*`;
+            *Coverage protection is enabled. PRs that decrease coverage will be blocked from merging.*\`;
             }
 
             // Find existing coverage comment
