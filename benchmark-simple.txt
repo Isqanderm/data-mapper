@@ -1,1 +1,0 @@
-Mapper#execute x 133,505,108 ops/sec ±10.05% (82 runs sampled)

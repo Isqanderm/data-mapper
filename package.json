@@ -3,29 +3,40 @@
   "version": "4.1.2",
   "description": "High-performance TypeScript/JavaScript data mapper with JIT compilation for ultra-fast object transformations",
   "private": false,
-  "main": "build/index.js",
-  "types": "build/index.d.ts",
+  "main": "build/cjs/index.js",
+  "module": "build/esm/index.js",
+  "types": "build/cjs/index.d.ts",
   "sideEffects": false,
   "exports": {
     ".": {
-      "types": "./build/index.d.ts",
-      "default": "./build/index.js"
+      "types": "./build/cjs/index.d.ts",
+      "import": "./build/esm/index.js",
+      "require": "./build/cjs/index.js",
+      "default": "./build/cjs/index.js"
     },
     "./class-transformer-compat": {
-      "types": "./build/compat/class-transformer/index.d.ts",
-      "default": "./build/compat/class-transformer/index.js"
+      "types": "./build/cjs/compat/class-transformer/index.d.ts",
+      "import": "./build/esm/compat/class-transformer/index.js",
+      "require": "./build/cjs/compat/class-transformer/index.js",
+      "default": "./build/cjs/compat/class-transformer/index.js"
     },
     "./class-validator-compat": {
-      "types": "./build/compat/class-validator/index.d.ts",
-      "default": "./build/compat/class-validator/index.js"
+      "types": "./build/cjs/compat/class-validator/index.d.ts",
+      "import": "./build/esm/compat/class-validator/index.js",
+      "require": "./build/cjs/compat/class-validator/index.js",
+      "default": "./build/cjs/compat/class-validator/index.js"
     },
     "./nestjs": {
-      "types": "./build/integrations/nestjs/index.d.ts",
-      "default": "./build/integrations/nestjs/index.js"
+      "types": "./build/cjs/integrations/nestjs/index.d.ts",
+      "import": "./build/esm/integrations/nestjs/index.js",
+      "require": "./build/cjs/integrations/nestjs/index.js",
+      "default": "./build/cjs/integrations/nestjs/index.js"
     }
   },
   "scripts": {
-    "build": "tsc",
+    "build": "npm run clean && npm run build:cjs && npm run build:esm",
+    "build:cjs": "tsc",
+    "build:esm": "tsc -p tsconfig.esm.json && node scripts/fix-esm-imports.js && echo '{\"type\":\"module\"}' > build/esm/package.json",
     "build:watch": "tsc --watch",
     "clean": "rm -rf build",
     "format": "prettier --write .",
@@ -36,6 +47,11 @@
     "release": "semantic-release",
     "test": "vitest run --coverage",
     "test:watch": "vitest",
+    "test:esm": "npm run test:esm:integration && npm run test:esm:simple && npm run test:esm:simulation",
+    "test:esm:integration": "node test/esm-integration.test.mjs",
+    "test:esm:simple": "node test/esm-runtime-simple.test.mjs",
+    "test:esm:simulation": "node test/esm-post-install-simulation.test.mjs",
+    "test:all": "npm run test && npm run test:esm",
     "bench": "vitest bench --run",
     "bench:watch": "vitest bench",
     "bench:core": "vitest bench benchmarks/suites/core --run",
