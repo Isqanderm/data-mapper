@@ -98,27 +98,17 @@ jobs:
         run: |
           echo "📊 Comparing coverage between main and PR..."
 
-          # Extract coverage percentages from main branch
-          MAIN_LINES=$(cat coverage-main.json | grep -o '"lines":{"total":[0-9]*,"covered":[0-9]*,"skipped":[0-9]*,"pct":[0-9.]*' | grep -o 'pct":[0-9.]*' | cut -d':' -f2 || echo "0")
-          MAIN_STATEMENTS=$(cat coverage-main.json | grep -o '"statements":{"total":[0-9]*,"covered":[0-9]*,"skipped":[0-9]*,"pct":[0-9.]*' | grep -o 'pct":[0-9.]*' | cut -d':' -f2 || echo "0")
-          MAIN_FUNCTIONS=$(cat coverage-main.json | grep -o '"functions":{"total":[0-9]*,"covered":[0-9]*,"skipped":[0-9]*,"pct":[0-9.]*' | grep -o 'pct":[0-9.]*' | cut -d':' -f2 || echo "0")
-          MAIN_BRANCHES=$(cat coverage-main.json | grep -o '"branches":{"total":[0-9]*,"covered":[0-9]*,"skipped":[0-9]*,"pct":[0-9.]*' | grep -o 'pct":[0-9.]*' | cut -d':' -f2 || echo "0")
+          # Extract coverage percentages from main branch using jq
+          MAIN_LINES=$(jq -r '.total.lines.pct // 0' coverage-main.json)
+          MAIN_STATEMENTS=$(jq -r '.total.statements.pct // 0' coverage-main.json)
+          MAIN_FUNCTIONS=$(jq -r '.total.functions.pct // 0' coverage-main.json)
+          MAIN_BRANCHES=$(jq -r '.total.branches.pct // 0' coverage-main.json)
 
-          # Extract coverage percentages from PR branch
-          PR_LINES=$(cat coverage-pr.json | grep -o '"lines":{"total":[0-9]*,"covered":[0-9]*,"skipped":[0-9]*,"pct":[0-9.]*' | grep -o 'pct":[0-9.]*' | cut -d':' -f2 || echo "0")
-          PR_STATEMENTS=$(cat coverage-pr.json | grep -o '"statements":{"total":[0-9]*,"covered":[0-9]*,"skipped":[0-9]*,"pct":[0-9.]*' | grep -o 'pct":[0-9.]*' | cut -d':' -f2 || echo "0")
-          PR_FUNCTIONS=$(cat coverage-pr.json | grep -o '"functions":{"total":[0-9]*,"covered":[0-9]*,"skipped":[0-9]*,"pct":[0-9.]*' | grep -o 'pct":[0-9.]*' | cut -d':' -f2 || echo "0")
-          PR_BRANCHES=$(cat coverage-pr.json | grep -o '"branches":{"total":[0-9]*,"covered":[0-9]*,"skipped":[0-9]*,"pct":[0-9.]*' | grep -o 'pct":[0-9.]*' | cut -d':' -f2 || echo "0")
-
-          # Set defaults if empty
-          MAIN_LINES=${MAIN_LINES:-0}
-          MAIN_STATEMENTS=${MAIN_STATEMENTS:-0}
-          MAIN_FUNCTIONS=${MAIN_FUNCTIONS:-0}
-          MAIN_BRANCHES=${MAIN_BRANCHES:-0}
-          PR_LINES=${PR_LINES:-0}
-          PR_STATEMENTS=${PR_STATEMENTS:-0}
-          PR_FUNCTIONS=${PR_FUNCTIONS:-0}
-          PR_BRANCHES=${PR_BRANCHES:-0}
+          # Extract coverage percentages from PR branch using jq
+          PR_LINES=$(jq -r '.total.lines.pct // 0' coverage-pr.json)
+          PR_STATEMENTS=$(jq -r '.total.statements.pct // 0' coverage-pr.json)
+          PR_FUNCTIONS=$(jq -r '.total.functions.pct // 0' coverage-pr.json)
+          PR_BRANCHES=$(jq -r '.total.branches.pct // 0' coverage-pr.json)
 
           echo "Main branch coverage:"
           echo "  Lines: ${MAIN_LINES}%"
