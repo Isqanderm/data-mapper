@@ -212,8 +212,8 @@ jobs:
         run: |
           echo "Generating per-file coverage diff..."
 
-          # Create coverage diff report
-          node -e "
+          # Create coverage diff report using heredoc to avoid shell interpolation
+          node << 'EOF'
           const fs = require('fs');
           const path = require('path');
 
@@ -247,7 +247,7 @@ jobs:
                 start_line: 1,
                 end_line: 1,
                 annotation_level: 'warning',
-                message: \`Coverage decreased by \${Math.abs(diff).toFixed(2)}% (from \${mainLines}% to \${prLines}%)\`,
+                message: `Coverage decreased by ${Math.abs(diff).toFixed(2)}% (from ${mainLines}% to ${prLines}%)`,
                 title: 'Coverage Decreased'
               });
 
@@ -272,9 +272,9 @@ jobs:
           fs.writeFileSync('coverage-annotations.json', JSON.stringify(annotations, null, 2));
           fs.writeFileSync('coverage-diff-report.json', JSON.stringify(diffReport, null, 2));
 
-          console.log(\`Generated \${annotations.length} annotations for files with decreased coverage\`);
-          console.log(\`Total files with coverage changes: \${diffReport.length}\`);
-          " || echo "Failed to generate coverage diff"
+          console.log(`Generated ${annotations.length} annotations for files with decreased coverage`);
+          console.log(`Total files with coverage changes: ${diffReport.length}`);
+          EOF
 
       - name: Create coverage annotations
         if: always()
