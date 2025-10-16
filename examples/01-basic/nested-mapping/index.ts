@@ -1,4 +1,3 @@
-import { MappingConfiguration } from '../../src/interface';
 import { Mapper } from '../../src';
 
 class Employee {

@@ -4,7 +4,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { validate, validateSync } from '../../../../src/compat/class-validator';
+import { validate } from '../../../../src/compat/class-validator';
 import {
   IsOptional,
   IsString,
@@ -18,7 +18,6 @@ import {
   MinLength,
   MaxLength,
   Min,
-  Max,
 } from '../../../../src/compat/class-validator/decorators';
 import { Type } from '../../../../src/compat/class-transformer';
 

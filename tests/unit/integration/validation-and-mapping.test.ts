@@ -31,12 +31,10 @@ import {
   IsBoolean,
   IsArray,
   MinLength,
-  MaxLength,
   Min,
   Max,
   IsOptional,
   IsDefined,
-  IsNotEmpty,
   ValidateNested,
 } from '../../../src/compat/class-validator';
 

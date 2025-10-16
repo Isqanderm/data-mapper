@@ -1,4 +1,4 @@
-import { Mapper, MappingConfiguration } from '../../src';
+import { Mapper } from '../../src';
 
 class Country {
   name?: string;
