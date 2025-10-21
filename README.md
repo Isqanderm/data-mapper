@@ -122,6 +122,8 @@ const user = plainToInstance(UserMapper, data);  // 4.3M ops/sec (13.2x faster!)
 
 ## Installation
 
+📦 **[View on npm](https://www.npmjs.com/package/om-data-mapper)** | **[View on GitHub](https://github.com/Isqanderm/data-mapper)**
+
 Install `om-data-mapper` using npm:
 
 ```bash
