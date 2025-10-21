@@ -1,11 +1,46 @@
 /**
  * Metadata storage for decorator-based mappers
- * Uses WeakMap to avoid memory leaks
+ * Uses WeakMap to avoid memory leaks and ensure proper garbage collection
+ *
+ * @packageDocumentation
  */
 
+/**
+ * Configuration options for the @Mapper decorator
+ *
+ * Controls the behavior and performance characteristics of the mapper.
+ * These options are set when decorating a class with @Mapper() and affect
+ * how the mapper compiles and executes transformations.
+ *
+ * @example Basic usage
+ * ```typescript
+ * @Mapper<Source, Target>({ unsafe: true })
+ * class FastMapper {
+ *   @Map('name')
+ *   name!: string;
+ * }
+ * ```
+ *
+ * @see {@link Mapper} for the decorator that uses these options
+ */
 export interface MapperOptions {
+  /**
+   * If true, disables try-catch error handling for maximum performance.
+   * Use only when you're certain the source data is valid and well-formed.
+   * @default false
+   */
   unsafe?: boolean;
-  useUnsafe?: boolean; // Alias for compatibility with MapperConfig
+
+  /**
+   * Alias for `unsafe` option, provided for compatibility with MapperConfig.
+   * @default false
+   */
+  useUnsafe?: boolean;
+
+  /**
+   * If true, enables strict mode validation (future feature).
+   * @default false
+   */
   strict?: boolean;
 }
 
@@ -79,22 +114,95 @@ export type MapperMethods<Source = any, Target = any> = {
   tryTransform: (source: Source) => { result: Target; errors: string[] };
 }
 
+/**
+ * Metadata for a single property mapping
+ *
+ * Describes how a single property should be mapped from source to target,
+ * including the mapping type, transformation functions, and additional options.
+ * This metadata is collected by property decorators and used during JIT compilation.
+ *
+ * @template Source - The source object type
+ * @template Target - The target property type
+ *
+ * @example Path mapping metadata
+ * ```typescript
+ * const mapping: PropertyMapping = {
+ *   propertyKey: 'fullName',
+ *   type: 'path',
+ *   sourcePath: 'user.name'
+ * };
+ * ```
+ *
+ * @example Transform mapping metadata
+ * ```typescript
+ * const mapping: PropertyMapping<User, string> = {
+ *   propertyKey: 'fullName',
+ *   type: 'transform',
+ *   transformer: (src: User) => `${src.firstName} ${src.lastName}`
+ * };
+ * ```
+ */
 export interface PropertyMapping<Source = any, Target = any> {
+  /** The name of the target property */
   propertyKey: string | symbol;
+
+  /** The type of mapping to perform */
   type: 'path' | 'transform' | 'nested' | 'ignore';
+
+  /** Path to the source property (for 'path' type mappings) */
   sourcePath?: string;
+
+  /** Transformation function (for 'transform' type mappings) */
   transformer?: (source: Source) => Target;
+
+  /** Nested mapper class (for 'nested' type mappings) */
   nestedMapper?: any;
+
+  /** Default value to use if source value is undefined */
   defaultValue?: any;
+
+  /** Value transformation function applied after mapping */
   transformValue?: (value: any) => any;
+
+  /** Conditional function to determine if mapping should occur */
   condition?: (source: Source) => boolean;
+
+  /** Validation function for the mapped value */
   validator?: (value: any) => boolean | string;
 }
 
+/**
+ * Complete metadata for a mapper class
+ *
+ * Contains all the information needed to compile and execute a mapper,
+ * including configuration options and property mappings. This metadata
+ * is stored in a WeakMap and accessed during mapper compilation.
+ *
+ * @template Source - The source object type
+ * @template Target - The target object type
+ *
+ * @example
+ * ```typescript
+ * const metadata: MapperMetadata<UserSource, UserDTO> = {
+ *   options: { unsafe: false },
+ *   properties: new Map([
+ *     ['name', { propertyKey: 'name', type: 'path', sourcePath: 'firstName' }],
+ *     ['email', { propertyKey: 'email', type: 'path', sourcePath: 'email' }]
+ *   ])
+ * };
+ * ```
+ */
 export interface MapperMetadata<Source = any, Target = any> {
+  /** Configuration options for the mapper */
   options: MapperOptions;
+
+  /** Map of property names to their mapping configurations */
   properties: Map<string | symbol, PropertyMapping<Source, Target>>;
+
+  /** Optional source type constructor (for runtime type checking) */
   sourceType?: new (...args: any[]) => Source;
+
+  /** Optional target type constructor (for runtime type checking) */
   targetType?: new (...args: any[]) => Target;
 }
 

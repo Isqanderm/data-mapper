@@ -829,7 +829,328 @@ Complete documentation is available in both **English** and **Russian**:
 - **`tryPlainToInstance<S, T>(MapperClass, source)`** - Safe transformation with error handling
 - **`createMapper<S, T>(MapperClass)`** - Create reusable mapper instance
 
-For complete API documentation, see the [Transformer Usage Guide](./docs/transformer-usage.md).
+For complete API documentation, see:
+- **[Transformer Usage Guide](./docs/transformer-usage.md)** - Comprehensive guide with examples
+- **[API Reference](https://isqanderm.github.io/data-mapper/)** - Auto-generated TypeDoc documentation
+
+> 💡 **Tip**: The API Reference is generated from JSDoc comments in the source code and provides detailed type information, parameter descriptions, and usage examples for all public APIs.
+
+---
+
+## 🔧 Troubleshooting
+
+### Common Issues and Solutions
+
+#### TypeScript Decorator Errors
+
+**Problem:** You see errors like `Experimental support for decorators is a feature that is subject to change` or decorators don't work as expected.
+
+**Solution:** Ensure you're using TC39 Stage 3 decorators, not the legacy experimental decorators. Update your `tsconfig.json`:
+
+```json
+{
+  "compilerOptions": {
+    "target": "ES2022",                    // Required for TC39 decorators
+    "experimentalDecorators": false,       // Must be false (or omitted)
+    "emitDecoratorMetadata": false,        // Must be false (or omitted)
+    "useDefineForClassFields": true        // Recommended
+  }
+}
+```
+
+**❌ Incorrect Configuration:**
+```json
+{
+  "compilerOptions": {
+    "experimentalDecorators": true,  // Wrong! This enables legacy decorators
+    "emitDecoratorMetadata": true    // Not needed for om-data-mapper
+  }
+}
+```
+
+**✅ Correct Configuration:**
+```json
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "experimentalDecorators": false  // Or simply omit this line
+  }
+}
+```
+
+---
+
+#### Performance Not as Expected
+
+**Problem:** Transformations are slower than expected or not showing the advertised performance gains.
+
+**Solution 1:** Reuse mapper instances instead of creating new ones for each transformation.
+
+**❌ Inefficient (creates new mapper each time):**
+```typescript
+function transformUsers(users: UserSource[]) {
+  return users.map(user => plainToInstance(UserMapper, user));
+}
+```
+
+**✅ Efficient (reuses compiled mapper):**
+```typescript
+import { getMapper } from 'om-data-mapper';
+
+const userMapper = getMapper<UserSource, UserDTO>(UserMapper);
+
+function transformUsers(users: UserSource[]) {
+  return users.map(user => userMapper.transform(user));
+}
+```
+
+**Solution 2:** Use `plainToInstanceArray` for batch transformations:
+
+**❌ Less efficient:**
+```typescript
+const results = sources.map(source => plainToInstance(MyMapper, source));
+```
+
+**✅ More efficient:**
+```typescript
+const results = plainToInstanceArray(MyMapper, sources);
+```
+
+**Solution 3:** Enable unsafe mode for maximum performance (only if you're certain data is valid):
+
+```typescript
+@Mapper<Source, Target>({ unsafe: true })
+class FastMapper {
+  @Map('name')
+  name!: string;
+}
+```
+
+---
+
+#### Migration from class-transformer Issues
+
+**Problem:** Code that worked with class-transformer doesn't work with om-data-mapper.
+
+**Solution 1:** Use the compatibility layer for a drop-in replacement:
+
+```typescript
+// Simply change the import path
+// Before:
+import { plainToClass, Expose, Type } from 'class-transformer';
+
+// After:
+import { plainToClass, Expose, Type } from 'om-data-mapper/class-transformer-compat';
+
+// Everything else stays the same!
+```
+
+**Solution 2:** Remove `reflect-metadata` import (not needed):
+
+**❌ Not needed with om-data-mapper:**
+```typescript
+import 'reflect-metadata';  // Remove this line
+import { plainToClass } from 'om-data-mapper/class-transformer-compat';
+```
+
+**✅ Correct:**
+```typescript
+import { plainToClass } from 'om-data-mapper/class-transformer-compat';
+```
+
+---
+
+#### Nested Object Mapping Not Working
+
+**Problem:** Nested objects are not being transformed correctly.
+
+**Solution:** Use `@MapWith` decorator to specify the nested mapper:
+
+**❌ Incorrect (nested object not transformed):**
+```typescript
+@Mapper<UserSource, UserDTO>()
+class UserMapper {
+  @Map('name')
+  name!: string;
+
+  @Map('address')  // This won't transform the nested object
+  address!: AddressDTO;
+}
+```
+
+**✅ Correct (nested object properly transformed):**
+```typescript
+@Mapper<AddressSource, AddressDTO>()
+class AddressMapper {
+  @Map('street')
+  street!: string;
+
+  @Map('city')
+  city!: string;
+}
+
+@Mapper<UserSource, UserDTO>()
+class UserMapper {
+  @Map('name')
+  name!: string;
+
+  @MapWith(AddressMapper)  // Use nested mapper
+  @Map('address')
+  address!: AddressDTO;
+}
+```
+
+---
+
+#### Type Inference Issues
+
+**Problem:** TypeScript doesn't infer types correctly or shows type errors.
+
+**Solution:** Explicitly specify type parameters:
+
+**❌ Type inference may fail:**
+```typescript
+const result = plainToInstance(UserMapper, source);  // Type may be 'any'
+```
+
+**✅ Explicit types ensure type safety:**
+```typescript
+const result = plainToInstance<UserSource, UserDTO>(UserMapper, source);
+```
+
+**Alternative:** Use `createMapper` for better type inference:
+
+```typescript
+const mapper = createMapper<UserSource, UserDTO>(UserMapper);
+const result = mapper.transform(source);  // Fully typed!
+```
+
+---
+
+#### Transformation Errors Not Visible
+
+**Problem:** Transformations fail silently without showing errors.
+
+**Solution:** Use `tryPlainToInstance` or `tryTransform` for error visibility:
+
+**❌ Errors are hidden:**
+```typescript
+const result = plainToInstance(UserMapper, source);
+// If transformation fails, you won't know why
+```
+
+**✅ Errors are visible:**
+```typescript
+const { result, errors } = tryPlainToInstance(UserMapper, source);
+
+if (errors.length > 0) {
+  console.error('Transformation errors:', errors);
+  // Handle errors appropriately
+}
+```
+
+---
+
+#### Default Values Not Applied
+
+**Problem:** Default values specified with `@Default` decorator are not being applied.
+
+**Solution:** Ensure `@Default` is placed before other decorators:
+
+**❌ Incorrect order:**
+```typescript
+@Map('name')
+@Default('Unknown')  // Won't work - must come before @Map
+name!: string;
+```
+
+**✅ Correct order:**
+```typescript
+@Default('Unknown')  // Correct - comes before @Map
+@Map('name')
+name!: string;
+```
+
+---
+
+#### Bundle Size Concerns
+
+**Problem:** Bundle size is larger than expected.
+
+**Solution 1:** Use tree-shaking compatible imports:
+
+**✅ Import only what you need:**
+```typescript
+import { Mapper, Map, plainToInstance } from 'om-data-mapper';
+```
+
+**Solution 2:** Ensure your bundler supports tree-shaking:
+
+```javascript
+// webpack.config.js
+module.exports = {
+  optimization: {
+    usedExports: true,
+    sideEffects: false
+  }
+};
+```
+
+---
+
+#### Runtime Errors in Production
+
+**Problem:** Code works in development but fails in production builds.
+
+**Solution 1:** Ensure decorators are not stripped by your build tool:
+
+```json
+// tsconfig.json
+{
+  "compilerOptions": {
+    "target": "ES2022",  // Don't downlevel to ES5
+    "module": "ESNext"
+  }
+}
+```
+
+**Solution 2:** Check that your bundler preserves class names:
+
+```javascript
+// webpack.config.js
+module.exports = {
+  optimization: {
+    minimize: true,
+    minimizer: [
+      new TerserPlugin({
+        terserOptions: {
+          keep_classnames: true,  // Preserve class names
+          keep_fnames: true       // Preserve function names
+        }
+      })
+    ]
+  }
+};
+```
+
+---
+
+### Getting Help
+
+If you're still experiencing issues:
+
+1. **Check the documentation**: [docs/](./docs/) directory contains comprehensive guides
+2. **Search existing issues**: [GitHub Issues](https://github.com/Isqanderm/data-mapper/issues)
+3. **Ask a question**: [GitHub Discussions](https://github.com/Isqanderm/data-mapper/discussions)
+4. **Report a bug**: [Create a new issue](https://github.com/Isqanderm/data-mapper/issues/new)
+
+When reporting issues, please include:
+- Your TypeScript version
+- Your `tsconfig.json` configuration
+- A minimal reproducible example
+- Expected vs actual behavior
+
+---
 
 ## Contributing
 
