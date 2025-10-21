@@ -33,6 +33,8 @@
     "build:esm": "tsc -p tsconfig.esm.json && node scripts/fix-esm-imports.js && echo '{\"type\":\"module\"}' > build/esm/package.json",
     "build:watch": "tsc --watch",
     "clean": "rm -rf build",
+    "docs": "typedoc",
+    "docs:watch": "typedoc --watch",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "lint": "eslint .",
@@ -125,6 +127,7 @@
     "semantic-release": "^24.2.9",
     "tinybench": "^5.0.1",
     "ts-node": "^10.9.2",
+    "typedoc": "^0.28.14",
     "typescript": "^5.3.3",
     "vitest": "^3.2.4"
   }
