@@ -5,6 +5,9 @@ build
 bench-results.json
 benchmark-*.txt
 
+# Generated API documentation
+docs/api
+
 # Ignore compiled JavaScript files in src directory
 # (TypeScript source files only, compiled output goes to dist/)
 src/**/*.js
