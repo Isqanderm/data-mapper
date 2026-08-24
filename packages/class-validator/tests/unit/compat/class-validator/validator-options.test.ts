@@ -4,6 +4,7 @@ import {
   IsDefined,
   MinLength,
   IsUppercase,
+  ValidateBy,
   validate,
   validateSync,
 } from '../../../../src';
@@ -66,5 +67,34 @@ describe('stopAtFirstError', () => {
     expect(Object.keys(errors[0].constraints!)).toHaveLength(1);
     const asyncErrors = await validate(new Dto(), { stopAtFirstError: true });
     expect(Object.keys(asyncErrors[0].constraints!)).toHaveLength(1);
+  });
+});
+
+describe('stopAtFirstError with async constraints', () => {
+  // ValidateBy is the bottom (closer-to-field) decorator, so its constraint is
+  // registered - and its async task fired - before the sync MinLength check
+  // runs. Without a post-trim, the fired-and-forgotten async task resolves
+  // after the sync check has already recorded its own failure, producing two
+  // constraint entries even under stopAtFirstError: true.
+  class AsyncDto {
+    @MinLength(5)
+    @ValidateBy({
+      name: 'alwaysFailsAsync',
+      validator: {
+        validate: () => Promise.resolve(false),
+      },
+    })
+    value: any = 'ab';
+  }
+
+  it('default: both the async and sync failures are reported', async () => {
+    const errors = await validate(new AsyncDto());
+    expect(Object.keys(errors[0].constraints!)).toHaveLength(2);
+  });
+
+  it('stopAtFirstError: only one failure reported despite the un-awaited async task', async () => {
+    const errors = await validate(new AsyncDto(), { stopAtFirstError: true });
+    expect(errors).toHaveLength(1);
+    expect(Object.keys(errors[0].constraints!)).toHaveLength(1);
   });
 });

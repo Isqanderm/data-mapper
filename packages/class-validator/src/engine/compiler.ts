@@ -515,6 +515,26 @@ function generateAsyncPropertyValidation(
   lines.push(`    if (propertyAsyncTasks.length > 0) {`);
   lines.push(`      await Promise.all(propertyAsyncTasks);`);
   lines.push(`    }`);
+  // stopAtFirstError post-trim: async constraint tasks are fired without
+  // intermediate awaits, so the synchronous per-check guard above cannot see
+  // errors recorded by other async constraints on this property. Once all
+  // async tasks have settled, trim propertyErrors down to a single entry
+  // (the first constraint in declaration order that actually failed).
+  const stopAtFirstErrorOrder = JSON.stringify(
+    metadata.constraints.map((c) => {
+      if (c.type === 'validateBy') return (c.value && c.value.name) || 'custom';
+      if (c.type === 'custom') return 'custom';
+      return c.type;
+    }),
+  );
+  lines.push(`    if (opts.stopAtFirstError) {`);
+  lines.push(`      const keys = Object.keys(propertyErrors);`);
+  lines.push(`      if (keys.length > 1) {`);
+  lines.push(`        const order = ${stopAtFirstErrorOrder};`);
+  lines.push(`        const firstKey = order.find(k => k in propertyErrors) || keys[0];`);
+  lines.push(`        for (const k of keys) { if (k !== firstKey) delete propertyErrors[k]; }`);
+  lines.push(`      }`);
+  lines.push(`    }`);
   lines.push(`    if (Object.keys(propertyErrors).length > 0 || nestedErrors.length > 0) {`);
   lines.push(`      const error = {`);
   lines.push(`        property: ${safePropName},`);
