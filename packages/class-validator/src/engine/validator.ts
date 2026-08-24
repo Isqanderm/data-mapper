@@ -20,6 +20,27 @@ function unknownValueError(object: any): ValidationError {
 }
 
 /**
+ * Strip target and/or value fields from errors based on options
+ */
+function stripErrorFields(
+  errors: ValidationError[],
+  options?: ValidatorOptions,
+): ValidationError[] {
+  const stripTarget = options?.validationError?.target === false;
+  const stripValue = options?.validationError?.value === false;
+  if (!stripTarget && !stripValue) return errors;
+  const walk = (errs: ValidationError[]): void => {
+    for (const err of errs) {
+      if (stripTarget) delete err.target;
+      if (stripValue) delete err.value;
+      if (err.children) walk(err.children);
+    }
+  };
+  walk(errors);
+  return errors;
+}
+
+/**
  * Validate an object asynchronously
  * Compatible with class-validator validate() function
  */
@@ -41,7 +62,7 @@ export async function validate(
   // Execute async validation
   const errors = await validator(object, options);
 
-  return errors;
+  return stripErrorFields(errors, options);
 }
 
 /**
@@ -63,7 +84,7 @@ export function validateSync(object: any, options?: ValidatorOptions): Validatio
   // Execute validation
   const errors = validator(object, options);
 
-  return errors;
+  return stripErrorFields(errors, options);
 }
 
 /**

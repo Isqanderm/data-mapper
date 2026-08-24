@@ -30,7 +30,7 @@ export interface ValidationError {
   children?: ValidationError[];
 
   /**
-   * Property path (for nested objects)
+   * Object that was validated
    */
   target?: any;
 }
@@ -83,6 +83,15 @@ export interface ValidatorOptions {
    * Forbid non-whitelisted properties
    */
   forbidNonWhitelisted?: boolean;
+
+  /**
+   * Settings for the returned ValidationError objects.
+   * target/value default to true (fields included).
+   */
+  validationError?: {
+    target?: boolean;
+    value?: boolean;
+  };
 }
 
 /**

@@ -166,3 +166,28 @@ describe('whitelist / forbidNonWhitelisted', () => {
     expect(dto.rogue).toBe('x');
   });
 });
+
+describe('validationError option', () => {
+  class Dto {
+    @IsString()
+    name: any = 42;
+  }
+
+  it('default: target and value present', () => {
+    const dto = new Dto();
+    const errors = validateSync(dto);
+    expect(errors[0].target).toBe(dto);
+    expect(errors[0].value).toBe(42);
+  });
+
+  it('target:false / value:false strip fields (sync + async)', async () => {
+    const errors = validateSync(new Dto(), {
+      validationError: { target: false, value: false },
+    });
+    expect(errors[0]).not.toHaveProperty('target');
+    expect(errors[0]).not.toHaveProperty('value');
+    const asyncErrors = await validate(new Dto(), { validationError: { target: false } });
+    expect(asyncErrors[0]).not.toHaveProperty('target');
+    expect(asyncErrors[0]).toHaveProperty('value');
+  });
+});
