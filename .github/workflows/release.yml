@@ -22,11 +22,10 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      # TODO Phase 5: restore "publish: pnpm run release" + NPM_TOKEN env when the packages are ready to ship (see docs/superpowers/specs/2026-08-24-monorepo-v5-design.md)
       - name: Create release PR or publish
         uses: changesets/action@v1
         with:
-          publish: pnpm run release
           version: pnpm run version-packages
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}

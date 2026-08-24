@@ -24,7 +24,7 @@ This project and everyone participating in it is governed by our [Code of Conduc
 ### Prerequisites
 
 - Node.js 20.x or higher
-- npm 10.x or higher
+- pnpm 10.x or higher
 - Git
 
 ### Fork and Clone
@@ -45,43 +45,43 @@ This project and everyone participating in it is governed by our [Code of Conduc
 1. Install dependencies:
 
    ```bash
-   npm install
+   pnpm install
    ```
 
 2. Build the project:
 
    ```bash
-   npm run build
+   pnpm run build
    ```
 
 3. Run tests:
 
    ```bash
-   npm test
+   pnpm test
    ```
 
 4. Run linting:
 
    ```bash
-   npm run lint
+   pnpm run lint
    ```
 
 5. Format code:
    ```bash
-   npm run format
+   pnpm run format
    ```
 
 ### Available Scripts
 
-- `npm run build` - Compile TypeScript to JavaScript
-- `npm run build:watch` - Watch mode for development
-- `npm test` - Run tests with coverage
-- `npm run test:watch` - Run tests in watch mode
-- `npm run lint` - Check code for linting errors
-- `npm run lint:fix` - Fix linting errors automatically
-- `npm run format` - Format code with Prettier
-- `npm run format:check` - Check code formatting
-- `npm run clean` - Remove build artifacts
+- `pnpm run build` - Compile TypeScript to JavaScript
+- `pnpm run build` - Watch mode for development
+- `pnpm test` - Run tests with coverage
+- `pnpm run test:watch` - Run tests in watch mode
+- `pnpm run lint` - Check code for linting errors
+- `pnpm run lint:fix` - Fix linting errors automatically
+- `pnpm run format` - Format code with Prettier
+- `pnpm run format:check` - Check code formatting
+- `pnpm run clean` - Remove build artifacts
 
 ## Making Changes
 
@@ -109,9 +109,9 @@ Branch naming conventions:
 1. Write your code following our [coding standards](#coding-standards)
 2. Add or update tests as needed
 3. Update documentation if necessary
-4. Ensure all tests pass: `npm test`
-5. Ensure linting passes: `npm run lint`
-6. Ensure formatting is correct: `npm run format:check`
+4. Ensure all tests pass: `pnpm test`
+5. Ensure linting passes: `pnpm run lint`
+6. Ensure formatting is correct: `pnpm run format:check`
 
 ## Commit Guidelines
 
@@ -187,10 +187,10 @@ git commit -m "feat(mapper): add caching support"
 2. Ensure all checks pass:
 
    ```bash
-   npm run build
-   npm test
-   npm run lint
-   npm run format:check
+   pnpm run build
+   pnpm test
+   pnpm run lint
+   pnpm run format:check
    ```
 
 3. Update documentation if needed
@@ -309,13 +309,13 @@ describe('Feature Name', () => {
 
 ```bash
 # Run all tests with coverage
-npm test
+pnpm test
 
 # Run tests in watch mode
-npm run test:watch
+pnpm run test:watch
 
 # Run specific test file
-npx vitest tests/smoke.test.ts
+pnpm exec vitest tests/smoke.test.ts
 ```
 
 ### Checking Coverage Locally
@@ -324,7 +324,7 @@ Before submitting your PR, verify that coverage is maintained:
 
 ```bash
 # Run tests with coverage
-npm test
+pnpm test
 
 # Open the HTML coverage report
 open coverage/index.html
