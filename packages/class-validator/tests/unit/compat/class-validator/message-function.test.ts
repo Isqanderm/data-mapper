@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { IsString, MinLength, validate, validateSync } from '../../../../src';
+import { IsString, MinLength, ValidateBy, validate, validateSync } from '../../../../src';
 import type { ValidationArguments } from '../../../../src';
 
 describe('function-form message', () => {
@@ -31,5 +31,48 @@ describe('function-form message', () => {
       name: any = 1;
     }
     expect(validateSync(new Dto())[0].constraints!.isString).toBe('nope');
+  });
+
+  it('unwraps args.constraints to the decorator-supplied array for a ValidateBy (composite envelope) constraint', () => {
+    let receivedConstraints: unknown;
+    class Dto {
+      @ValidateBy(
+        {
+          name: 'isLongerThan',
+          validator: {
+            validate: () => false,
+          },
+          constraints: ['firstName'],
+        },
+        {
+          message: (args: ValidationArguments) => {
+            receivedConstraints = args.constraints;
+            return 'nope';
+          },
+        },
+      )
+      lastName: any = 'x';
+    }
+    const errors = validateSync(new Dto());
+    expect(errors).toHaveLength(1);
+    expect(receivedConstraints).toEqual(['firstName']);
+    expect((receivedConstraints as unknown[])[0]).toBe('firstName');
+  });
+
+  it('keeps args.constraints as a single-element array for a scalar constraint value', () => {
+    let receivedConstraints: unknown;
+    class Dto {
+      @MinLength(5, {
+        message: (args: ValidationArguments) => {
+          receivedConstraints = args.constraints;
+          return 'too short';
+        },
+      })
+      name: any = 'ab';
+    }
+    const errors = validateSync(new Dto());
+    expect(errors).toHaveLength(1);
+    expect(receivedConstraints).toEqual([5]);
+    expect((receivedConstraints as unknown[])[0]).toBe(5);
   });
 });

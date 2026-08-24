@@ -123,6 +123,31 @@ describe('stopAtFirstError with async constraints', () => {
     expect(errors).toHaveLength(1);
     expect(Object.keys(errors[0].constraints!)).toHaveLength(1);
   });
+
+  // The post-trim order array must agree with the emitted error keys on
+  // which constraint maps to which key. A validateBy name that isn't a
+  // valid JS identifier gets sanitized to 'custom' when the error key is
+  // emitted; the order array used to keep the raw (unsanitized) name,
+  // so it never matched and the trim fell back to `keys[0]` instead of
+  // the declared-first constraint.
+  class NonIdentifierNameDto {
+    @MinLength(5)
+    @ValidateBy({
+      name: 'not-an-identifier',
+      validator: {
+        validate: () => Promise.resolve(false),
+      },
+    })
+    value: any = 'ab';
+  }
+
+  it('stopAtFirstError: non-identifier validateBy name still trims to the declared-first constraint', async () => {
+    const errors = await validate(new NonIdentifierNameDto(), { stopAtFirstError: true });
+    expect(errors).toHaveLength(1);
+    const keys = Object.keys(errors[0].constraints!);
+    expect(keys).toHaveLength(1);
+    expect(keys[0]).toBe('custom');
+  });
 });
 
 describe('whitelist / forbidNonWhitelisted', () => {

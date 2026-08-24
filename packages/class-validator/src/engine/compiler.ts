@@ -26,6 +26,23 @@ const compiledValidatorsCache = new Map<any, CompiledValidator>();
 const compiledAsyncValidatorsCache = new Map<any, AsyncCompiledValidator>();
 
 /**
+ * Matches a valid JS identifier, used to decide whether a validateBy
+ * constraint's raw name is safe to use as an error-object property key.
+ */
+const IDENTIFIER_REGEX = /^[A-Za-z_$][A-Za-z0-9_$]*$/;
+
+/**
+ * Sanitize a validateBy validator's raw name into the key that will
+ * actually be used on the generated error object: the name itself when
+ * it's a valid identifier, otherwise the 'custom' fallback. Must be kept
+ * in sync between the emitted error keys and the stopAtFirstError order
+ * array — both need to agree on which key a given constraint lands on.
+ */
+function sanitizeValidatorName(rawName: string): string {
+  return IDENTIFIER_REGEX.test(rawName) ? rawName : 'custom';
+}
+
+/**
  * Compile validation function for a class
  */
 export function compileValidator(metadata: ClassValidationMetadata): CompiledValidator {
@@ -571,7 +588,8 @@ function generateAsyncPropertyValidation(
   // (the first constraint in declaration order that actually failed).
   const stopAtFirstErrorOrder = JSON.stringify(
     metadata.constraints.map((c) => {
-      if (c.type === 'validateBy') return (c.value && c.value.name) || 'custom';
+      if (c.type === 'validateBy')
+        return sanitizeValidatorName((c.value && c.value.name) || 'custom');
       if (c.type === 'custom') return 'custom';
       return c.type;
     }),
@@ -1663,9 +1681,7 @@ function generateConstraintCheck(
       // Handle ValidateBy decorator
       if (constraint.value && constraint.value.validator) {
         const rawValidatorName = constraint.value.name || 'custom';
-        const validatorName = /^[A-Za-z_$][A-Za-z0-9_$]*$/.test(rawValidatorName)
-          ? rawValidatorName
-          : 'custom';
+        const validatorName = sanitizeValidatorName(rawValidatorName);
         const defaultMsg = emitMessage(
           constraint,
           constraintIndex,
@@ -1834,9 +1850,7 @@ function generateAsyncConstraintCheck(
     // For ValidateBy decorators (may be async)
     const taskVarName = `customTask_${asyncTaskCounter++}`;
     const rawValidatorName = constraint.value.name || 'custom';
-    const validatorName = /^[A-Za-z_$][A-Za-z0-9_$]*$/.test(rawValidatorName)
-      ? rawValidatorName
-      : 'custom';
+    const validatorName = sanitizeValidatorName(rawValidatorName);
     const defaultMsg = emitMessage(
       constraint,
       constraintIndex,
@@ -1915,10 +1929,19 @@ function emitMessage(
 ): string {
   if (typeof constraint.message === 'function') {
     const safeProp = JSON.stringify(propertyName);
+    // The stored constraint `value` is sometimes a scalar (e.g. MinLength(5)
+    // stores value: 5) and sometimes an envelope object for custom/validateBy
+    // constraints (e.g. { name, validator, defaultMessage, constraints: [...] }).
+    // Unwrap the envelope's `.constraints` array when present so a function
+    // message sees the same `constraints` shape as the custom/validateBy sync
+    // and async branches build (`constraintValue.constraints || []`); a
+    // scalar value falls back to a single-element array, and an absent value
+    // becomes an empty array (no constraint args to report).
+    const constraintValueExpr = `metadata.properties.get(${safeProp}).constraints[${constraintIndex}].value`;
     return (
       `(metadata.properties.get(${safeProp}).constraints[${constraintIndex}].message({ ` +
       `value: ${valueName}, ` +
-      `constraints: [metadata.properties.get(${safeProp}).constraints[${constraintIndex}].value], ` +
+      `constraints: (function(v){ return v === undefined ? [] : (v && Array.isArray(v.constraints) ? v.constraints : [v]); })(${constraintValueExpr}), ` +
       `targetName: object && object.constructor ? object.constructor.name : '', ` +
       `object: object, ` +
       `property: ${safeProp} }))`
