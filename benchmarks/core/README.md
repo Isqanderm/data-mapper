@@ -5,9 +5,11 @@ This directory contains core performance benchmarks for om-data-mapper's fundame
 ## 📊 Benchmarks
 
 ### simple.bench.ts
+
 Tests basic property mapping performance.
 
 **Scenarios:**
+
 - Direct field mapping
 - Simple transformations
 - Baseline vanilla JavaScript comparison
@@ -15,9 +17,11 @@ Tests basic property mapping performance.
 **Expected Performance:** ~30M ops/sec
 
 ### complex.bench.ts
+
 Tests complex transformation scenarios.
 
 **Scenarios:**
+
 - Nested object mapping
 - Array transformations
 - Custom transformation functions
@@ -26,9 +30,11 @@ Tests complex transformation scenarios.
 **Expected Performance:** ~13M ops/sec
 
 ### nested.bench.ts
+
 Tests deep nested property access.
 
 **Scenarios:**
+
 - Multi-level object traversal
 - Deep property extraction
 - Nested path resolution
@@ -36,9 +42,11 @@ Tests deep nested property access.
 **Expected Performance:** ~2.4M ops/sec
 
 ### array.bench.ts
+
 Tests bulk array transformation performance.
 
 **Scenarios:**
+
 - Mapping 100 items
 - Batch transformations
 - Array processing efficiency
@@ -46,9 +54,11 @@ Tests bulk array transformation performance.
 **Expected Performance:** ~1M ops/sec
 
 ### shared-mappers.ts
+
 Shared mapper definitions used across benchmarks.
 
 **Contains:**
+
 - Decorator-based mapper classes
 - Reusable type definitions
 - Common test scenarios
@@ -93,6 +103,7 @@ npx vitest bench core/ --watch
 ```
 
 **Metrics:**
+
 - **hz**: Operations per second (higher is better)
 - **min/max**: Minimum and maximum execution time
 - **mean**: Average execution time
@@ -102,27 +113,33 @@ npx vitest bench core/ --watch
 
 ## 🎯 Performance Targets
 
-| Benchmark | Target | Actual | Status |
-|-----------|--------|--------|--------|
-| Simple    | 25M ops/sec | ~30M ops/sec | ✅ Exceeds |
-| Complex   | 10M ops/sec | ~13M ops/sec | ✅ Exceeds |
-| Nested    | 2M ops/sec  | ~2.4M ops/sec | ✅ Exceeds |
-| Array     | 800K ops/sec | ~1M ops/sec | ✅ Exceeds |
+| Benchmark | Target       | Actual        | Status     |
+| --------- | ------------ | ------------- | ---------- |
+| Simple    | 25M ops/sec  | ~30M ops/sec  | ✅ Exceeds |
+| Complex   | 10M ops/sec  | ~13M ops/sec  | ✅ Exceeds |
+| Nested    | 2M ops/sec   | ~2.4M ops/sec | ✅ Exceeds |
+| Array     | 800K ops/sec | ~1M ops/sec   | ✅ Exceeds |
 
 ## 🔧 Adding New Benchmarks
 
 1. Create a new `.bench.ts` file in this directory
 2. Import Vitest bench utilities:
+
    ```typescript
    import { bench, describe } from 'vitest';
    import { Mapper } from '../../src/core/Mapper';
    ```
 
 3. Define your benchmark:
+
    ```typescript
    describe('My Benchmark', () => {
-     const mapper = Mapper.create({ /* ... */ });
-     const data = { /* ... */ };
+     const mapper = Mapper.create({
+       /* ... */
+     });
+     const data = {
+       /* ... */
+     };
 
      bench('My test', () => {
        mapper.execute(data);
@@ -148,6 +165,7 @@ npx vitest bench core/ --watch
 ### Benchmark Not Running
 
 Make sure Vitest is installed:
+
 ```bash
 npm install
 ```
@@ -162,6 +180,7 @@ npm install
 ### Import Errors
 
 Make sure you're importing from the correct paths:
+
 ```typescript
 import { Mapper } from '../../src/core/Mapper';
 ```
@@ -179,4 +198,3 @@ These benchmarks run automatically in CI/CD:
 - [Comparison Benchmarks](../comparisons/) - Library comparisons
 - [Main README](../README.md) - Benchmark overview
 - [Vitest Bench Docs](https://vitest.dev/guide/features.html#benchmarking)
-

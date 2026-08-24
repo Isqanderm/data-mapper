@@ -103,7 +103,10 @@ export function plainToClassFromExist<T, V>(
  * @returns Plain object or array of plain objects
  */
 export function classToPlain<T>(object: T, options?: ClassTransformOptions): Record<string, any>;
-export function classToPlain<T>(object: T[], options?: ClassTransformOptions): Record<string, any>[];
+export function classToPlain<T>(
+  object: T[],
+  options?: ClassTransformOptions,
+): Record<string, any>[];
 export function classToPlain<T>(
   object: T | T[],
   options: ClassTransformOptions = {},
@@ -337,4 +340,3 @@ function transformValue(
 
   return value;
 }
-

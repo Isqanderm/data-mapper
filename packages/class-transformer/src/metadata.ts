@@ -149,7 +149,9 @@ export function shouldExposeProperty(
 
   // If no metadata, use strategy
   if (!propertyMeta) {
-    const strategy = options.excludeExtraneousValues ? 'excludeAll' : options.strategy || 'exposeAll';
+    const strategy = options.excludeExtraneousValues
+      ? 'excludeAll'
+      : options.strategy || 'exposeAll';
     return strategy === 'exposeAll';
   }
 
@@ -218,4 +220,3 @@ export function getSourcePropertyName(
   }
   return String(propertyKey);
 }
-

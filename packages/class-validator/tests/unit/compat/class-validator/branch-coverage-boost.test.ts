@@ -375,4 +375,3 @@ describe('Branch Coverage Boost - Edge Cases in Decorators', () => {
     expect(errors).toHaveLength(0);
   });
 });
-

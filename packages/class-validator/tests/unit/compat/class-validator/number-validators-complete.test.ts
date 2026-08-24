@@ -3,11 +3,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import {
-  IsPositive,
-  IsNegative,
-  validateSync,
-} from '../../../../src';
+import { IsPositive, IsNegative, validateSync } from '../../../../src';
 
 describe('Number Validators - Complete Coverage', () => {
   describe('@IsPositive', () => {
@@ -223,9 +219,8 @@ describe('Number Validators - Complete Coverage', () => {
 
       const errors = validateSync(invalid);
       expect(errors).toHaveLength(2);
-      expect(errors.find(e => e.property === 'credit')).toBeDefined();
-      expect(errors.find(e => e.property === 'debit')).toBeDefined();
+      expect(errors.find((e) => e.property === 'credit')).toBeDefined();
+      expect(errors.find((e) => e.property === 'debit')).toBeDefined();
     });
   });
 });
-

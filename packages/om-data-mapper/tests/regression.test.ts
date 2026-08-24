@@ -70,7 +70,9 @@ describe('Benchmark Regression Tests - Simple Validation', () => {
       validateSync(dto);
     }, 1000);
 
-    console.log(`Simple validation: ${avgTime.toFixed(4)}ms (baseline: ${BASELINES.simpleValidation}ms)`);
+    console.log(
+      `Simple validation: ${avgTime.toFixed(4)}ms (baseline: ${BASELINES.simpleValidation}ms)`,
+    );
 
     // Check that performance is within tolerance
     const maxAllowed = BASELINES.simpleValidation * (1 + TOLERANCE);
@@ -152,7 +154,9 @@ describe('Benchmark Regression Tests - Complex Validation', () => {
       validateSync(dto);
     }, 1000);
 
-    console.log(`Complex validation: ${avgTime.toFixed(4)}ms (baseline: ${BASELINES.complexValidation}ms)`);
+    console.log(
+      `Complex validation: ${avgTime.toFixed(4)}ms (baseline: ${BASELINES.complexValidation}ms)`,
+    );
 
     const maxAllowed = BASELINES.complexValidation * (1 + TOLERANCE);
     expect(avgTime).toBeLessThan(maxAllowed);
@@ -197,7 +201,9 @@ describe('Benchmark Regression Tests - Nested Arrays', () => {
       validateSync(dto);
     }, 500);
 
-    console.log(`Nested array validation: ${avgTime.toFixed(4)}ms (baseline: ${BASELINES.nestedValidation}ms)`);
+    console.log(
+      `Nested array validation: ${avgTime.toFixed(4)}ms (baseline: ${BASELINES.nestedValidation}ms)`,
+    );
 
     const maxAllowed = BASELINES.nestedValidation * (1 + TOLERANCE);
     expect(avgTime).toBeLessThan(maxAllowed);
@@ -227,7 +233,9 @@ describe('Benchmark Regression Tests - Transformation', () => {
       plainToInstance(UserDto, plain);
     }, 1000);
 
-    console.log(`Transformation: ${avgTime.toFixed(4)}ms (baseline: ${BASELINES.transformation}ms)`);
+    console.log(
+      `Transformation: ${avgTime.toFixed(4)}ms (baseline: ${BASELINES.transformation}ms)`,
+    );
 
     const maxAllowed = BASELINES.transformation * (1 + TOLERANCE);
     expect(avgTime).toBeLessThan(maxAllowed);
@@ -260,7 +268,9 @@ describe('Benchmark Regression Tests - Transformation + Validation', () => {
       validateSync(dto);
     }, 1000);
 
-    console.log(`Transform + Validate: ${avgTime.toFixed(4)}ms (baseline: ${BASELINES.transformationAndValidation}ms)`);
+    console.log(
+      `Transform + Validate: ${avgTime.toFixed(4)}ms (baseline: ${BASELINES.transformationAndValidation}ms)`,
+    );
 
     const maxAllowed = BASELINES.transformationAndValidation * (1 + TOLERANCE);
     expect(avgTime).toBeLessThan(maxAllowed);
@@ -298,4 +308,3 @@ describe('Benchmark Regression Tests - Async Validation', () => {
     expect(avgTime).toBeLessThan(2.0);
   });
 });
-

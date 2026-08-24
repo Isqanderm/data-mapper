@@ -6,39 +6,38 @@ codecov:
 coverage:
   precision: 2
   round: down
-  range: "70...100"
+  range: '70...100'
   status:
     project:
       default:
         target: auto
-        threshold: 0%  # No coverage drops allowed - any decrease will fail the check
+        threshold: 0% # No coverage drops allowed - any decrease will fail the check
         base: auto
-        if_ci_failed: error  # Fail if CI fails
+        if_ci_failed: error # Fail if CI fails
     patch:
       default:
         target: auto
-        threshold: 0%  # New code must maintain or improve coverage
+        threshold: 0% # New code must maintain or improve coverage
         base: auto
         if_ci_failed: error
 
 ignore:
-  - "benchmarks/**/*"
-  - "examples/**/*"
-  - "docs/**/*"
-  - "tests/**/*"
-  - "**/*.test.ts"
-  - "**/*.bench.ts"
-  - "**/*.d.ts"
-  - "build/**/*"
-  - "coverage/**/*"
-  - "node_modules/**/*"
-  - "src/**/types.ts"  # Type definitions only
-  - "src/**/interfaces.ts"  # Interface definitions only
+  - 'benchmarks/**/*'
+  - 'examples/**/*'
+  - 'docs/**/*'
+  - 'tests/**/*'
+  - '**/*.test.ts'
+  - '**/*.bench.ts'
+  - '**/*.d.ts'
+  - 'build/**/*'
+  - 'coverage/**/*'
+  - 'node_modules/**/*'
+  - 'src/**/types.ts' # Type definitions only
+  - 'src/**/interfaces.ts' # Interface definitions only
 
 comment:
-  layout: "reach,diff,flags,tree,footer"
+  layout: 'reach,diff,flags,tree,footer'
   behavior: default
   require_changes: false
   require_base: no
   require_head: yes
-

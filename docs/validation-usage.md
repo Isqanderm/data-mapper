@@ -37,7 +37,7 @@ class UserDto {
 }
 
 const user = new UserDto();
-user.name = 'Jo';  // Too short
+user.name = 'Jo'; // Too short
 user.email = 'invalid-email';
 
 const errors = await validate(user);
@@ -146,15 +146,15 @@ const allErrors = validateManySync(users);
 
 ```typescript
 interface ValidatorOptions {
-  skipMissingProperties?: boolean;      // Skip undefined properties
-  skipNullProperties?: boolean;         // Skip null properties
-  skipUndefinedProperties?: boolean;    // Skip undefined properties
-  groups?: string[];                    // Validation groups
-  always?: boolean;                     // Always validate
-  stopAtFirstError?: boolean;           // Stop at first error
-  forbidUnknownValues?: boolean;        // Forbid unknown values
-  whitelist?: boolean;                  // Remove unknown properties
-  forbidNonWhitelisted?: boolean;       // Throw on unknown properties
+  skipMissingProperties?: boolean; // Skip undefined properties
+  skipNullProperties?: boolean; // Skip null properties
+  skipUndefinedProperties?: boolean; // Skip undefined properties
+  groups?: string[]; // Validation groups
+  always?: boolean; // Always validate
+  stopAtFirstError?: boolean; // Stop at first error
+  forbidUnknownValues?: boolean; // Forbid unknown values
+  whitelist?: boolean; // Remove unknown properties
+  forbidNonWhitelisted?: boolean; // Throw on unknown properties
 }
 ```
 
@@ -164,7 +164,7 @@ interface ValidatorOptions {
 const errors = await validate(user, {
   skipMissingProperties: true,
   groups: ['create'],
-  stopAtFirstError: true
+  stopAtFirstError: true,
 });
 ```
 
@@ -175,6 +175,7 @@ const errors = await validate(user, {
 ### Common Validators
 
 #### `@IsOptional()`
+
 Marks property as optional - skips validation if undefined.
 
 ```typescript
@@ -186,6 +187,7 @@ class UserDto {
 ```
 
 #### `@IsDefined()`
+
 Checks if value is defined (not undefined).
 
 ```typescript
@@ -196,6 +198,7 @@ class UserDto {
 ```
 
 #### `@IsNotEmpty()`
+
 Checks if value is not empty.
 
 ```typescript
@@ -206,6 +209,7 @@ class UserDto {
 ```
 
 #### `@Equals(value)`
+
 Checks if value equals the specified value.
 
 ```typescript
@@ -216,6 +220,7 @@ class ConfigDto {
 ```
 
 #### `@NotEquals(value)`
+
 Checks if value does not equal the specified value.
 
 ```typescript
@@ -226,6 +231,7 @@ class UserDto {
 ```
 
 #### `@IsIn(values)`
+
 Checks if value is in an array of allowed values.
 
 ```typescript
@@ -236,6 +242,7 @@ class UserDto {
 ```
 
 #### `@IsNotIn(values)`
+
 Checks if value is not in an array of disallowed values.
 
 ```typescript
@@ -250,6 +257,7 @@ class UserDto {
 ### String Validators
 
 #### `@IsString()`
+
 Checks if value is a string.
 
 ```typescript
@@ -260,6 +268,7 @@ class UserDto {
 ```
 
 #### `@MinLength(min)`
+
 Checks if string length is at least min.
 
 ```typescript
@@ -270,6 +279,7 @@ class UserDto {
 ```
 
 #### `@MaxLength(max)`
+
 Checks if string length is at most max.
 
 ```typescript
@@ -280,6 +290,7 @@ class UserDto {
 ```
 
 #### `@Length(min, max)`
+
 Checks if string length is between min and max.
 
 ```typescript
@@ -290,6 +301,7 @@ class UserDto {
 ```
 
 #### `@IsEmail()`
+
 Checks if value is a valid email.
 
 ```typescript
@@ -300,6 +312,7 @@ class UserDto {
 ```
 
 #### `@IsURL()`
+
 Checks if value is a valid URL.
 
 ```typescript
@@ -310,6 +323,7 @@ class UserDto {
 ```
 
 #### `@IsUUID()`
+
 Checks if value is a valid UUID.
 
 ```typescript
@@ -320,6 +334,7 @@ class UserDto {
 ```
 
 #### `@IsJSON()`
+
 Checks if value is valid JSON.
 
 ```typescript
@@ -330,6 +345,7 @@ class ConfigDto {
 ```
 
 #### `@IsAlpha()`
+
 Checks if string contains only letters.
 
 ```typescript
@@ -340,6 +356,7 @@ class UserDto {
 ```
 
 #### `@IsAlphanumeric()`
+
 Checks if string contains only letters and numbers.
 
 ```typescript
@@ -350,6 +367,7 @@ class UserDto {
 ```
 
 #### `@IsHexColor()`
+
 Checks if value is a valid hex color.
 
 ```typescript
@@ -360,6 +378,7 @@ class ThemeDto {
 ```
 
 #### `@IsIP()`
+
 Checks if value is a valid IP address.
 
 ```typescript
@@ -370,6 +389,7 @@ class ServerDto {
 ```
 
 #### `@IsCreditCard()`
+
 Checks if value is a valid credit card number.
 
 ```typescript
@@ -380,6 +400,7 @@ class PaymentDto {
 ```
 
 #### `@IsISBN()`
+
 Checks if value is a valid ISBN.
 
 ```typescript
@@ -390,6 +411,7 @@ class BookDto {
 ```
 
 #### `@IsPhoneNumber(region?)`
+
 Checks if value is a valid phone number.
 
 ```typescript
@@ -400,6 +422,7 @@ class UserDto {
 ```
 
 #### `@Contains(seed)`
+
 Checks if string contains the seed.
 
 ```typescript
@@ -410,6 +433,7 @@ class UserDto {
 ```
 
 #### `@NotContains(seed)`
+
 Checks if string does not contain the seed.
 
 ```typescript
@@ -420,6 +444,7 @@ class UserDto {
 ```
 
 #### `@IsLowercase()`
+
 Checks if string is lowercase.
 
 ```typescript
@@ -430,6 +455,7 @@ class UserDto {
 ```
 
 #### `@IsUppercase()`
+
 Checks if string is uppercase.
 
 ```typescript
@@ -440,6 +466,7 @@ class CodeDto {
 ```
 
 #### `@Matches(pattern)`
+
 Checks if string matches a regex pattern.
 
 ```typescript
@@ -450,6 +477,7 @@ class UserDto {
 ```
 
 #### `@IsFQDN()`
+
 Checks if value is a fully qualified domain name (FQDN).
 
 ```typescript
@@ -460,6 +488,7 @@ class WebsiteDto {
 ```
 
 #### `@IsISO8601()`
+
 Checks if value is a valid ISO 8601 date string.
 
 ```typescript
@@ -470,6 +499,7 @@ class EventDto {
 ```
 
 #### `@IsDateString()`
+
 Alias for `@IsISO8601()`. Checks if value is a valid ISO 8601 date string.
 
 ```typescript
@@ -480,6 +510,7 @@ class EventDto {
 ```
 
 #### `@IsMobilePhone(locale?)`
+
 Checks if value is a valid mobile phone number. Supports locale-specific validation.
 
 ```typescript
@@ -496,6 +527,7 @@ class ContactDto {
 ```
 
 #### `@IsPostalCode(locale?)`
+
 Checks if value is a valid postal code. Supports US, RU, and GB locales.
 
 ```typescript
@@ -511,6 +543,7 @@ class RussianAddressDto {
 ```
 
 #### `@IsMongoId()`
+
 Checks if value is a valid MongoDB ObjectId (24-character hexadecimal string).
 
 ```typescript
@@ -521,6 +554,7 @@ class DocumentDto {
 ```
 
 #### `@IsJWT()`
+
 Checks if value is a valid JWT token.
 
 ```typescript
@@ -531,6 +565,7 @@ class AuthDto {
 ```
 
 #### `@IsStrongPassword()`
+
 Checks if value is a strong password (min 8 chars, uppercase, lowercase, number, special char).
 
 ```typescript
@@ -541,6 +576,7 @@ class UserDto {
 ```
 
 #### `@IsPort()`
+
 Checks if value is a valid port number (0-65535).
 
 ```typescript
@@ -551,6 +587,7 @@ class ServerDto {
 ```
 
 #### `@IsMACAddress()`
+
 Checks if value is a valid MAC address.
 
 ```typescript
@@ -561,6 +598,7 @@ class DeviceDto {
 ```
 
 #### `@IsBase64()`
+
 Checks if value is a valid base64 encoded string.
 
 ```typescript
@@ -571,6 +609,7 @@ class FileDto {
 ```
 
 #### `@IsIBAN()`
+
 Checks if value is a valid International Bank Account Number (IBAN).
 
 ```typescript
@@ -581,6 +620,7 @@ class BankAccountDto {
 ```
 
 #### `@IsBIC()`
+
 Checks if value is a valid Bank Identifier Code (BIC/SWIFT).
 
 ```typescript
@@ -591,6 +631,7 @@ class BankDto {
 ```
 
 #### `@IsCurrency()`
+
 Checks if value is a valid currency amount.
 
 ```typescript
@@ -601,6 +642,7 @@ class PaymentDto {
 ```
 
 #### `@IsISO4217CurrencyCode()`
+
 Checks if value is a valid ISO 4217 currency code.
 
 ```typescript
@@ -611,6 +653,7 @@ class TransactionDto {
 ```
 
 #### `@IsEthereumAddress()`
+
 Checks if value is a valid Ethereum address.
 
 ```typescript
@@ -621,6 +664,7 @@ class WalletDto {
 ```
 
 #### `@IsBtcAddress()`
+
 Checks if value is a valid Bitcoin address (legacy or SegWit).
 
 ```typescript
@@ -631,6 +675,7 @@ class CryptoDto {
 ```
 
 #### `@IsPassportNumber(locale?)`
+
 Checks if value is a valid passport number. Supports locale-specific validation.
 
 ```typescript
@@ -646,6 +691,7 @@ class InternationalDto {
 ```
 
 #### `@IsIdentityCard(locale?)`
+
 Checks if value is a valid identity card number.
 
 ```typescript
@@ -656,6 +702,7 @@ class IdentityDto {
 ```
 
 #### `@IsEAN()`
+
 Checks if value is a valid European Article Number (EAN-8 or EAN-13).
 
 ```typescript
@@ -666,6 +713,7 @@ class ProductDto {
 ```
 
 #### `@IsISIN()`
+
 Checks if value is a valid International Securities Identification Number (ISIN).
 
 ```typescript
@@ -676,6 +724,7 @@ class SecurityDto {
 ```
 
 #### `@IsMagnetURI()`
+
 Checks if value is a valid Magnet URI.
 
 ```typescript
@@ -686,6 +735,7 @@ class TorrentDto {
 ```
 
 #### `@IsDataURI()`
+
 Checks if value is a valid Data URI.
 
 ```typescript
@@ -696,6 +746,7 @@ class ImageDto {
 ```
 
 #### `@IsISO31661Alpha2()`
+
 Checks if value is a valid ISO 3166-1 alpha-2 country code.
 
 ```typescript
@@ -706,6 +757,7 @@ class AddressDto {
 ```
 
 #### `@IsISO31661Alpha3()`
+
 Checks if value is a valid ISO 3166-1 alpha-3 country code.
 
 ```typescript
@@ -716,6 +768,7 @@ class CountryDto {
 ```
 
 #### `@IsLocale()`
+
 Checks if value is a valid locale code.
 
 ```typescript
@@ -726,6 +779,7 @@ class UserDto {
 ```
 
 #### `@IsSemVer()`
+
 Checks if value is a valid semantic version.
 
 ```typescript
@@ -736,6 +790,7 @@ class PackageDto {
 ```
 
 #### `@IsMimeType()`
+
 Checks if value is a valid MIME type.
 
 ```typescript
@@ -746,6 +801,7 @@ class FileDto {
 ```
 
 #### `@IsTimeZone()`
+
 Checks if value is a valid timezone.
 
 ```typescript
@@ -756,6 +812,7 @@ class EventDto {
 ```
 
 #### `@IsRFC3339()`
+
 Checks if value is a valid RFC 3339 date string.
 
 ```typescript
@@ -770,6 +827,7 @@ class TimestampDto {
 ### Number Validators
 
 #### `@IsNumber()`
+
 Checks if value is a number.
 
 ```typescript
@@ -780,6 +838,7 @@ class ProductDto {
 ```
 
 #### `@IsInt()`
+
 Checks if value is an integer.
 
 ```typescript
@@ -790,6 +849,7 @@ class ProductDto {
 ```
 
 #### `@Min(min)`
+
 Checks if number is at least min.
 
 ```typescript
@@ -800,6 +860,7 @@ class ProductDto {
 ```
 
 #### `@Max(max)`
+
 Checks if number is at most max.
 
 ```typescript
@@ -810,6 +871,7 @@ class ProductDto {
 ```
 
 #### `@IsPositive()`
+
 Checks if number is positive.
 
 ```typescript
@@ -820,6 +882,7 @@ class ProductDto {
 ```
 
 #### `@IsNegative()`
+
 Checks if number is negative.
 
 ```typescript
@@ -830,6 +893,7 @@ class TransactionDto {
 ```
 
 #### `@IsDivisibleBy(num)`
+
 Checks if number is divisible by num.
 
 ```typescript
@@ -840,6 +904,7 @@ class ProductDto {
 ```
 
 #### `@IsDecimal()`
+
 Checks if value is a decimal number.
 
 ```typescript
@@ -854,6 +919,7 @@ class ProductDto {
 ### Date Validators
 
 #### `@MinDate(date)`
+
 Checks if date is after or equal to the specified date.
 
 ```typescript
@@ -864,6 +930,7 @@ class EventDto {
 ```
 
 #### `@MaxDate(date)`
+
 Checks if date is before or equal to the specified date.
 
 ```typescript
@@ -878,6 +945,7 @@ class EventDto {
 ### Array Validators
 
 #### `@IsArray()`
+
 Checks if value is an array.
 
 ```typescript
@@ -888,6 +956,7 @@ class ProductDto {
 ```
 
 #### `@ArrayNotEmpty()`
+
 Checks if array is not empty.
 
 ```typescript
@@ -898,6 +967,7 @@ class ProductDto {
 ```
 
 #### `@ArrayMinSize(min)`
+
 Checks if array has at least min elements.
 
 ```typescript
@@ -908,6 +978,7 @@ class ProductDto {
 ```
 
 #### `@ArrayMaxSize(max)`
+
 Checks if array has at most max elements.
 
 ```typescript
@@ -918,6 +989,7 @@ class ProductDto {
 ```
 
 #### `@ArrayContains(values)`
+
 Checks if array contains all specified values.
 
 ```typescript
@@ -928,6 +1000,7 @@ class ProductDto {
 ```
 
 #### `@ArrayNotContains(values)`
+
 Checks if array does not contain any of the specified values.
 
 ```typescript
@@ -938,6 +1011,7 @@ class ProductDto {
 ```
 
 #### `@ArrayUnique()`
+
 Checks if all array elements are unique.
 
 ```typescript
@@ -952,6 +1026,7 @@ class ProductDto {
 ### Type Checker Validators
 
 #### `@IsBoolean()`
+
 Checks if value is a boolean.
 
 ```typescript
@@ -962,6 +1037,7 @@ class UserDto {
 ```
 
 #### `@IsDate()`
+
 Checks if value is a Date object.
 
 ```typescript
@@ -972,6 +1048,7 @@ class EventDto {
 ```
 
 #### `@IsObject()`
+
 Checks if value is an object.
 
 ```typescript
@@ -982,13 +1059,14 @@ class UserDto {
 ```
 
 #### `@IsEnum(enum)`
+
 Checks if value is a valid enum value.
 
 ```typescript
 enum UserRole {
   Admin = 'admin',
   User = 'user',
-  Guest = 'guest'
+  Guest = 'guest',
 }
 
 class UserDto {
@@ -998,6 +1076,7 @@ class UserDto {
 ```
 
 #### `@IsInstance(class)`
+
 Checks if value is an instance of a class.
 
 ```typescript
@@ -1008,6 +1087,7 @@ class UserDto {
 ```
 
 #### `@IsNotEmptyObject()`
+
 Checks if value is a non-empty object.
 
 ```typescript
@@ -1022,16 +1102,18 @@ class UserDto {
 ### Geographic Validators
 
 #### `@IsLatLong()`
+
 Checks if value is a valid latitude-longitude pair.
 
 ```typescript
 class LocationDto {
   @IsLatLong()
-  coordinates: string;  // "40.7128,-74.0060"
+  coordinates: string; // "40.7128,-74.0060"
 }
 ```
 
 #### `@IsLatitude()`
+
 Checks if value is a valid latitude.
 
 ```typescript
@@ -1042,6 +1124,7 @@ class LocationDto {
 ```
 
 #### `@IsLongitude()`
+
 Checks if value is a valid longitude.
 
 ```typescript
@@ -1083,7 +1166,7 @@ class UserDto {
 const user = new UserDto();
 user.name = 'John';
 user.address = new Address();
-user.address.street = '';  // Invalid
+user.address.street = ''; // Invalid
 
 const errors = await validate(user);
 // Errors will include nested validation errors
@@ -1102,7 +1185,7 @@ class UserDto {
   @IsString()
   accountType: string;
 
-  @ValidateIf(o => o.accountType === 'premium')
+  @ValidateIf((o) => o.accountType === 'premium')
   @IsString()
   premiumFeature?: string;
 }
@@ -1158,7 +1241,7 @@ Use functions for dynamic error messages.
 ```typescript
 class UserDto {
   @MinLength(3, {
-    message: (args) => `${args.property} is too short. Minimum length is ${args.constraints[0]}`
+    message: (args) => `${args.property} is too short. Minimum length is ${args.constraints[0]}`,
   })
   name: string;
 }
@@ -1175,19 +1258,19 @@ import {
   ValidatorConstraint,
   ValidatorConstraintInterface,
   ValidationArguments,
-  Validate
+  Validate,
 } from 'om-data-mapper/class-validator-compat';
 
 @ValidatorConstraint({ name: 'isStrongPassword', async: false })
 class IsStrongPasswordConstraint implements ValidatorConstraintInterface {
   validate(value: any, args: ValidationArguments): boolean {
     if (typeof value !== 'string') return false;
-    
+
     const hasUpperCase = /[A-Z]/.test(value);
     const hasLowerCase = /[a-z]/.test(value);
     const hasNumber = /[0-9]/.test(value);
     const hasSpecialChar = /[!@#$%^&*]/.test(value);
-    
+
     return hasUpperCase && hasLowerCase && hasNumber && hasSpecialChar && value.length >= 8;
   }
 
@@ -1210,7 +1293,7 @@ class IsUserAlreadyExistConstraint implements ValidatorConstraintInterface {
   async validate(value: any, args: ValidationArguments): Promise<boolean> {
     // Check database
     const user = await database.findUserByEmail(value);
-    return !user;  // Return false if user exists
+    return !user; // Return false if user exists
   }
 
   defaultMessage(args: ValidationArguments): string {
@@ -1276,7 +1359,7 @@ class UserDto {
 
   @IsOptional()
   @IsString()
-  middleName?: string;  // Only validated if provided
+  middleName?: string; // Only validated if provided
 }
 ```
 
@@ -1319,6 +1402,7 @@ import { validate, IsString } from 'om-data-mapper/class-validator-compat';
 ## API Reference Summary
 
 ### Functions
+
 - `validate(object, options?)` - Async validation
 - `validateSync(object, options?)` - Sync validation
 - `validateOrReject(object, options?)` - Async validation with throw
@@ -1327,6 +1411,7 @@ import { validate, IsString } from 'om-data-mapper/class-validator-compat';
 - `validateManySync(objects, options?)` - Validate array sync
 
 ### Decorators
+
 - **Common**: `@IsOptional()`, `@IsDefined()`, `@IsNotEmpty()`, `@Equals()`, `@NotEquals()`, `@IsIn()`, `@IsNotIn()`
 - **String**: `@IsString()`, `@MinLength()`, `@MaxLength()`, `@Length()`, `@IsEmail()`, `@IsURL()`, `@IsUUID()`, `@Matches()`
 - **Number**: `@IsNumber()`, `@IsInt()`, `@Min()`, `@Max()`, `@IsPositive()`, `@IsNegative()`
@@ -1349,4 +1434,3 @@ The validation module provides:
 - ✅ **Extensible** - custom validators supported
 
 Start validating with confidence! 🚀
-

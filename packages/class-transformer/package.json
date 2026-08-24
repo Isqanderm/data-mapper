@@ -21,12 +21,20 @@
       "default": "./build/cjs/index.js"
     }
   },
-  "files": ["build", "README.md", "LICENSE"],
+  "files": [
+    "build",
+    "README.md",
+    "LICENSE"
+  ],
   "scripts": {
     "clean": "rm -rf build",
     "build": "rm -rf build && tsc -p tsconfig.json && tsc -p tsconfig.esm.json && node ../../scripts/fix-esm-imports.js && echo '{\"type\":\"module\"}' > build/esm/package.json",
     "test": "vitest run"
   },
-  "engines": { "node": ">=18.0.0" },
-  "publishConfig": { "access": "public" }
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
 }

@@ -59,11 +59,12 @@ interface PropertyMetadata {
   excludeOptions?: ExcludeOptions;
   typeFunction?: TypeHelpFunction;
   transformFn?: TransformFn;
-  name?: string;  // Отображение имени свойства
+  name?: string; // Отображение имени свойства
 }
 ```
 
 **Ключевые различия:**
+
 - **Decorator API**: На основе Symbol, привязан к конструктору класса
 - **Compatibility API**: На основе WeakMap, предотвращает утечки памяти
 - **Оба**: Используют TC39 Stage 3 декораторы
@@ -177,7 +178,7 @@ if (source?.address) {
   const nestedResult = nestedMapper.execute(source.address);
   target.address = nestedResult.result;
   if (nestedResult.errors.length > 0) {
-    __errors.push(...nestedResult.errors.map(e => 'address.' + e));
+    __errors.push(...nestedResult.errors.map((e) => 'address.' + e));
   }
 }
 ```
@@ -195,7 +196,7 @@ target.itemNames = cache['itemNames__transformer'](source);
 
 // Для вложенных массивов с маппером:
 if (Array.isArray(source?.items)) {
-  target.items = source.items.map(item => {
+  target.items = source.items.map((item) => {
     const nestedMapper = cache['items__nestedMapper'];
     return nestedMapper.execute(item).result;
   });
@@ -224,6 +225,7 @@ function generateSafePropertyAccess(sourcePath: string): string {
 ```
 
 **Почему Optional Chaining?**
+
 - ✅ Быстрее, чем try-catch
 - ✅ Более читаемый сгенерированный код
 - ✅ Нативная возможность JavaScript (ES2020+)
@@ -290,13 +292,14 @@ const result3 = mapper.transform(source3);
 
 ```typescript
 const cache = {
-  'fullName__transformer': (src) => src.firstName + ' ' + src.lastName,
-  'age__condition': (src) => src.age !== undefined,
-  '__defValues': { score: 0, status: 'active' }
+  fullName__transformer: (src) => src.firstName + ' ' + src.lastName,
+  age__condition: (src) => src.age !== undefined,
+  __defValues: { score: 0, status: 'active' },
 };
 ```
 
 **Преимущества:**
+
 - Избегает накладных расходов замыканий
 - Позволяет переиспользовать функции
 - Упрощает сгенерированный код
@@ -321,7 +324,7 @@ target.name = source?.firstName;
 // Если нет декоратора @Ignore(), генерирует код
 // Если есть декоратор @Ignore(), пропускает генерацию кода
 if (mapping.type === 'ignore') {
-  continue;  // Пропустить это свойство
+  continue; // Пропустить это свойство
 }
 ```
 
@@ -366,13 +369,13 @@ transformPlainToClass(UserDto, plainObject, 'plainToClass', options)
 
 ### Ключевые различия с Decorator API:
 
-| Возможность | Decorator API | class-transformer Compat |
-|------------|--------------|-------------------------|
-| Компиляция | JIT при создании экземпляра | Интерпретируется во время выполнения |
-| Производительность | В 10 раз быстрее | Совместим с class-transformer |
-| Метаданные | На основе Symbol | На основе WeakMap |
-| API | `@Map()`, `@MapFrom()` | `@Expose()`, `@Type()` |
-| Случай использования | Новые проекты | Миграция с class-transformer |
+| Возможность          | Decorator API               | class-transformer Compat             |
+| -------------------- | --------------------------- | ------------------------------------ |
+| Компиляция           | JIT при создании экземпляра | Интерпретируется во время выполнения |
+| Производительность   | В 10 раз быстрее            | Совместим с class-transformer        |
+| Метаданные           | На основе Symbol            | На основе WeakMap                    |
+| API                  | `@Map()`, `@MapFrom()`      | `@Expose()`, `@Type()`               |
+| Случай использования | Новые проекты               | Миграция с class-transformer         |
 
 ---
 
@@ -388,12 +391,12 @@ transformPlainToClass(UserDto, plainObject, 'plainToClass', options)
 
 По сравнению с class-transformer:
 
-| Тип трансформации | class-transformer | om-data-mapper | Ускорение |
-|------------------|------------------|----------------|-----------|
-| Простое отображение | 326K оп/сек | **3.2M оп/сек** | **10x** |
-| Сложные трансформации | 150K оп/сек | **1.5M оп/сек** | **10x** |
-| Вложенные объекты | 80K оп/сек | **800K оп/сек** | **10x** |
-| Трансформации массивов | 50K оп/сек | **500K оп/сек** | **10x** |
+| Тип трансформации      | class-transformer | om-data-mapper  | Ускорение |
+| ---------------------- | ----------------- | --------------- | --------- |
+| Простое отображение    | 326K оп/сек       | **3.2M оп/сек** | **10x**   |
+| Сложные трансформации  | 150K оп/сек       | **1.5M оп/сек** | **10x**   |
+| Вложенные объекты      | 80K оп/сек        | **800K оп/сек** | **10x**   |
+| Трансформации массивов | 50K оп/сек        | **500K оп/сек** | **10x**   |
 
 ### Использование памяти
 
@@ -483,7 +486,7 @@ function transform(source, target, __errors, cache) {
     const nestedResult = nestedMapper.execute(source.address);
     target.address = nestedResult.result;
     if (nestedResult.errors.length > 0) {
-      __errors.push(...nestedResult.errors.map(e => 'address.' + e));
+      __errors.push(...nestedResult.errors.map((e) => 'address.' + e));
     }
   }
 }
@@ -514,7 +517,7 @@ class UserMapper {
         mapping,
         cache,
         defaultValues,
-        false
+        false,
       );
       if (code) codeLines.push(code);
     }
@@ -560,14 +563,14 @@ console.timeEnd('1000 executions');
 
 Decorator API использует тот же подход JIT-компиляции, что и BaseMapper, но с лучшей эргономикой:
 
-| Возможность | BaseMapper | Decorator API |
-|------------|-----------|---------------|
-| Стиль API | Императивный | Декларативный |
-| Типобезопасность | Ручная | Автоматическая |
-| Генерация кода | ✅ Да | ✅ Да |
-| Производительность | Быстрая | **Быстрее** (меньше накладных расходов) |
-| Поддерживаемость | Средняя | Высокая |
-| Рекомендуется | ❌ Устаревший | ✅ Современный |
+| Возможность        | BaseMapper    | Decorator API                           |
+| ------------------ | ------------- | --------------------------------------- |
+| Стиль API          | Императивный  | Декларативный                           |
+| Типобезопасность   | Ручная        | Автоматическая                          |
+| Генерация кода     | ✅ Да         | ✅ Да                                   |
+| Производительность | Быстрая       | **Быстрее** (меньше накладных расходов) |
+| Поддерживаемость   | Средняя       | Высокая                                 |
+| Рекомендуется      | ❌ Устаревший | ✅ Современный                          |
 
 ---
 
@@ -592,6 +595,3 @@ Decorator API использует тот же подход JIT-компиляц
 - ✅ **Расширяемость** с пользовательскими трансформерами
 
 Эта архитектура делает `om-data-mapper` одной из самых быстрых библиотек трансформации объектов, доступных для TypeScript/JavaScript.
-
-
-

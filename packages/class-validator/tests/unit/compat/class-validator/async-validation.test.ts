@@ -26,7 +26,7 @@ function IsUniqueEmail(options?: { message?: string; groups?: string[] }) {
         groups: options?.groups,
         validator: async (value: any) => {
           // Simulate async database check
-          await new Promise(resolve => setTimeout(resolve, 10));
+          await new Promise((resolve) => setTimeout(resolve, 10));
           // Simulate checking if email exists
           return value !== 'taken@example.com';
         },
@@ -45,7 +45,7 @@ function IsExists(options?: { message?: string; groups?: string[] }) {
         groups: options?.groups,
         validator: async (value: any) => {
           // Simulate async API check
-          await new Promise(resolve => setTimeout(resolve, 10));
+          await new Promise((resolve) => setTimeout(resolve, 10));
           // Simulate checking if value exists
           return value !== 'nonexistent';
         },
@@ -112,9 +112,9 @@ describe('Async Validation', () => {
 
       const invalidErrors = await validate(invalid);
       expect(invalidErrors.length).toBeGreaterThan(0);
-      expect(invalidErrors.some(e => e.property === 'name')).toBe(true);
-      expect(invalidErrors.some(e => e.property === 'price')).toBe(true);
-      expect(invalidErrors.some(e => e.property === 'categoryId')).toBe(true);
+      expect(invalidErrors.some((e) => e.property === 'name')).toBe(true);
+      expect(invalidErrors.some((e) => e.property === 'price')).toBe(true);
+      expect(invalidErrors.some((e) => e.property === 'categoryId')).toBe(true);
     });
 
     it('should handle multiple async validators on same property', async () => {
@@ -216,7 +216,7 @@ describe('Async Validation', () => {
       expect(invalidErrors).toHaveLength(1);
       expect(invalidErrors[0].property).toBe('items');
       expect(invalidErrors[0].children).toBeDefined();
-      expect(invalidErrors[0].children!.some(e => e.property.includes('[1]'))).toBe(true);
+      expect(invalidErrors[0].children!.some((e) => e.property.includes('[1]'))).toBe(true);
     });
   });
 
@@ -241,15 +241,15 @@ describe('Async Validation', () => {
       // Validate with 'create' group
       const createErrors = await validate(user, { groups: ['create'] });
       expect(createErrors.length).toBeGreaterThan(0);
-      expect(createErrors.some(e => e.property === 'email')).toBe(true);
-      expect(createErrors.some(e => e.property === 'userId')).toBe(false);
+      expect(createErrors.some((e) => e.property === 'email')).toBe(true);
+      expect(createErrors.some((e) => e.property === 'userId')).toBe(false);
 
       // Validate with 'update' group
       const updateErrors = await validate(user, { groups: ['update'] });
       expect(updateErrors.length).toBeGreaterThan(0);
-      expect(updateErrors.some(e => e.property === 'email')).toBe(true);
-      expect(updateErrors.some(e => e.property === 'userId')).toBe(true);
-      expect(updateErrors.some(e => e.property === 'username')).toBe(false);
+      expect(updateErrors.some((e) => e.property === 'email')).toBe(true);
+      expect(updateErrors.some((e) => e.property === 'userId')).toBe(true);
+      expect(updateErrors.some((e) => e.property === 'username')).toBe(false);
     });
   });
 
@@ -309,4 +309,3 @@ describe('Async Validation', () => {
     });
   });
 });
-

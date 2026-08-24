@@ -1120,8 +1120,6 @@ export function IsBtcAddress(options?: ValidationDecoratorOptions) {
   };
 }
 
-
-
 // ============================================================================
 // Medium Priority Validators - Documents & Identifiers
 // ============================================================================
@@ -1140,10 +1138,7 @@ export function IsBtcAddress(options?: ValidationDecoratorOptions) {
  * }
  * ```
  */
-export function IsPassportNumber(
-  locale?: string,
-  options?: ValidationDecoratorOptions,
-) {
+export function IsPassportNumber(locale?: string, options?: ValidationDecoratorOptions) {
   return function (target: undefined, context: ClassFieldDecoratorContext): any {
     const propertyKey = context.name;
 
@@ -1173,10 +1168,7 @@ export function IsPassportNumber(
  * }
  * ```
  */
-export function IsIdentityCard(
-  locale?: string,
-  options?: ValidationDecoratorOptions,
-) {
+export function IsIdentityCard(locale?: string, options?: ValidationDecoratorOptions) {
   return function (target: undefined, context: ClassFieldDecoratorContext): any {
     const propertyKey = context.name;
 
@@ -1307,7 +1299,6 @@ export function IsDataURI(options?: ValidationDecoratorOptions) {
     });
   };
 }
-
 
 // ============================================================================
 // Medium Priority Validators - Localization
@@ -1512,4 +1503,3 @@ export function IsRFC3339(options?: ValidationDecoratorOptions) {
     });
   };
 }
-

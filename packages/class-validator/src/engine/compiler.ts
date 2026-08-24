@@ -13,10 +13,7 @@ import type {
   AsyncCompiledValidator,
 } from '../types';
 import { getValidationMetadata, hasValidationMetadata } from './metadata';
-import {
-  getValidatorInstance,
-  clearValidatorInstanceCache,
-} from './validator-registry';
+import { getValidatorInstance, clearValidatorInstanceCache } from './validator-registry';
 
 /**
  * Cache for compiled validators
@@ -54,7 +51,15 @@ export function compileValidator(metadata: ClassValidationMetadata): CompiledVal
 
   // Wrap to provide helper functions
   const wrappedFn = (object: any, options?: ValidatorOptions) => {
-    return compiledFn(object, options, getValidationMetadata, hasValidationMetadata, compileValidator, getValidatorInstance, metadata);
+    return compiledFn(
+      object,
+      options,
+      getValidationMetadata,
+      hasValidationMetadata,
+      compileValidator,
+      getValidatorInstance,
+      metadata,
+    );
   };
 
   // Cache it
@@ -90,7 +95,16 @@ export function compileAsyncValidator(metadata: ClassValidationMetadata): AsyncC
 
   // Wrap to provide helper functions
   const wrappedFn = async (object: any, options?: ValidatorOptions) => {
-    return compiledFn(object, options, getValidationMetadata, hasValidationMetadata, compileValidator, compileAsyncValidator, getValidatorInstance, metadata);
+    return compiledFn(
+      object,
+      options,
+      getValidationMetadata,
+      hasValidationMetadata,
+      compileValidator,
+      compileAsyncValidator,
+      getValidatorInstance,
+      metadata,
+    );
   };
 
   // Cache it
@@ -207,7 +221,9 @@ function generatePropertyValidation(
     if (metadata.optionalGroups && metadata.optionalGroups.length > 0) {
       const groupsJson = JSON.stringify(metadata.optionalGroups);
       lines.push(`  // Optional with groups - only skip if groups match`);
-      lines.push(`  if ((value === undefined || value === null) && opts.groups && opts.groups.length > 0 && opts.groups.some(g => ${groupsJson}.includes(g))) {`);
+      lines.push(
+        `  if ((value === undefined || value === null) && opts.groups && opts.groups.length > 0 && opts.groups.some(g => ${groupsJson}.includes(g))) {`,
+      );
       lines.push(`    // Skip validation for optional property in matching group`);
       lines.push(`  } else {`);
     } else {
@@ -226,8 +242,12 @@ function generatePropertyValidation(
       // Constraint has groups - only validate if options.groups matches
       const groupsJson = JSON.stringify(constraint.groups);
       lines.push(`  // Check validation groups`);
-      lines.push(`  if (opts.groups && opts.groups.length > 0 && opts.groups.some(g => ${groupsJson}.includes(g))) {`);
-      lines.push(generateConstraintCheck(constraint, i, propertyName, 'value', 'propertyErrors', '    '));
+      lines.push(
+        `  if (opts.groups && opts.groups.length > 0 && opts.groups.some(g => ${groupsJson}.includes(g))) {`,
+      );
+      lines.push(
+        generateConstraintCheck(constraint, i, propertyName, 'value', 'propertyErrors', '    '),
+      );
       lines.push(`  }`);
     } else {
       // No groups specified on constraint - always validate
@@ -313,122 +333,148 @@ function generateAsyncPropertyValidation(
   lines.push(`    let nestedErrors = [];`);
   lines.push(`    const propertyAsyncTasks = [];`);
 
-    // Handle conditional validation (ValidateIf)
-    if (metadata.isConditional && metadata.condition) {
-      lines.push(`  // Conditional validation (ValidateIf)`);
-      lines.push(`  const condition = metadata.properties.get(${safePropName}).condition;`);
-      lines.push(`  if (!condition || !condition(object)) {`);
-      lines.push(`    // Skip validation - condition not met`);
+  // Handle conditional validation (ValidateIf)
+  if (metadata.isConditional && metadata.condition) {
+    lines.push(`  // Conditional validation (ValidateIf)`);
+    lines.push(`  const condition = metadata.properties.get(${safePropName}).condition;`);
+    lines.push(`  if (!condition || !condition(object)) {`);
+    lines.push(`    // Skip validation - condition not met`);
+    lines.push(`  } else {`);
+  }
+
+  // Handle optional properties
+  if (metadata.isOptional) {
+    // Check if optional has groups
+    if (metadata.optionalGroups && metadata.optionalGroups.length > 0) {
+      const groupsJson = JSON.stringify(metadata.optionalGroups);
+      lines.push(`  // Optional with groups - only skip if groups match`);
+      lines.push(
+        `  if ((value === undefined || value === null) && opts.groups && opts.groups.length > 0 && opts.groups.some(g => ${groupsJson}.includes(g))) {`,
+      );
+      lines.push(`    // Skip validation for optional property in matching group`);
+      lines.push(`  } else {`);
+    } else {
+      // No groups - always optional
+      lines.push(`  if (value === undefined || value === null) {`);
+      lines.push(`    // Skip validation for optional property`);
       lines.push(`  } else {`);
     }
+  }
 
-    // Handle optional properties
-    if (metadata.isOptional) {
-      // Check if optional has groups
-      if (metadata.optionalGroups && metadata.optionalGroups.length > 0) {
-        const groupsJson = JSON.stringify(metadata.optionalGroups);
-        lines.push(`  // Optional with groups - only skip if groups match`);
-        lines.push(`  if ((value === undefined || value === null) && opts.groups && opts.groups.length > 0 && opts.groups.some(g => ${groupsJson}.includes(g))) {`);
-        lines.push(`    // Skip validation for optional property in matching group`);
-        lines.push(`  } else {`);
-      } else {
-        // No groups - always optional
-        lines.push(`  if (value === undefined || value === null) {`);
-        lines.push(`    // Skip validation for optional property`);
-        lines.push(`  } else {`);
-      }
-    }
-
-    // Generate validation checks for each constraint
-    for (let i = 0; i < metadata.constraints.length; i++) {
-      const constraint = metadata.constraints[i];
-      // Check if constraint should be validated based on groups
-      if (constraint.groups && constraint.groups.length > 0) {
-        // Constraint has groups - only validate if options.groups matches
-        const groupsJson = JSON.stringify(constraint.groups);
-        lines.push(`    // Check validation groups`);
-        lines.push(`    if (opts.groups && opts.groups.length > 0 && opts.groups.some(g => ${groupsJson}.includes(g))) {`);
-        lines.push(generateAsyncConstraintCheck(constraint, i, propertyName, 'value', 'propertyErrors', 'propertyAsyncTasks', '      '));
-        lines.push(`    }`);
-      } else {
-        // No groups specified on constraint - always validate
-        lines.push(generateAsyncConstraintCheck(constraint, i, propertyName, 'value', 'propertyErrors', 'propertyAsyncTasks', '    '));
-      }
-    }
-
-    // Handle nested validation
-    if (metadata.isNested) {
-      lines.push(`  // Nested async validation`);
-      lines.push(`  if (value !== null && value !== undefined) {`);
-
-      // Check if it's an array of nested objects
-      lines.push(`    if (Array.isArray(value)) {`);
-      lines.push(`      // Validate array of nested objects asynchronously`);
-      lines.push(`      const arrayAsyncTask = (async () => {`);
-      lines.push(`        for (let i = 0; i < value.length; i++) {`);
-      lines.push(`          const nestedValue = value[i];`);
-      lines.push(`          if (nestedValue && typeof nestedValue === 'object') {`);
-      lines.push(`            const nestedValidator = getNestedAsyncValidator(nestedValue);`);
-      lines.push(`            if (nestedValidator) {`);
-      lines.push(`              const nestedValidationErrors = await nestedValidator(nestedValue, opts);`);
-      lines.push(`              if (nestedValidationErrors.length > 0) {`);
-      lines.push(`                nestedErrors.push(...nestedValidationErrors.map(err => ({`);
-      lines.push(`                  ...err,`);
-      lines.push(`                  property: \`[\${i}].\${err.property}\``);
-      lines.push(`                })));`);
-      lines.push(`              }`);
-      lines.push(`            }`);
-      lines.push(`          }`);
-      lines.push(`        }`);
-      lines.push(`      })();`);
-      lines.push(`      propertyAsyncTasks.push(arrayAsyncTask);`);
-      lines.push(`    } else if (typeof value === 'object') {`);
-      lines.push(`      // Validate single nested object asynchronously`);
-      lines.push(`      const nestedAsyncTask = (async () => {`);
-      lines.push(`        const nestedValidator = getNestedAsyncValidator(value);`);
-      lines.push(`        if (nestedValidator) {`);
-      lines.push(`          nestedErrors = await nestedValidator(value, opts);`);
-      lines.push(`        }`);
-      lines.push(`      })();`);
-      lines.push(`      propertyAsyncTasks.push(nestedAsyncTask);`);
+  // Generate validation checks for each constraint
+  for (let i = 0; i < metadata.constraints.length; i++) {
+    const constraint = metadata.constraints[i];
+    // Check if constraint should be validated based on groups
+    if (constraint.groups && constraint.groups.length > 0) {
+      // Constraint has groups - only validate if options.groups matches
+      const groupsJson = JSON.stringify(constraint.groups);
+      lines.push(`    // Check validation groups`);
+      lines.push(
+        `    if (opts.groups && opts.groups.length > 0 && opts.groups.some(g => ${groupsJson}.includes(g))) {`,
+      );
+      lines.push(
+        generateAsyncConstraintCheck(
+          constraint,
+          i,
+          propertyName,
+          'value',
+          'propertyErrors',
+          'propertyAsyncTasks',
+          '      ',
+        ),
+      );
       lines.push(`    }`);
-      lines.push(`  }`);
+    } else {
+      // No groups specified on constraint - always validate
+      lines.push(
+        generateAsyncConstraintCheck(
+          constraint,
+          i,
+          propertyName,
+          'value',
+          'propertyErrors',
+          'propertyAsyncTasks',
+          '    ',
+        ),
+      );
     }
+  }
 
-    if (metadata.isOptional) {
-      lines.push(`  }`);
-    }
+  // Handle nested validation
+  if (metadata.isNested) {
+    lines.push(`  // Nested async validation`);
+    lines.push(`  if (value !== null && value !== undefined) {`);
 
-    // Close conditional validation block
-    if (metadata.isConditional && metadata.condition) {
-      lines.push(`  }`);
-    }
-
-    // Wait for property async tasks and add errors
-    lines.push(`  // Wait for property async validations`);
-    lines.push(`  const propertyTask = (async () => {`);
-    lines.push(`    if (propertyAsyncTasks.length > 0) {`);
-    lines.push(`      await Promise.all(propertyAsyncTasks);`);
+    // Check if it's an array of nested objects
+    lines.push(`    if (Array.isArray(value)) {`);
+    lines.push(`      // Validate array of nested objects asynchronously`);
+    lines.push(`      const arrayAsyncTask = (async () => {`);
+    lines.push(`        for (let i = 0; i < value.length; i++) {`);
+    lines.push(`          const nestedValue = value[i];`);
+    lines.push(`          if (nestedValue && typeof nestedValue === 'object') {`);
+    lines.push(`            const nestedValidator = getNestedAsyncValidator(nestedValue);`);
+    lines.push(`            if (nestedValidator) {`);
+    lines.push(
+      `              const nestedValidationErrors = await nestedValidator(nestedValue, opts);`,
+    );
+    lines.push(`              if (nestedValidationErrors.length > 0) {`);
+    lines.push(`                nestedErrors.push(...nestedValidationErrors.map(err => ({`);
+    lines.push(`                  ...err,`);
+    lines.push(`                  property: \`[\${i}].\${err.property}\``);
+    lines.push(`                })));`);
+    lines.push(`              }`);
+    lines.push(`            }`);
+    lines.push(`          }`);
+    lines.push(`        }`);
+    lines.push(`      })();`);
+    lines.push(`      propertyAsyncTasks.push(arrayAsyncTask);`);
+    lines.push(`    } else if (typeof value === 'object') {`);
+    lines.push(`      // Validate single nested object asynchronously`);
+    lines.push(`      const nestedAsyncTask = (async () => {`);
+    lines.push(`        const nestedValidator = getNestedAsyncValidator(value);`);
+    lines.push(`        if (nestedValidator) {`);
+    lines.push(`          nestedErrors = await nestedValidator(value, opts);`);
+    lines.push(`        }`);
+    lines.push(`      })();`);
+    lines.push(`      propertyAsyncTasks.push(nestedAsyncTask);`);
     lines.push(`    }`);
-    lines.push(`    if (Object.keys(propertyErrors).length > 0 || nestedErrors.length > 0) {`);
-    lines.push(`      const error = {`);
-    lines.push(`        property: ${safePropName},`);
-    lines.push(`        value: value,`);
-    lines.push(`        target: object`);
-    lines.push(`      };`);
-    lines.push(`      if (Object.keys(propertyErrors).length > 0) {`);
-    lines.push(`        error.constraints = propertyErrors;`);
-    lines.push(`      }`);
-    lines.push(`      if (nestedErrors.length > 0) {`);
-    lines.push(`        error.children = nestedErrors;`);
-    lines.push(`      }`);
-    lines.push(`      errors.push(error);`);
-    lines.push(`    }`);
-    lines.push(`  })();`);
-    lines.push(`  asyncTasks.push(propertyTask);`);
-    lines.push(`}`);
+    lines.push(`  }`);
+  }
 
-    return lines.join('\n');
+  if (metadata.isOptional) {
+    lines.push(`  }`);
+  }
+
+  // Close conditional validation block
+  if (metadata.isConditional && metadata.condition) {
+    lines.push(`  }`);
+  }
+
+  // Wait for property async tasks and add errors
+  lines.push(`  // Wait for property async validations`);
+  lines.push(`  const propertyTask = (async () => {`);
+  lines.push(`    if (propertyAsyncTasks.length > 0) {`);
+  lines.push(`      await Promise.all(propertyAsyncTasks);`);
+  lines.push(`    }`);
+  lines.push(`    if (Object.keys(propertyErrors).length > 0 || nestedErrors.length > 0) {`);
+  lines.push(`      const error = {`);
+  lines.push(`        property: ${safePropName},`);
+  lines.push(`        value: value,`);
+  lines.push(`        target: object`);
+  lines.push(`      };`);
+  lines.push(`      if (Object.keys(propertyErrors).length > 0) {`);
+  lines.push(`        error.constraints = propertyErrors;`);
+  lines.push(`      }`);
+  lines.push(`      if (nestedErrors.length > 0) {`);
+  lines.push(`        error.children = nestedErrors;`);
+  lines.push(`      }`);
+  lines.push(`      errors.push(error);`);
+  lines.push(`    }`);
+  lines.push(`  })();`);
+  lines.push(`  asyncTasks.push(propertyTask);`);
+  lines.push(`}`);
+
+  return lines.join('\n');
 }
 
 /**
@@ -448,95 +494,143 @@ function generateConstraintCheck(
   switch (constraint.type) {
     case 'isString':
       lines.push(`${indent}  if (typeof ${valueName} !== 'string') {`);
-      lines.push(`${indent}    ${errorsName}.isString = ${JSON.stringify(getErrorMessage(constraint, 'must be a string'))};`);
+      lines.push(
+        `${indent}    ${errorsName}.isString = ${JSON.stringify(getErrorMessage(constraint, 'must be a string'))};`,
+      );
       lines.push(`${indent}  }`);
       break;
 
     case 'minLength':
-      lines.push(`${indent}  if (typeof ${valueName} === 'string' && ${valueName}.length < ${constraint.value}) {`);
-      lines.push(`${indent}    ${errorsName}.minLength = ${JSON.stringify(getErrorMessage(constraint, `must be at least ${constraint.value} characters`))};`);
+      lines.push(
+        `${indent}  if (typeof ${valueName} === 'string' && ${valueName}.length < ${constraint.value}) {`,
+      );
+      lines.push(
+        `${indent}    ${errorsName}.minLength = ${JSON.stringify(getErrorMessage(constraint, `must be at least ${constraint.value} characters`))};`,
+      );
       lines.push(`${indent}  }`);
       break;
 
     case 'maxLength':
-      lines.push(`${indent}  if (typeof ${valueName} === 'string' && ${valueName}.length > ${constraint.value}) {`);
-      lines.push(`${indent}    ${errorsName}.maxLength = ${JSON.stringify(getErrorMessage(constraint, `must be at most ${constraint.value} characters`))};`);
+      lines.push(
+        `${indent}  if (typeof ${valueName} === 'string' && ${valueName}.length > ${constraint.value}) {`,
+      );
+      lines.push(
+        `${indent}    ${errorsName}.maxLength = ${JSON.stringify(getErrorMessage(constraint, `must be at most ${constraint.value} characters`))};`,
+      );
       lines.push(`${indent}  }`);
       break;
 
     case 'isNumber':
       lines.push(`${indent}  if (typeof ${valueName} !== 'number' || isNaN(${valueName})) {`);
-      lines.push(`${indent}    ${errorsName}.isNumber = ${JSON.stringify(getErrorMessage(constraint, 'must be a number'))};`);
+      lines.push(
+        `${indent}    ${errorsName}.isNumber = ${JSON.stringify(getErrorMessage(constraint, 'must be a number'))};`,
+      );
       lines.push(`    }`);
       break;
 
     case 'min':
-      lines.push(`${indent}  if (typeof ${valueName} === 'number' && ${valueName} < ${constraint.value}) {`);
-      lines.push(`${indent}    ${errorsName}.min = ${JSON.stringify(getErrorMessage(constraint, `must not be less than ${constraint.value}`))};`);
+      lines.push(
+        `${indent}  if (typeof ${valueName} === 'number' && ${valueName} < ${constraint.value}) {`,
+      );
+      lines.push(
+        `${indent}    ${errorsName}.min = ${JSON.stringify(getErrorMessage(constraint, `must not be less than ${constraint.value}`))};`,
+      );
       lines.push(`    }`);
       break;
 
     case 'max':
-      lines.push(`${indent}  if (typeof ${valueName} === 'number' && ${valueName} > ${constraint.value}) {`);
-      lines.push(`${indent}    ${errorsName}.max = ${JSON.stringify(getErrorMessage(constraint, `must not be greater than ${constraint.value}`))};`);
+      lines.push(
+        `${indent}  if (typeof ${valueName} === 'number' && ${valueName} > ${constraint.value}) {`,
+      );
+      lines.push(
+        `${indent}    ${errorsName}.max = ${JSON.stringify(getErrorMessage(constraint, `must not be greater than ${constraint.value}`))};`,
+      );
       lines.push(`    }`);
       break;
 
     case 'isInt':
-      lines.push(`${indent}  if (typeof ${valueName} !== 'number' || !Number.isInteger(${valueName})) {`);
-      lines.push(`${indent}    ${errorsName}.isInt = ${JSON.stringify(getErrorMessage(constraint, 'must be an integer'))};`);
+      lines.push(
+        `${indent}  if (typeof ${valueName} !== 'number' || !Number.isInteger(${valueName})) {`,
+      );
+      lines.push(
+        `${indent}    ${errorsName}.isInt = ${JSON.stringify(getErrorMessage(constraint, 'must be an integer'))};`,
+      );
       lines.push(`    }`);
       break;
 
     case 'isBoolean':
       lines.push(`${indent}  if (typeof ${valueName} !== 'boolean') {`);
-      lines.push(`${indent}    ${errorsName}.isBoolean = ${JSON.stringify(getErrorMessage(constraint, 'must be a boolean'))};`);
+      lines.push(
+        `${indent}    ${errorsName}.isBoolean = ${JSON.stringify(getErrorMessage(constraint, 'must be a boolean'))};`,
+      );
       lines.push(`    }`);
       break;
 
     case 'isNotEmpty':
-      lines.push(`${indent}  if (${valueName} === null || ${valueName} === undefined || ${valueName} === '' || (Array.isArray(${valueName}) && ${valueName}.length === 0)) {`);
-      lines.push(`${indent}    ${errorsName}.isNotEmpty = ${JSON.stringify(getErrorMessage(constraint, 'should not be empty'))};`);
+      lines.push(
+        `${indent}  if (${valueName} === null || ${valueName} === undefined || ${valueName} === '' || (Array.isArray(${valueName}) && ${valueName}.length === 0)) {`,
+      );
+      lines.push(
+        `${indent}    ${errorsName}.isNotEmpty = ${JSON.stringify(getErrorMessage(constraint, 'should not be empty'))};`,
+      );
       lines.push(`    }`);
       break;
 
     case 'isDefined':
       lines.push(`${indent}  if (${valueName} === undefined || ${valueName} === null) {`);
-      lines.push(`${indent}    ${errorsName}.isDefined = ${JSON.stringify(getErrorMessage(constraint, 'should not be null or undefined'))};`);
+      lines.push(
+        `${indent}    ${errorsName}.isDefined = ${JSON.stringify(getErrorMessage(constraint, 'should not be null or undefined'))};`,
+      );
       lines.push(`    }`);
       break;
 
     // Array validators
     case 'isArray':
       lines.push(`${indent}  if (!Array.isArray(${valueName})) {`);
-      lines.push(`${indent}    ${errorsName}.isArray = ${JSON.stringify(getErrorMessage(constraint, 'must be an array'))};`);
+      lines.push(
+        `${indent}    ${errorsName}.isArray = ${JSON.stringify(getErrorMessage(constraint, 'must be an array'))};`,
+      );
       lines.push(`    }`);
       break;
 
     case 'arrayNotEmpty':
       lines.push(`${indent}  if (!Array.isArray(${valueName}) || ${valueName}.length === 0) {`);
-      lines.push(`${indent}    ${errorsName}.arrayNotEmpty = ${JSON.stringify(getErrorMessage(constraint, 'should not be empty'))};`);
+      lines.push(
+        `${indent}    ${errorsName}.arrayNotEmpty = ${JSON.stringify(getErrorMessage(constraint, 'should not be empty'))};`,
+      );
       lines.push(`    }`);
       break;
 
     case 'arrayMinSize':
-      lines.push(`${indent}  if (Array.isArray(${valueName}) && ${valueName}.length < ${constraint.value}) {`);
-      lines.push(`${indent}    ${errorsName}.arrayMinSize = ${JSON.stringify(getErrorMessage(constraint, `must contain at least ${constraint.value} elements`))};`);
+      lines.push(
+        `${indent}  if (Array.isArray(${valueName}) && ${valueName}.length < ${constraint.value}) {`,
+      );
+      lines.push(
+        `${indent}    ${errorsName}.arrayMinSize = ${JSON.stringify(getErrorMessage(constraint, `must contain at least ${constraint.value} elements`))};`,
+      );
       lines.push(`    }`);
       break;
 
     case 'arrayMaxSize':
-      lines.push(`${indent}  if (Array.isArray(${valueName}) && ${valueName}.length > ${constraint.value}) {`);
-      lines.push(`${indent}    ${errorsName}.arrayMaxSize = ${JSON.stringify(getErrorMessage(constraint, `must contain no more than ${constraint.value} elements`))};`);
+      lines.push(
+        `${indent}  if (Array.isArray(${valueName}) && ${valueName}.length > ${constraint.value}) {`,
+      );
+      lines.push(
+        `${indent}    ${errorsName}.arrayMaxSize = ${JSON.stringify(getErrorMessage(constraint, `must contain no more than ${constraint.value} elements`))};`,
+      );
       lines.push(`    }`);
       break;
 
     case 'arrayContains':
       lines.push(`${indent}  if (Array.isArray(${valueName})) {`);
       lines.push(`${indent}    const requiredValues = ${JSON.stringify(constraint.value)};`);
-      lines.push(`${indent}    const hasAll = requiredValues.every(v => ${valueName}.includes(v));`);
+      lines.push(
+        `${indent}    const hasAll = requiredValues.every(v => ${valueName}.includes(v));`,
+      );
       lines.push(`${indent}    if (!hasAll) {`);
-      lines.push(`${indent}      ${errorsName}.arrayContains = ${JSON.stringify(getErrorMessage(constraint, 'must contain required values'))};`);
+      lines.push(
+        `${indent}      ${errorsName}.arrayContains = ${JSON.stringify(getErrorMessage(constraint, 'must contain required values'))};`,
+      );
       lines.push(`${indent}    }`);
       lines.push(`    }`);
       break;
@@ -544,9 +638,13 @@ function generateConstraintCheck(
     case 'arrayNotContains':
       lines.push(`${indent}  if (Array.isArray(${valueName})) {`);
       lines.push(`${indent}    const forbiddenValues = ${JSON.stringify(constraint.value)};`);
-      lines.push(`${indent}    const hasAny = forbiddenValues.some(v => ${valueName}.includes(v));`);
+      lines.push(
+        `${indent}    const hasAny = forbiddenValues.some(v => ${valueName}.includes(v));`,
+      );
       lines.push(`${indent}    if (hasAny) {`);
-      lines.push(`${indent}      ${errorsName}.arrayNotContains = ${JSON.stringify(getErrorMessage(constraint, 'must not contain forbidden values'))};`);
+      lines.push(
+        `${indent}      ${errorsName}.arrayNotContains = ${JSON.stringify(getErrorMessage(constraint, 'must not contain forbidden values'))};`,
+      );
       lines.push(`${indent}    }`);
       lines.push(`    }`);
       break;
@@ -555,28 +653,40 @@ function generateConstraintCheck(
       lines.push(`${indent}  if (Array.isArray(${valueName})) {`);
       lines.push(`${indent}    const uniqueSet = new Set(${valueName});`);
       lines.push(`${indent}    if (uniqueSet.size !== ${valueName}.length) {`);
-      lines.push(`${indent}      ${errorsName}.arrayUnique = ${JSON.stringify(getErrorMessage(constraint, 'all elements must be unique'))};`);
+      lines.push(
+        `${indent}      ${errorsName}.arrayUnique = ${JSON.stringify(getErrorMessage(constraint, 'all elements must be unique'))};`,
+      );
       lines.push(`${indent}    }`);
       lines.push(`    }`);
       break;
 
     // Type checkers
     case 'isDate':
-      lines.push(`${indent}  if (!(${valueName} instanceof Date) || isNaN(${valueName}.getTime())) {`);
-      lines.push(`${indent}    ${errorsName}.isDate = ${JSON.stringify(getErrorMessage(constraint, 'must be a Date instance'))};`);
+      lines.push(
+        `${indent}  if (!(${valueName} instanceof Date) || isNaN(${valueName}.getTime())) {`,
+      );
+      lines.push(
+        `${indent}    ${errorsName}.isDate = ${JSON.stringify(getErrorMessage(constraint, 'must be a Date instance'))};`,
+      );
       lines.push(`    }`);
       break;
 
     case 'isObject':
-      lines.push(`${indent}  if (typeof ${valueName} !== 'object' || ${valueName} === null || Array.isArray(${valueName})) {`);
-      lines.push(`${indent}    ${errorsName}.isObject = ${JSON.stringify(getErrorMessage(constraint, 'must be an object'))};`);
+      lines.push(
+        `${indent}  if (typeof ${valueName} !== 'object' || ${valueName} === null || Array.isArray(${valueName})) {`,
+      );
+      lines.push(
+        `${indent}    ${errorsName}.isObject = ${JSON.stringify(getErrorMessage(constraint, 'must be an object'))};`,
+      );
       lines.push(`    }`);
       break;
 
     case 'isEnum':
       lines.push(`    const enumValues = Object.values(${JSON.stringify(constraint.value)});`);
       lines.push(`${indent}  if (!enumValues.includes(${valueName})) {`);
-      lines.push(`${indent}    ${errorsName}.isEnum = ${JSON.stringify(getErrorMessage(constraint, 'must be a valid enum value'))};`);
+      lines.push(
+        `${indent}    ${errorsName}.isEnum = ${JSON.stringify(getErrorMessage(constraint, 'must be a valid enum value'))};`,
+      );
       lines.push(`    }`);
       break;
 
@@ -585,7 +695,9 @@ function generateConstraintCheck(
       lines.push(`${indent}  if (typeof ${valueName} === 'string') {`);
       lines.push(`${indent}    const emailRegex = /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/;`);
       lines.push(`${indent}    if (!emailRegex.test(${valueName})) {`);
-      lines.push(`${indent}      ${errorsName}.isEmail = ${JSON.stringify(getErrorMessage(constraint, 'must be an email'))};`);
+      lines.push(
+        `${indent}      ${errorsName}.isEmail = ${JSON.stringify(getErrorMessage(constraint, 'must be an email'))};`,
+      );
       lines.push(`${indent}    }`);
       lines.push(`    }`);
       break;
@@ -595,7 +707,9 @@ function generateConstraintCheck(
       lines.push(`${indent}    try {`);
       lines.push(`${indent}      new URL(${valueName});`);
       lines.push(`${indent}    } catch {`);
-      lines.push(`${indent}      ${errorsName}.isURL = ${JSON.stringify(getErrorMessage(constraint, 'must be a URL address'))};`);
+      lines.push(
+        `${indent}      ${errorsName}.isURL = ${JSON.stringify(getErrorMessage(constraint, 'must be a URL address'))};`,
+      );
       lines.push(`${indent}    }`);
       lines.push(`    }`);
       break;
@@ -603,16 +717,26 @@ function generateConstraintCheck(
     case 'isUUID':
       lines.push(`${indent}  if (typeof ${valueName} === 'string') {`);
       if (constraint.value === '3') {
-        lines.push(`${indent}    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-3[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;`);
+        lines.push(
+          `${indent}    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-3[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;`,
+        );
       } else if (constraint.value === '4') {
-        lines.push(`${indent}    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;`);
+        lines.push(
+          `${indent}    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;`,
+        );
       } else if (constraint.value === '5') {
-        lines.push(`${indent}    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-5[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;`);
+        lines.push(
+          `${indent}    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-5[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;`,
+        );
       } else {
-        lines.push(`${indent}    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;`);
+        lines.push(
+          `${indent}    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;`,
+        );
       }
       lines.push(`${indent}    if (!uuidRegex.test(${valueName})) {`);
-      lines.push(`${indent}      ${errorsName}.isUUID = ${JSON.stringify(getErrorMessage(constraint, 'must be a UUID'))};`);
+      lines.push(
+        `${indent}      ${errorsName}.isUUID = ${JSON.stringify(getErrorMessage(constraint, 'must be a UUID'))};`,
+      );
       lines.push(`${indent}    }`);
       lines.push(`    }`);
       break;
@@ -622,7 +746,9 @@ function generateConstraintCheck(
       lines.push(`${indent}    try {`);
       lines.push(`${indent}      JSON.parse(${valueName});`);
       lines.push(`${indent}    } catch {`);
-      lines.push(`${indent}      ${errorsName}.isJSON = ${JSON.stringify(getErrorMessage(constraint, 'must be a json string'))};`);
+      lines.push(
+        `${indent}      ${errorsName}.isJSON = ${JSON.stringify(getErrorMessage(constraint, 'must be a json string'))};`,
+      );
       lines.push(`${indent}    }`);
       lines.push(`    }`);
       break;
@@ -632,7 +758,9 @@ function generateConstraintCheck(
       lines.push(`${indent}  if (typeof ${valueName} === 'string') {`);
       lines.push(`${indent}    const alphaRegex = /^[a-zA-Z]+$/;`);
       lines.push(`${indent}    if (!alphaRegex.test(${valueName})) {`);
-      lines.push(`${indent}      ${errorsName}.isAlpha = ${JSON.stringify(getErrorMessage(constraint, 'must contain only letters (a-zA-Z)'))};`);
+      lines.push(
+        `${indent}      ${errorsName}.isAlpha = ${JSON.stringify(getErrorMessage(constraint, 'must contain only letters (a-zA-Z)'))};`,
+      );
       lines.push(`${indent}    }`);
       lines.push(`    }`);
       break;
@@ -641,7 +769,9 @@ function generateConstraintCheck(
       lines.push(`${indent}  if (typeof ${valueName} === 'string') {`);
       lines.push(`${indent}    const alphanumericRegex = /^[a-zA-Z0-9]+$/;`);
       lines.push(`${indent}    if (!alphanumericRegex.test(${valueName})) {`);
-      lines.push(`${indent}      ${errorsName}.isAlphanumeric = ${JSON.stringify(getErrorMessage(constraint, 'must contain only letters and numbers'))};`);
+      lines.push(
+        `${indent}      ${errorsName}.isAlphanumeric = ${JSON.stringify(getErrorMessage(constraint, 'must contain only letters and numbers'))};`,
+      );
       lines.push(`${indent}    }`);
       lines.push(`    }`);
       break;
@@ -650,7 +780,9 @@ function generateConstraintCheck(
       lines.push(`${indent}  if (typeof ${valueName} === 'string') {`);
       lines.push(`${indent}    const hexColorRegex = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i;`);
       lines.push(`${indent}    if (!hexColorRegex.test(${valueName})) {`);
-      lines.push(`${indent}      ${errorsName}.isHexColor = ${JSON.stringify(getErrorMessage(constraint, 'must be a hexadecimal color'))};`);
+      lines.push(
+        `${indent}      ${errorsName}.isHexColor = ${JSON.stringify(getErrorMessage(constraint, 'must be a hexadecimal color'))};`,
+      );
       lines.push(`${indent}    }`);
       lines.push(`    }`);
       break;
@@ -658,16 +790,28 @@ function generateConstraintCheck(
     case 'isIP':
       lines.push(`${indent}  if (typeof ${valueName} === 'string') {`);
       if (constraint.value === '4') {
-        lines.push(`${indent}    const ipRegex = /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;`);
+        lines.push(
+          `${indent}    const ipRegex = /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;`,
+        );
       } else if (constraint.value === '6') {
-        lines.push(`${indent}    const ipRegex = /^(([0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\\.){3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\\.){3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))$/;`);
+        lines.push(
+          `${indent}    const ipRegex = /^(([0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\\.){3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\\.){3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))$/;`,
+        );
       } else {
-        lines.push(`${indent}    const ipv4Regex = /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;`);
-        lines.push(`${indent}    const ipv6Regex = /^(([0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4})$/;`);
-        lines.push(`${indent}    const ipRegex = { test: (v) => ipv4Regex.test(v) || ipv6Regex.test(v) };`);
+        lines.push(
+          `${indent}    const ipv4Regex = /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;`,
+        );
+        lines.push(
+          `${indent}    const ipv6Regex = /^(([0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4})$/;`,
+        );
+        lines.push(
+          `${indent}    const ipRegex = { test: (v) => ipv4Regex.test(v) || ipv6Regex.test(v) };`,
+        );
       }
       lines.push(`${indent}    if (!ipRegex.test(${valueName})) {`);
-      lines.push(`${indent}      ${errorsName}.isIP = ${JSON.stringify(getErrorMessage(constraint, 'must be an ip address'))};`);
+      lines.push(
+        `${indent}      ${errorsName}.isIP = ${JSON.stringify(getErrorMessage(constraint, 'must be an ip address'))};`,
+      );
       lines.push(`${indent}    }`);
       lines.push(`    }`);
       break;
@@ -677,7 +821,9 @@ function generateConstraintCheck(
       lines.push(`${indent}  if (typeof ${valueName} === 'string') {`);
       lines.push(`${indent}    const sanitized = ${valueName}.replace(/[- ]/g, '');`);
       lines.push(`${indent}    if (!/^[0-9]{13,19}$/.test(sanitized)) {`);
-      lines.push(`${indent}      ${errorsName}.isCreditCard = ${JSON.stringify(getErrorMessage(constraint, 'must be a credit card'))};`);
+      lines.push(
+        `${indent}      ${errorsName}.isCreditCard = ${JSON.stringify(getErrorMessage(constraint, 'must be a credit card'))};`,
+      );
       lines.push(`${indent}    } else {`);
       // Luhn algorithm
       lines.push(`${indent}      let sum = 0;`);
@@ -692,7 +838,9 @@ function generateConstraintCheck(
       lines.push(`${indent}        isEven = !isEven;`);
       lines.push(`${indent}      }`);
       lines.push(`${indent}      if (sum % 10 !== 0) {`);
-      lines.push(`${indent}        ${errorsName}.isCreditCard = ${JSON.stringify(getErrorMessage(constraint, 'must be a credit card'))};`);
+      lines.push(
+        `${indent}        ${errorsName}.isCreditCard = ${JSON.stringify(getErrorMessage(constraint, 'must be a credit card'))};`,
+      );
       lines.push(`${indent}      }`);
       lines.push(`${indent}    }`);
       lines.push(`    }`);
@@ -703,17 +851,23 @@ function generateConstraintCheck(
       lines.push(`${indent}    const sanitized = ${valueName}.replace(/[- ]/g, '');`);
       if (constraint.value === '10') {
         lines.push(`${indent}    if (!/^[0-9]{9}[0-9X]$/i.test(sanitized)) {`);
-        lines.push(`${indent}      ${errorsName}.isISBN = ${JSON.stringify(getErrorMessage(constraint, 'must be an ISBN'))};`);
+        lines.push(
+          `${indent}      ${errorsName}.isISBN = ${JSON.stringify(getErrorMessage(constraint, 'must be an ISBN'))};`,
+        );
         lines.push(`${indent}    }`);
       } else if (constraint.value === '13') {
         lines.push(`${indent}    if (!/^[0-9]{13}$/.test(sanitized)) {`);
-        lines.push(`${indent}      ${errorsName}.isISBN = ${JSON.stringify(getErrorMessage(constraint, 'must be an ISBN'))};`);
+        lines.push(
+          `${indent}      ${errorsName}.isISBN = ${JSON.stringify(getErrorMessage(constraint, 'must be an ISBN'))};`,
+        );
         lines.push(`${indent}    }`);
       } else {
         lines.push(`${indent}    const isbn10 = /^[0-9]{9}[0-9X]$/i.test(sanitized);`);
         lines.push(`${indent}    const isbn13 = /^[0-9]{13}$/.test(sanitized);`);
         lines.push(`${indent}    if (!isbn10 && !isbn13) {`);
-        lines.push(`${indent}      ${errorsName}.isISBN = ${JSON.stringify(getErrorMessage(constraint, 'must be an ISBN'))};`);
+        lines.push(
+          `${indent}      ${errorsName}.isISBN = ${JSON.stringify(getErrorMessage(constraint, 'must be an ISBN'))};`,
+        );
         lines.push(`${indent}    }`);
       }
       lines.push(`    }`);
@@ -721,35 +875,55 @@ function generateConstraintCheck(
 
     case 'isPhoneNumber':
       lines.push(`${indent}  if (typeof ${valueName} === 'string') {`);
-      lines.push(`${indent}    const phoneRegex = /^[+]?[(]?[0-9]{1,4}[)]?[-\\s.]?[(]?[0-9]{1,4}[)]?[-\\s.]?[0-9]{1,9}$/;`);
+      lines.push(
+        `${indent}    const phoneRegex = /^[+]?[(]?[0-9]{1,4}[)]?[-\\s.]?[(]?[0-9]{1,4}[)]?[-\\s.]?[0-9]{1,9}$/;`,
+      );
       lines.push(`${indent}    if (!phoneRegex.test(${valueName})) {`);
-      lines.push(`${indent}      ${errorsName}.isPhoneNumber = ${JSON.stringify(getErrorMessage(constraint, 'must be a valid phone number'))};`);
+      lines.push(
+        `${indent}      ${errorsName}.isPhoneNumber = ${JSON.stringify(getErrorMessage(constraint, 'must be a valid phone number'))};`,
+      );
       lines.push(`${indent}    }`);
       lines.push(`    }`);
       break;
 
     // String validators - Content
     case 'contains':
-      lines.push(`${indent}  if (typeof ${valueName} === 'string' && !${valueName}.includes(${JSON.stringify(constraint.value)})) {`);
-      lines.push(`${indent}    ${errorsName}.contains = ${JSON.stringify(getErrorMessage(constraint, `must contain a ${constraint.value} string`))};`);
+      lines.push(
+        `${indent}  if (typeof ${valueName} === 'string' && !${valueName}.includes(${JSON.stringify(constraint.value)})) {`,
+      );
+      lines.push(
+        `${indent}    ${errorsName}.contains = ${JSON.stringify(getErrorMessage(constraint, `must contain a ${constraint.value} string`))};`,
+      );
       lines.push(`    }`);
       break;
 
     case 'notContains':
-      lines.push(`${indent}  if (typeof ${valueName} === 'string' && ${valueName}.includes(${JSON.stringify(constraint.value)})) {`);
-      lines.push(`${indent}    ${errorsName}.notContains = ${JSON.stringify(getErrorMessage(constraint, `should not contain a ${constraint.value} string`))};`);
+      lines.push(
+        `${indent}  if (typeof ${valueName} === 'string' && ${valueName}.includes(${JSON.stringify(constraint.value)})) {`,
+      );
+      lines.push(
+        `${indent}    ${errorsName}.notContains = ${JSON.stringify(getErrorMessage(constraint, `should not contain a ${constraint.value} string`))};`,
+      );
       lines.push(`    }`);
       break;
 
     case 'isLowercase':
-      lines.push(`${indent}  if (typeof ${valueName} === 'string' && ${valueName} !== ${valueName}.toLowerCase()) {`);
-      lines.push(`${indent}    ${errorsName}.isLowercase = ${JSON.stringify(getErrorMessage(constraint, 'must be a lowercase string'))};`);
+      lines.push(
+        `${indent}  if (typeof ${valueName} === 'string' && ${valueName} !== ${valueName}.toLowerCase()) {`,
+      );
+      lines.push(
+        `${indent}    ${errorsName}.isLowercase = ${JSON.stringify(getErrorMessage(constraint, 'must be a lowercase string'))};`,
+      );
       lines.push(`    }`);
       break;
 
     case 'isUppercase':
-      lines.push(`${indent}  if (typeof ${valueName} === 'string' && ${valueName} !== ${valueName}.toUpperCase()) {`);
-      lines.push(`${indent}    ${errorsName}.isUppercase = ${JSON.stringify(getErrorMessage(constraint, 'must be an uppercase string'))};`);
+      lines.push(
+        `${indent}  if (typeof ${valueName} === 'string' && ${valueName} !== ${valueName}.toUpperCase()) {`,
+      );
+      lines.push(
+        `${indent}    ${errorsName}.isUppercase = ${JSON.stringify(getErrorMessage(constraint, 'must be an uppercase string'))};`,
+      );
       lines.push(`    }`);
       break;
 
@@ -758,9 +932,13 @@ function generateConstraintCheck(
         const pattern = constraint.value.pattern;
         const modifiers = constraint.value.modifiers || '';
         lines.push(`${indent}  if (typeof ${valueName} === 'string') {`);
-        lines.push(`${indent}    const regex = new RegExp(${JSON.stringify(pattern)}, ${JSON.stringify(modifiers)});`);
+        lines.push(
+          `${indent}    const regex = new RegExp(${JSON.stringify(pattern)}, ${JSON.stringify(modifiers)});`,
+        );
         lines.push(`${indent}    if (!regex.test(${valueName})) {`);
-        lines.push(`${indent}      ${errorsName}.matches = ${JSON.stringify(getErrorMessage(constraint, `must match ${pattern} regular expression`))};`);
+        lines.push(
+          `${indent}      ${errorsName}.matches = ${JSON.stringify(getErrorMessage(constraint, `must match ${pattern} regular expression`))};`,
+        );
         lines.push(`${indent}    }`);
         lines.push(`    }`);
       }
@@ -769,27 +947,39 @@ function generateConstraintCheck(
     // High Priority Validators
     case 'isFQDN':
       lines.push(`${indent}  if (typeof ${valueName} === 'string') {`);
-      lines.push(`${indent}    const fqdnRegex = /^([a-zA-Z0-9-_]+\\.)*[a-zA-Z0-9][a-zA-Z0-9-_]+\\.[a-zA-Z]{2,11}$/;`);
+      lines.push(
+        `${indent}    const fqdnRegex = /^([a-zA-Z0-9-_]+\\.)*[a-zA-Z0-9][a-zA-Z0-9-_]+\\.[a-zA-Z]{2,11}$/;`,
+      );
       lines.push(`${indent}    if (!fqdnRegex.test(${valueName})) {`);
-      lines.push(`${indent}      ${errorsName}.isFQDN = ${JSON.stringify(getErrorMessage(constraint, 'must be a valid domain name'))};`);
+      lines.push(
+        `${indent}      ${errorsName}.isFQDN = ${JSON.stringify(getErrorMessage(constraint, 'must be a valid domain name'))};`,
+      );
       lines.push(`${indent}    }`);
       lines.push(`    }`);
       break;
 
     case 'isISO8601':
       lines.push(`${indent}  if (typeof ${valueName} === 'string') {`);
-      lines.push(`${indent}    const iso8601Regex = /^\\d{4}-\\d{2}-\\d{2}(T\\d{2}:\\d{2}:\\d{2}(\\.\\d{1,3})?(Z|[+-]\\d{2}:\\d{2})?)?$/;`);
+      lines.push(
+        `${indent}    const iso8601Regex = /^\\d{4}-\\d{2}-\\d{2}(T\\d{2}:\\d{2}:\\d{2}(\\.\\d{1,3})?(Z|[+-]\\d{2}:\\d{2})?)?$/;`,
+      );
       lines.push(`${indent}    if (!iso8601Regex.test(${valueName})) {`);
-      lines.push(`${indent}      ${errorsName}.isISO8601 = ${JSON.stringify(getErrorMessage(constraint, 'must be a valid ISO 8601 date string'))};`);
+      lines.push(
+        `${indent}      ${errorsName}.isISO8601 = ${JSON.stringify(getErrorMessage(constraint, 'must be a valid ISO 8601 date string'))};`,
+      );
       lines.push(`${indent}    }`);
       lines.push(`    }`);
       break;
 
     case 'isMobilePhone':
       lines.push(`${indent}  if (typeof ${valueName} === 'string') {`);
-      lines.push(`${indent}    const phoneRegex = /^[+]?[(]?[0-9]{1,4}[)]?[-\\s.()]?[0-9]{1,4}[-\\s.()]?[0-9]{1,4}[-\\s.()]?[0-9]{1,9}$/;`);
+      lines.push(
+        `${indent}    const phoneRegex = /^[+]?[(]?[0-9]{1,4}[)]?[-\\s.()]?[0-9]{1,4}[-\\s.()]?[0-9]{1,4}[-\\s.()]?[0-9]{1,9}$/;`,
+      );
       lines.push(`${indent}    if (!phoneRegex.test(${valueName})) {`);
-      lines.push(`${indent}      ${errorsName}.isMobilePhone = ${JSON.stringify(getErrorMessage(constraint, 'must be a valid phone number'))};`);
+      lines.push(
+        `${indent}      ${errorsName}.isMobilePhone = ${JSON.stringify(getErrorMessage(constraint, 'must be a valid phone number'))};`,
+      );
       lines.push(`${indent}    }`);
       lines.push(`    }`);
       break;
@@ -801,12 +991,16 @@ function generateConstraintCheck(
       } else if (constraint.value === 'RU') {
         lines.push(`${indent}    const postalRegex = /^\\d{6}$/;`);
       } else if (constraint.value === 'GB') {
-        lines.push(`${indent}    const postalRegex = /^[A-Z]{1,2}\\d{1,2}[A-Z]?\\s?\\d[A-Z]{2}$/i;`);
+        lines.push(
+          `${indent}    const postalRegex = /^[A-Z]{1,2}\\d{1,2}[A-Z]?\\s?\\d[A-Z]{2}$/i;`,
+        );
       } else {
         lines.push(`${indent}    const postalRegex = /^[A-Z0-9]{3,10}$/i;`);
       }
       lines.push(`${indent}    if (!postalRegex.test(${valueName})) {`);
-      lines.push(`${indent}      ${errorsName}.isPostalCode = ${JSON.stringify(getErrorMessage(constraint, 'must be a valid postal code'))};`);
+      lines.push(
+        `${indent}      ${errorsName}.isPostalCode = ${JSON.stringify(getErrorMessage(constraint, 'must be a valid postal code'))};`,
+      );
       lines.push(`${indent}    }`);
       lines.push(`    }`);
       break;
@@ -815,7 +1009,9 @@ function generateConstraintCheck(
       lines.push(`${indent}  if (typeof ${valueName} === 'string') {`);
       lines.push(`${indent}    const mongoIdRegex = /^[0-9a-fA-F]{24}$/;`);
       lines.push(`${indent}    if (!mongoIdRegex.test(${valueName})) {`);
-      lines.push(`${indent}      ${errorsName}.isMongoId = ${JSON.stringify(getErrorMessage(constraint, 'must be a mongodb id'))};`);
+      lines.push(
+        `${indent}      ${errorsName}.isMongoId = ${JSON.stringify(getErrorMessage(constraint, 'must be a mongodb id'))};`,
+      );
       lines.push(`${indent}    }`);
       lines.push(`    }`);
       break;
@@ -824,11 +1020,17 @@ function generateConstraintCheck(
       lines.push(`${indent}  if (typeof ${valueName} === 'string') {`);
       lines.push(`${indent}    const parts = ${valueName}.split('.');`);
       lines.push(`${indent}    if (parts.length !== 3 || !parts[0] || !parts[1]) {`);
-      lines.push(`${indent}      ${errorsName}.isJWT = ${JSON.stringify(getErrorMessage(constraint, 'must be a jwt string'))};`);
+      lines.push(
+        `${indent}      ${errorsName}.isJWT = ${JSON.stringify(getErrorMessage(constraint, 'must be a jwt string'))};`,
+      );
       lines.push(`${indent}    } else {`);
       lines.push(`${indent}      const jwtRegex = /^[A-Za-z0-9-_]+$/;`);
-      lines.push(`${indent}      if (!jwtRegex.test(parts[0]) || !jwtRegex.test(parts[1]) || (parts[2] && !jwtRegex.test(parts[2]))) {`);
-      lines.push(`${indent}        ${errorsName}.isJWT = ${JSON.stringify(getErrorMessage(constraint, 'must be a jwt string'))};`);
+      lines.push(
+        `${indent}      if (!jwtRegex.test(parts[0]) || !jwtRegex.test(parts[1]) || (parts[2] && !jwtRegex.test(parts[2]))) {`,
+      );
+      lines.push(
+        `${indent}        ${errorsName}.isJWT = ${JSON.stringify(getErrorMessage(constraint, 'must be a jwt string'))};`,
+      );
       lines.push(`${indent}      }`);
       lines.push(`${indent}    }`);
       lines.push(`    }`);
@@ -841,8 +1043,12 @@ function generateConstraintCheck(
       lines.push(`${indent}    const hasNumber = /[0-9]/.test(${valueName});`);
       lines.push(`${indent}    const hasSpecial = /[!@#$%^&*(),.?":{}|<>]/.test(${valueName});`);
       lines.push(`${indent}    const isLongEnough = ${valueName}.length >= 8;`);
-      lines.push(`${indent}    if (!hasLower || !hasUpper || !hasNumber || !hasSpecial || !isLongEnough) {`);
-      lines.push(`${indent}      ${errorsName}.isStrongPassword = ${JSON.stringify(getErrorMessage(constraint, 'must be a strong password (min 8 chars, uppercase, lowercase, number, special char)'))};`);
+      lines.push(
+        `${indent}    if (!hasLower || !hasUpper || !hasNumber || !hasSpecial || !isLongEnough) {`,
+      );
+      lines.push(
+        `${indent}      ${errorsName}.isStrongPassword = ${JSON.stringify(getErrorMessage(constraint, 'must be a strong password (min 8 chars, uppercase, lowercase, number, special char)'))};`,
+      );
       lines.push(`${indent}    }`);
       lines.push(`    }`);
       break;
@@ -851,7 +1057,9 @@ function generateConstraintCheck(
       lines.push(`${indent}  if (typeof ${valueName} === 'string') {`);
       lines.push(`${indent}    const port = parseInt(${valueName}, 10);`);
       lines.push(`${indent}    if (isNaN(port) || port < 0 || port > 65535) {`);
-      lines.push(`${indent}      ${errorsName}.isPort = ${JSON.stringify(getErrorMessage(constraint, 'must be a valid port number'))};`);
+      lines.push(
+        `${indent}      ${errorsName}.isPort = ${JSON.stringify(getErrorMessage(constraint, 'must be a valid port number'))};`,
+      );
       lines.push(`${indent}    }`);
       lines.push(`    }`);
       break;
@@ -860,16 +1068,22 @@ function generateConstraintCheck(
       lines.push(`${indent}  if (typeof ${valueName} === 'string') {`);
       lines.push(`${indent}    const macRegex = /^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$/;`);
       lines.push(`${indent}    if (!macRegex.test(${valueName})) {`);
-      lines.push(`${indent}      ${errorsName}.isMACAddress = ${JSON.stringify(getErrorMessage(constraint, 'must be a MAC Address'))};`);
+      lines.push(
+        `${indent}      ${errorsName}.isMACAddress = ${JSON.stringify(getErrorMessage(constraint, 'must be a MAC Address'))};`,
+      );
       lines.push(`${indent}    }`);
       lines.push(`    }`);
       break;
 
     case 'isBase64':
       lines.push(`${indent}  if (typeof ${valueName} === 'string') {`);
-      lines.push(`${indent}    const base64Regex = /^(?:[A-Za-z0-9+\\/]{4})*(?:[A-Za-z0-9+\\/]{2}==|[A-Za-z0-9+\\/]{3}=|[A-Za-z0-9+\\/]{2,3})?$/;`);
+      lines.push(
+        `${indent}    const base64Regex = /^(?:[A-Za-z0-9+\\/]{4})*(?:[A-Za-z0-9+\\/]{2}==|[A-Za-z0-9+\\/]{3}=|[A-Za-z0-9+\\/]{2,3})?$/;`,
+      );
       lines.push(`${indent}    if (!base64Regex.test(${valueName})) {`);
-      lines.push(`${indent}      ${errorsName}.isBase64 = ${JSON.stringify(getErrorMessage(constraint, 'must be base64 encoded'))};`);
+      lines.push(
+        `${indent}      ${errorsName}.isBase64 = ${JSON.stringify(getErrorMessage(constraint, 'must be base64 encoded'))};`,
+      );
       lines.push(`${indent}    }`);
       lines.push(`    }`);
       break;
@@ -879,7 +1093,9 @@ function generateConstraintCheck(
       lines.push(`${indent}  if (typeof ${valueName} === 'string') {`);
       lines.push(`${indent}    const ibanRegex = /^[A-Z]{2}[0-9]{2}[A-Z0-9]{1,30}$/;`);
       lines.push(`${indent}    if (!ibanRegex.test(${valueName})) {`);
-      lines.push(`${indent}      ${errorsName}.isIBAN = ${JSON.stringify(getErrorMessage(constraint, 'must be a valid IBAN'))};`);
+      lines.push(
+        `${indent}      ${errorsName}.isIBAN = ${JSON.stringify(getErrorMessage(constraint, 'must be a valid IBAN'))};`,
+      );
       lines.push(`${indent}    }`);
       lines.push(`    }`);
       break;
@@ -888,16 +1104,22 @@ function generateConstraintCheck(
       lines.push(`${indent}  if (typeof ${valueName} === 'string') {`);
       lines.push(`${indent}    const bicRegex = /^[A-Z]{6}[A-Z0-9]{2}([A-Z0-9]{3})?$/;`);
       lines.push(`${indent}    if (!bicRegex.test(${valueName})) {`);
-      lines.push(`${indent}      ${errorsName}.isBIC = ${JSON.stringify(getErrorMessage(constraint, 'must be a valid BIC or SWIFT code'))};`);
+      lines.push(
+        `${indent}      ${errorsName}.isBIC = ${JSON.stringify(getErrorMessage(constraint, 'must be a valid BIC or SWIFT code'))};`,
+      );
       lines.push(`${indent}    }`);
       lines.push(`    }`);
       break;
 
     case 'isCurrency':
       lines.push(`${indent}  if (typeof ${valueName} === 'string') {`);
-      lines.push(`${indent}    const currencyRegex = /^[\\$€£¥₽]?\\s?[0-9]{1,3}(,[0-9]{3})*(\\.\\d{2})?$/;`);
+      lines.push(
+        `${indent}    const currencyRegex = /^[\\$€£¥₽]?\\s?[0-9]{1,3}(,[0-9]{3})*(\\.\\d{2})?$/;`,
+      );
       lines.push(`${indent}    if (!currencyRegex.test(${valueName})) {`);
-      lines.push(`${indent}      ${errorsName}.isCurrency = ${JSON.stringify(getErrorMessage(constraint, 'must be a valid currency amount'))};`);
+      lines.push(
+        `${indent}      ${errorsName}.isCurrency = ${JSON.stringify(getErrorMessage(constraint, 'must be a valid currency amount'))};`,
+      );
       lines.push(`${indent}    }`);
       lines.push(`    }`);
       break;
@@ -906,7 +1128,9 @@ function generateConstraintCheck(
       lines.push(`${indent}  if (typeof ${valueName} === 'string') {`);
       lines.push(`${indent}    const currencyCodeRegex = /^[A-Z]{3}$/;`);
       lines.push(`${indent}    if (!currencyCodeRegex.test(${valueName})) {`);
-      lines.push(`${indent}      ${errorsName}.isISO4217CurrencyCode = ${JSON.stringify(getErrorMessage(constraint, 'must be a valid ISO 4217 currency code'))};`);
+      lines.push(
+        `${indent}      ${errorsName}.isISO4217CurrencyCode = ${JSON.stringify(getErrorMessage(constraint, 'must be a valid ISO 4217 currency code'))};`,
+      );
       lines.push(`${indent}    }`);
       lines.push(`    }`);
       break;
@@ -916,7 +1140,9 @@ function generateConstraintCheck(
       lines.push(`${indent}  if (typeof ${valueName} === 'string') {`);
       lines.push(`${indent}    const ethRegex = /^0x[a-fA-F0-9]{39,40}$/;`);
       lines.push(`${indent}    if (!ethRegex.test(${valueName})) {`);
-      lines.push(`${indent}      ${errorsName}.isEthereumAddress = ${JSON.stringify(getErrorMessage(constraint, 'must be a valid Ethereum address'))};`);
+      lines.push(
+        `${indent}      ${errorsName}.isEthereumAddress = ${JSON.stringify(getErrorMessage(constraint, 'must be a valid Ethereum address'))};`,
+      );
       lines.push(`${indent}    }`);
       lines.push(`    }`);
       break;
@@ -925,7 +1151,9 @@ function generateConstraintCheck(
       lines.push(`${indent}  if (typeof ${valueName} === 'string') {`);
       lines.push(`${indent}    const btcRegex = /^(bc1|[13])[a-zA-HJ-NP-Z0-9]{25,62}$/;`);
       lines.push(`${indent}    if (!btcRegex.test(${valueName})) {`);
-      lines.push(`${indent}      ${errorsName}.isBtcAddress = ${JSON.stringify(getErrorMessage(constraint, 'must be a valid Bitcoin address'))};`);
+      lines.push(
+        `${indent}      ${errorsName}.isBtcAddress = ${JSON.stringify(getErrorMessage(constraint, 'must be a valid Bitcoin address'))};`,
+      );
       lines.push(`${indent}    }`);
       lines.push(`    }`);
       break;
@@ -939,7 +1167,9 @@ function generateConstraintCheck(
         lines.push(`${indent}    const passportRegex = /^[A-Z0-9]{6,12}$/;`);
       }
       lines.push(`${indent}    if (!passportRegex.test(${valueName})) {`);
-      lines.push(`${indent}      ${errorsName}.isPassportNumber = ${JSON.stringify(getErrorMessage(constraint, 'must be a valid passport number'))};`);
+      lines.push(
+        `${indent}      ${errorsName}.isPassportNumber = ${JSON.stringify(getErrorMessage(constraint, 'must be a valid passport number'))};`,
+      );
       lines.push(`${indent}    }`);
       lines.push(`    }`);
       break;
@@ -948,7 +1178,9 @@ function generateConstraintCheck(
       lines.push(`${indent}  if (typeof ${valueName} === 'string') {`);
       lines.push(`${indent}    const idRegex = /^[A-Z0-9]{5,20}$/;`);
       lines.push(`${indent}    if (!idRegex.test(${valueName})) {`);
-      lines.push(`${indent}      ${errorsName}.isIdentityCard = ${JSON.stringify(getErrorMessage(constraint, 'must be a valid identity card'))};`);
+      lines.push(
+        `${indent}      ${errorsName}.isIdentityCard = ${JSON.stringify(getErrorMessage(constraint, 'must be a valid identity card'))};`,
+      );
       lines.push(`${indent}    }`);
       lines.push(`    }`);
       break;
@@ -957,7 +1189,9 @@ function generateConstraintCheck(
       lines.push(`${indent}  if (typeof ${valueName} === 'string') {`);
       lines.push(`${indent}    const eanRegex = /^[0-9]{8}$|^[0-9]{13}$/;`);
       lines.push(`${indent}    if (!eanRegex.test(${valueName})) {`);
-      lines.push(`${indent}      ${errorsName}.isEAN = ${JSON.stringify(getErrorMessage(constraint, 'must be a valid EAN'))};`);
+      lines.push(
+        `${indent}      ${errorsName}.isEAN = ${JSON.stringify(getErrorMessage(constraint, 'must be a valid EAN'))};`,
+      );
       lines.push(`${indent}    }`);
       lines.push(`    }`);
       break;
@@ -966,7 +1200,9 @@ function generateConstraintCheck(
       lines.push(`${indent}  if (typeof ${valueName} === 'string') {`);
       lines.push(`${indent}    const isinRegex = /^[A-Z]{2}[A-Z0-9]{9}[0-9]$/;`);
       lines.push(`${indent}    if (!isinRegex.test(${valueName})) {`);
-      lines.push(`${indent}      ${errorsName}.isISIN = ${JSON.stringify(getErrorMessage(constraint, 'must be a valid ISIN'))};`);
+      lines.push(
+        `${indent}      ${errorsName}.isISIN = ${JSON.stringify(getErrorMessage(constraint, 'must be a valid ISIN'))};`,
+      );
       lines.push(`${indent}    }`);
       lines.push(`    }`);
       break;
@@ -974,9 +1210,13 @@ function generateConstraintCheck(
     // Medium Priority Validators - Network & URI
     case 'isMagnetURI':
       lines.push(`${indent}  if (typeof ${valueName} === 'string') {`);
-      lines.push(`${indent}    const magnetRegex = /^magnet:\\?xt=urn:[a-z0-9]+:[a-z0-9]{32,40}/i;`);
+      lines.push(
+        `${indent}    const magnetRegex = /^magnet:\\?xt=urn:[a-z0-9]+:[a-z0-9]{32,40}/i;`,
+      );
       lines.push(`${indent}    if (!magnetRegex.test(${valueName})) {`);
-      lines.push(`${indent}      ${errorsName}.isMagnetURI = ${JSON.stringify(getErrorMessage(constraint, 'must be a valid Magnet URI'))};`);
+      lines.push(
+        `${indent}      ${errorsName}.isMagnetURI = ${JSON.stringify(getErrorMessage(constraint, 'must be a valid Magnet URI'))};`,
+      );
       lines.push(`${indent}    }`);
       lines.push(`    }`);
       break;
@@ -985,7 +1225,9 @@ function generateConstraintCheck(
       lines.push(`${indent}  if (typeof ${valueName} === 'string') {`);
       lines.push(`${indent}    const dataUriRegex = /^data:([a-z]+\\/[a-z0-9-+.]+)?;base64,/i;`);
       lines.push(`${indent}    if (!dataUriRegex.test(${valueName})) {`);
-      lines.push(`${indent}      ${errorsName}.isDataURI = ${JSON.stringify(getErrorMessage(constraint, 'must be a valid Data URI'))};`);
+      lines.push(
+        `${indent}      ${errorsName}.isDataURI = ${JSON.stringify(getErrorMessage(constraint, 'must be a valid Data URI'))};`,
+      );
       lines.push(`${indent}    }`);
       lines.push(`    }`);
       break;
@@ -995,7 +1237,9 @@ function generateConstraintCheck(
       lines.push(`${indent}  if (typeof ${valueName} === 'string') {`);
       lines.push(`${indent}    const alpha2Regex = /^[A-Z]{2}$/;`);
       lines.push(`${indent}    if (!alpha2Regex.test(${valueName})) {`);
-      lines.push(`${indent}      ${errorsName}.isISO31661Alpha2 = ${JSON.stringify(getErrorMessage(constraint, 'must be a valid ISO 3166-1 alpha-2 country code'))};`);
+      lines.push(
+        `${indent}      ${errorsName}.isISO31661Alpha2 = ${JSON.stringify(getErrorMessage(constraint, 'must be a valid ISO 3166-1 alpha-2 country code'))};`,
+      );
       lines.push(`${indent}    }`);
       lines.push(`    }`);
       break;
@@ -1004,7 +1248,9 @@ function generateConstraintCheck(
       lines.push(`${indent}  if (typeof ${valueName} === 'string') {`);
       lines.push(`${indent}    const alpha3Regex = /^[A-Z]{3}$/;`);
       lines.push(`${indent}    if (!alpha3Regex.test(${valueName})) {`);
-      lines.push(`${indent}      ${errorsName}.isISO31661Alpha3 = ${JSON.stringify(getErrorMessage(constraint, 'must be a valid ISO 3166-1 alpha-3 country code'))};`);
+      lines.push(
+        `${indent}      ${errorsName}.isISO31661Alpha3 = ${JSON.stringify(getErrorMessage(constraint, 'must be a valid ISO 3166-1 alpha-3 country code'))};`,
+      );
       lines.push(`${indent}    }`);
       lines.push(`    }`);
       break;
@@ -1013,7 +1259,9 @@ function generateConstraintCheck(
       lines.push(`${indent}  if (typeof ${valueName} === 'string') {`);
       lines.push(`${indent}    const localeRegex = /^[a-z]{2}(-[A-Z]{2})?$/;`);
       lines.push(`${indent}    if (!localeRegex.test(${valueName})) {`);
-      lines.push(`${indent}      ${errorsName}.isLocale = ${JSON.stringify(getErrorMessage(constraint, 'must be a valid locale'))};`);
+      lines.push(
+        `${indent}      ${errorsName}.isLocale = ${JSON.stringify(getErrorMessage(constraint, 'must be a valid locale'))};`,
+      );
       lines.push(`${indent}    }`);
       lines.push(`    }`);
       break;
@@ -1021,9 +1269,13 @@ function generateConstraintCheck(
     // Medium Priority Validators - Formats & Standards
     case 'isSemVer':
       lines.push(`${indent}  if (typeof ${valueName} === 'string') {`);
-      lines.push(`${indent}    const semverRegex = /^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$/;`);
+      lines.push(
+        `${indent}    const semverRegex = /^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$/;`,
+      );
       lines.push(`${indent}    if (!semverRegex.test(${valueName})) {`);
-      lines.push(`${indent}      ${errorsName}.isSemVer = ${JSON.stringify(getErrorMessage(constraint, 'must be a valid semantic version'))};`);
+      lines.push(
+        `${indent}      ${errorsName}.isSemVer = ${JSON.stringify(getErrorMessage(constraint, 'must be a valid semantic version'))};`,
+      );
       lines.push(`${indent}    }`);
       lines.push(`    }`);
       break;
@@ -1032,7 +1284,9 @@ function generateConstraintCheck(
       lines.push(`${indent}  if (typeof ${valueName} === 'string') {`);
       lines.push(`${indent}    const mimeRegex = /^[a-z]+\\/[a-z0-9\\-+.]+$/i;`);
       lines.push(`${indent}    if (!mimeRegex.test(${valueName})) {`);
-      lines.push(`${indent}      ${errorsName}.isMimeType = ${JSON.stringify(getErrorMessage(constraint, 'must be a valid MIME type'))};`);
+      lines.push(
+        `${indent}      ${errorsName}.isMimeType = ${JSON.stringify(getErrorMessage(constraint, 'must be a valid MIME type'))};`,
+      );
       lines.push(`${indent}    }`);
       lines.push(`    }`);
       break;
@@ -1041,31 +1295,43 @@ function generateConstraintCheck(
       lines.push(`${indent}  if (typeof ${valueName} === 'string') {`);
       lines.push(`${indent}    const timezoneRegex = /^[A-Z][a-zA-Z]+\\/[A-Z][a-zA-Z_]+$/;`);
       lines.push(`${indent}    if (!timezoneRegex.test(${valueName}) && ${valueName} !== 'UTC') {`);
-      lines.push(`${indent}      ${errorsName}.isTimeZone = ${JSON.stringify(getErrorMessage(constraint, 'must be a valid timezone'))};`);
+      lines.push(
+        `${indent}      ${errorsName}.isTimeZone = ${JSON.stringify(getErrorMessage(constraint, 'must be a valid timezone'))};`,
+      );
       lines.push(`${indent}    }`);
       lines.push(`    }`);
       break;
 
     case 'isRFC3339':
       lines.push(`${indent}  if (typeof ${valueName} === 'string') {`);
-      lines.push(`${indent}    const rfc3339Regex = /^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?(Z|[+-]\\d{2}:\\d{2})$/;`);
+      lines.push(
+        `${indent}    const rfc3339Regex = /^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?(Z|[+-]\\d{2}:\\d{2})$/;`,
+      );
       lines.push(`${indent}    if (!rfc3339Regex.test(${valueName})) {`);
-      lines.push(`${indent}      ${errorsName}.isRFC3339 = ${JSON.stringify(getErrorMessage(constraint, 'must be a valid RFC 3339 date'))};`);
+      lines.push(
+        `${indent}      ${errorsName}.isRFC3339 = ${JSON.stringify(getErrorMessage(constraint, 'must be a valid RFC 3339 date'))};`,
+      );
       lines.push(`${indent}    }`);
       lines.push(`    }`);
       break;
 
     // Number validators
     case 'isDivisibleBy':
-      lines.push(`${indent}  if (typeof ${valueName} === 'number' && ${valueName} % ${constraint.value} !== 0) {`);
-      lines.push(`${indent}    ${errorsName}.isDivisibleBy = ${JSON.stringify(getErrorMessage(constraint, `must be divisible by ${constraint.value}`))};`);
+      lines.push(
+        `${indent}  if (typeof ${valueName} === 'number' && ${valueName} % ${constraint.value} !== 0) {`,
+      );
+      lines.push(
+        `${indent}    ${errorsName}.isDivisibleBy = ${JSON.stringify(getErrorMessage(constraint, `must be divisible by ${constraint.value}`))};`,
+      );
       lines.push(`    }`);
       break;
 
     case 'isDecimal':
       lines.push(`${indent}  if (typeof ${valueName} === 'number') {`);
       lines.push(`${indent}    if (Number.isInteger(${valueName})) {`);
-      lines.push(`${indent}      ${errorsName}.isDecimal = ${JSON.stringify(getErrorMessage(constraint, 'must be a decimal number'))};`);
+      lines.push(
+        `${indent}      ${errorsName}.isDecimal = ${JSON.stringify(getErrorMessage(constraint, 'must be a decimal number'))};`,
+      );
       lines.push(`${indent}    }`);
       lines.push(`    }`);
       break;
@@ -1076,7 +1342,9 @@ function generateConstraintCheck(
         const minTime = constraint.value.getTime();
         lines.push(`${indent}  if (${valueName} instanceof Date) {`);
         lines.push(`${indent}    if (${valueName}.getTime() < ${minTime}) {`);
-        lines.push(`${indent}      ${errorsName}.minDate = ${JSON.stringify(getErrorMessage(constraint, `minimal allowed date is ${constraint.value.toISOString()}`))};`);
+        lines.push(
+          `${indent}      ${errorsName}.minDate = ${JSON.stringify(getErrorMessage(constraint, `minimal allowed date is ${constraint.value.toISOString()}`))};`,
+        );
         lines.push(`${indent}    }`);
         lines.push(`    }`);
       }
@@ -1087,7 +1355,9 @@ function generateConstraintCheck(
         const maxTime = constraint.value.getTime();
         lines.push(`${indent}  if (${valueName} instanceof Date) {`);
         lines.push(`${indent}    if (${valueName}.getTime() > ${maxTime}) {`);
-        lines.push(`${indent}      ${errorsName}.maxDate = ${JSON.stringify(getErrorMessage(constraint, `maximal allowed date is ${constraint.value.toISOString()}`))};`);
+        lines.push(
+          `${indent}      ${errorsName}.maxDate = ${JSON.stringify(getErrorMessage(constraint, `maximal allowed date is ${constraint.value.toISOString()}`))};`,
+        );
         lines.push(`${indent}    }`);
         lines.push(`    }`);
       }
@@ -1096,13 +1366,17 @@ function generateConstraintCheck(
     // Common validators - Comparison
     case 'equals':
       lines.push(`${indent}  if (${valueName} !== ${JSON.stringify(constraint.value)}) {`);
-      lines.push(`${indent}    ${errorsName}.equals = ${JSON.stringify(getErrorMessage(constraint, `must be equal to ${constraint.value}`))};`);
+      lines.push(
+        `${indent}    ${errorsName}.equals = ${JSON.stringify(getErrorMessage(constraint, `must be equal to ${constraint.value}`))};`,
+      );
       lines.push(`    }`);
       break;
 
     case 'notEquals':
       lines.push(`${indent}  if (${valueName} === ${JSON.stringify(constraint.value)}) {`);
-      lines.push(`${indent}    ${errorsName}.notEquals = ${JSON.stringify(getErrorMessage(constraint, `should not be equal to ${constraint.value}`))};`);
+      lines.push(
+        `${indent}    ${errorsName}.notEquals = ${JSON.stringify(getErrorMessage(constraint, `should not be equal to ${constraint.value}`))};`,
+      );
       lines.push(`    }`);
       break;
 
@@ -1110,7 +1384,9 @@ function generateConstraintCheck(
       if (Array.isArray(constraint.value)) {
         lines.push(`    const allowedValues = ${JSON.stringify(constraint.value)};`);
         lines.push(`${indent}  if (!allowedValues.includes(${valueName})) {`);
-        lines.push(`${indent}    ${errorsName}.isIn = ${JSON.stringify(getErrorMessage(constraint, `must be one of the following values: ${constraint.value.join(', ')}`))};`);
+        lines.push(
+          `${indent}    ${errorsName}.isIn = ${JSON.stringify(getErrorMessage(constraint, `must be one of the following values: ${constraint.value.join(', ')}`))};`,
+        );
         lines.push(`    }`);
       }
       break;
@@ -1119,7 +1395,9 @@ function generateConstraintCheck(
       if (Array.isArray(constraint.value)) {
         lines.push(`    const disallowedValues = ${JSON.stringify(constraint.value)};`);
         lines.push(`${indent}  if (disallowedValues.includes(${valueName})) {`);
-        lines.push(`${indent}    ${errorsName}.isNotIn = ${JSON.stringify(getErrorMessage(constraint, `should not be one of the following values: ${constraint.value.join(', ')}`))};`);
+        lines.push(
+          `${indent}    ${errorsName}.isNotIn = ${JSON.stringify(getErrorMessage(constraint, `should not be one of the following values: ${constraint.value.join(', ')}`))};`,
+        );
         lines.push(`    }`);
       }
       break;
@@ -1127,20 +1405,34 @@ function generateConstraintCheck(
     case 'isEmpty':
       lines.push(`${indent}  if (${valueName} !== null && ${valueName} !== undefined) {`);
       lines.push(`${indent}    if (typeof ${valueName} === 'string' && ${valueName}.length > 0) {`);
-      lines.push(`${indent}      ${errorsName}.isEmpty = ${JSON.stringify(getErrorMessage(constraint, 'must be empty'))};`);
-      lines.push(`${indent}    } else if (Array.isArray(${valueName}) && ${valueName}.length > 0) {`);
-      lines.push(`${indent}      ${errorsName}.isEmpty = ${JSON.stringify(getErrorMessage(constraint, 'must be empty'))};`);
-      lines.push(`${indent}    } else if (typeof ${valueName} === 'object' && Object.keys(${valueName}).length > 0) {`);
-      lines.push(`${indent}      ${errorsName}.isEmpty = ${JSON.stringify(getErrorMessage(constraint, 'must be empty'))};`);
+      lines.push(
+        `${indent}      ${errorsName}.isEmpty = ${JSON.stringify(getErrorMessage(constraint, 'must be empty'))};`,
+      );
+      lines.push(
+        `${indent}    } else if (Array.isArray(${valueName}) && ${valueName}.length > 0) {`,
+      );
+      lines.push(
+        `${indent}      ${errorsName}.isEmpty = ${JSON.stringify(getErrorMessage(constraint, 'must be empty'))};`,
+      );
+      lines.push(
+        `${indent}    } else if (typeof ${valueName} === 'object' && Object.keys(${valueName}).length > 0) {`,
+      );
+      lines.push(
+        `${indent}      ${errorsName}.isEmpty = ${JSON.stringify(getErrorMessage(constraint, 'must be empty'))};`,
+      );
       lines.push(`${indent}    }`);
       lines.push(`    }`);
       break;
 
     // Object validators
     case 'isNotEmptyObject':
-      lines.push(`${indent}  if (typeof ${valueName} === 'object' && ${valueName} !== null && !Array.isArray(${valueName})) {`);
+      lines.push(
+        `${indent}  if (typeof ${valueName} === 'object' && ${valueName} !== null && !Array.isArray(${valueName})) {`,
+      );
       lines.push(`${indent}    if (Object.keys(${valueName}).length === 0) {`);
-      lines.push(`${indent}      ${errorsName}.isNotEmptyObject = ${JSON.stringify(getErrorMessage(constraint, 'must be a non-empty object'))};`);
+      lines.push(
+        `${indent}      ${errorsName}.isNotEmptyObject = ${JSON.stringify(getErrorMessage(constraint, 'must be a non-empty object'))};`,
+      );
       lines.push(`${indent}    }`);
       lines.push(`    }`);
       break;
@@ -1148,9 +1440,13 @@ function generateConstraintCheck(
     // Geographic validators
     case 'isLatLong':
       lines.push(`${indent}  if (typeof ${valueName} === 'string') {`);
-      lines.push(`${indent}    const latLongRegex = /^[-+]?([1-8]?\\d(\\.\\d+)?|90(\\.0+)?),\\s*[-+]?(180(\\.0+)?|((1[0-7]\\d)|([1-9]?\\d))(\\.\\d+)?)$/;`);
+      lines.push(
+        `${indent}    const latLongRegex = /^[-+]?([1-8]?\\d(\\.\\d+)?|90(\\.0+)?),\\s*[-+]?(180(\\.0+)?|((1[0-7]\\d)|([1-9]?\\d))(\\.\\d+)?)$/;`,
+      );
       lines.push(`${indent}    if (!latLongRegex.test(${valueName})) {`);
-      lines.push(`${indent}      ${errorsName}.isLatLong = ${JSON.stringify(getErrorMessage(constraint, 'must be a latitude,longitude string'))};`);
+      lines.push(
+        `${indent}      ${errorsName}.isLatLong = ${JSON.stringify(getErrorMessage(constraint, 'must be a latitude,longitude string'))};`,
+      );
       lines.push(`${indent}    }`);
       lines.push(`    }`);
       break;
@@ -1158,12 +1454,16 @@ function generateConstraintCheck(
     case 'isLatitude':
       lines.push(`${indent}  if (typeof ${valueName} === 'number') {`);
       lines.push(`${indent}    if (${valueName} < -90 || ${valueName} > 90) {`);
-      lines.push(`${indent}      ${errorsName}.isLatitude = ${JSON.stringify(getErrorMessage(constraint, 'latitude must be a number between -90 and 90'))};`);
+      lines.push(
+        `${indent}      ${errorsName}.isLatitude = ${JSON.stringify(getErrorMessage(constraint, 'latitude must be a number between -90 and 90'))};`,
+      );
       lines.push(`${indent}    }`);
       lines.push(`    } else if (typeof ${valueName} === 'string') {`);
       lines.push(`${indent}    const lat = parseFloat(${valueName});`);
       lines.push(`${indent}    if (isNaN(lat) || lat < -90 || lat > 90) {`);
-      lines.push(`${indent}      ${errorsName}.isLatitude = ${JSON.stringify(getErrorMessage(constraint, 'latitude must be a number between -90 and 90'))};`);
+      lines.push(
+        `${indent}      ${errorsName}.isLatitude = ${JSON.stringify(getErrorMessage(constraint, 'latitude must be a number between -90 and 90'))};`,
+      );
       lines.push(`${indent}    }`);
       lines.push(`    }`);
       break;
@@ -1171,12 +1471,16 @@ function generateConstraintCheck(
     case 'isLongitude':
       lines.push(`${indent}  if (typeof ${valueName} === 'number') {`);
       lines.push(`${indent}    if (${valueName} < -180 || ${valueName} > 180) {`);
-      lines.push(`${indent}      ${errorsName}.isLongitude = ${JSON.stringify(getErrorMessage(constraint, 'longitude must be a number between -180 and 180'))};`);
+      lines.push(
+        `${indent}      ${errorsName}.isLongitude = ${JSON.stringify(getErrorMessage(constraint, 'longitude must be a number between -180 and 180'))};`,
+      );
       lines.push(`${indent}    }`);
       lines.push(`    } else if (typeof ${valueName} === 'string') {`);
       lines.push(`${indent}    const lon = parseFloat(${valueName});`);
       lines.push(`${indent}    if (isNaN(lon) || lon < -180 || lon > 180) {`);
-      lines.push(`${indent}      ${errorsName}.isLongitude = ${JSON.stringify(getErrorMessage(constraint, 'longitude must be a number between -180 and 180'))};`);
+      lines.push(
+        `${indent}      ${errorsName}.isLongitude = ${JSON.stringify(getErrorMessage(constraint, 'longitude must be a number between -180 and 180'))};`,
+      );
       lines.push(`${indent}    }`);
       lines.push(`    }`);
       break;
@@ -1188,9 +1492,13 @@ function generateConstraintCheck(
         const errorMsg = JSON.stringify(getErrorMessage(constraint, 'validation failed'));
         lines.push(`${indent}// Custom validator class`);
         lines.push(`${indent}{`);
-        lines.push(`${indent}  const constraint = metadata.properties.get(${safePropName}).constraints[${constraintIndex}];`);
+        lines.push(
+          `${indent}  const constraint = metadata.properties.get(${safePropName}).constraints[${constraintIndex}];`,
+        );
         lines.push(`${indent}  const constraintValue = constraint.value;`);
-        lines.push(`${indent}  const validatorInstance = getValidatorInstance(constraintValue.constraintClass);`);
+        lines.push(
+          `${indent}  const validatorInstance = getValidatorInstance(constraintValue.constraintClass);`,
+        );
         lines.push(`${indent}  const args = {`);
         lines.push(`${indent}    value: ${valueName},`);
         lines.push(`${indent}    constraints: constraintValue.constraints || [],`);
@@ -1217,7 +1525,9 @@ function generateConstraintCheck(
         const defaultMsg = JSON.stringify(getErrorMessage(constraint, 'validation failed'));
         lines.push(`${indent}// ValidateBy: ${validatorName}`);
         lines.push(`${indent}{`);
-        lines.push(`${indent}  const constraint = metadata.properties.get(${safePropName}).constraints[${constraintIndex}];`);
+        lines.push(
+          `${indent}  const constraint = metadata.properties.get(${safePropName}).constraints[${constraintIndex}];`,
+        );
         lines.push(`${indent}  const constraintValue = constraint.value;`);
         lines.push(`${indent}  const args = {`);
         lines.push(`${indent}    value: ${valueName},`);
@@ -1229,7 +1539,9 @@ function generateConstraintCheck(
         lines.push(`${indent}  const result = constraintValue.validator(${valueName}, args);`);
         lines.push(`${indent}  if (!result) {`);
         lines.push(`${indent}    if (constraintValue.defaultMessage) {`);
-        lines.push(`${indent}      ${errorsName}.${validatorName} = constraintValue.defaultMessage(args);`);
+        lines.push(
+          `${indent}      ${errorsName}.${validatorName} = constraintValue.defaultMessage(args);`,
+        );
         lines.push(`${indent}    } else {`);
         lines.push(`${indent}      ${errorsName}.${validatorName} = ${defaultMsg};`);
         lines.push(`${indent}    }`);
@@ -1243,10 +1555,14 @@ function generateConstraintCheck(
       if (constraint.value) {
         lines.push(`${indent}// IsInstance validator`);
         lines.push(`${indent}{`);
-        lines.push(`${indent}  const constraint = metadata.properties.get(${safePropName}).constraints[${constraintIndex}];`);
+        lines.push(
+          `${indent}  const constraint = metadata.properties.get(${safePropName}).constraints[${constraintIndex}];`,
+        );
         lines.push(`${indent}  const targetType = constraint.value;`);
         lines.push(`${indent}  if (!(${valueName} instanceof targetType)) {`);
-        lines.push(`${indent}    ${errorsName}.isInstance = ${JSON.stringify(getErrorMessage(constraint, 'must be an instance of the specified class'))};`);
+        lines.push(
+          `${indent}    ${errorsName}.isInstance = ${JSON.stringify(getErrorMessage(constraint, 'must be an instance of the specified class'))};`,
+        );
         lines.push(`${indent}  }`);
         lines.push(`${indent}}`);
       }
@@ -1301,7 +1617,9 @@ function generateAsyncConstraintCheck(
     const errorMsg = JSON.stringify(getErrorMessage(constraint, 'validation failed'));
     lines.push(`${indent}// Custom async validator (inline)`);
     lines.push(`${indent}const ${taskVarName} = (async () => {`);
-    lines.push(`${indent}  const constraint = metadata.properties.get(${safePropName}).constraints[${constraintIndex}];`);
+    lines.push(
+      `${indent}  const constraint = metadata.properties.get(${safePropName}).constraints[${constraintIndex}];`,
+    );
     lines.push(`${indent}  if (constraint.validator) {`);
     lines.push(`${indent}    const result = await constraint.validator(${valueName});`);
     lines.push(`${indent}    if (!result) {`);
@@ -1316,9 +1634,13 @@ function generateAsyncConstraintCheck(
     const errorMsg = JSON.stringify(getErrorMessage(constraint, 'validation failed'));
     lines.push(`${indent}// Custom validator class (potentially async)`);
     lines.push(`${indent}const ${taskVarName} = (async () => {`);
-    lines.push(`${indent}  const constraint = metadata.properties.get(${safePropName}).constraints[${constraintIndex}];`);
+    lines.push(
+      `${indent}  const constraint = metadata.properties.get(${safePropName}).constraints[${constraintIndex}];`,
+    );
     lines.push(`${indent}  const constraintValue = constraint.value;`);
-    lines.push(`${indent}  const validatorInstance = getValidatorInstance(constraintValue.constraintClass);`);
+    lines.push(
+      `${indent}  const validatorInstance = getValidatorInstance(constraintValue.constraintClass);`,
+    );
     lines.push(`${indent}  const args = {`);
     lines.push(`${indent}    value: ${valueName},`);
     lines.push(`${indent}    constraints: constraintValue.constraints || [],`);
@@ -1343,7 +1665,9 @@ function generateAsyncConstraintCheck(
     const defaultMsg = JSON.stringify(getErrorMessage(constraint, 'validation failed'));
     lines.push(`${indent}// ValidateBy: ${validatorName} (potentially async)`);
     lines.push(`${indent}const ${taskVarName} = (async () => {`);
-    lines.push(`${indent}  const constraint = metadata.properties.get(${safePropName}).constraints[${constraintIndex}];`);
+    lines.push(
+      `${indent}  const constraint = metadata.properties.get(${safePropName}).constraints[${constraintIndex}];`,
+    );
     lines.push(`${indent}  const constraintValue = constraint.value;`);
     lines.push(`${indent}  const args = {`);
     lines.push(`${indent}    value: ${valueName},`);
@@ -1355,7 +1679,9 @@ function generateAsyncConstraintCheck(
     lines.push(`${indent}  const result = await constraintValue.validator(${valueName}, args);`);
     lines.push(`${indent}  if (!result) {`);
     lines.push(`${indent}    if (constraintValue.defaultMessage) {`);
-    lines.push(`${indent}      ${errorsName}.${validatorName} = constraintValue.defaultMessage(args);`);
+    lines.push(
+      `${indent}      ${errorsName}.${validatorName} = constraintValue.defaultMessage(args);`,
+    );
     lines.push(`${indent}    } else {`);
     lines.push(`${indent}      ${errorsName}.${validatorName} = ${defaultMsg};`);
     lines.push(`${indent}    }`);
@@ -1364,7 +1690,16 @@ function generateAsyncConstraintCheck(
     lines.push(`${indent}${asyncTasksName}.push(${taskVarName});`);
   } else {
     // For built-in validators, use sync validation (they don't support async)
-    lines.push(generateConstraintCheck(constraint, constraintIndex, propertyName, valueName, errorsName, indent));
+    lines.push(
+      generateConstraintCheck(
+        constraint,
+        constraintIndex,
+        propertyName,
+        valueName,
+        errorsName,
+        indent,
+      ),
+    );
   }
 
   return lines.join('\n');
@@ -1395,4 +1730,3 @@ export function clearValidatorCache(): void {
 export function getValidatorCacheSize(): number {
   return compiledValidatorsCache.size + compiledAsyncValidatorsCache.size;
 }
-

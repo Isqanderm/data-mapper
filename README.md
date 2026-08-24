@@ -57,8 +57,9 @@ High-performance TypeScript/JavaScript data mapper with JIT compilation for ultr
 ## 🎯 Quick Comparison
 
 **class-transformer:**
+
 ```ts
-import 'reflect-metadata';  // Extra dependency
+import 'reflect-metadata'; // Extra dependency
 import { plainToClass, Expose, Transform } from 'class-transformer';
 
 class UserDTO {
@@ -70,10 +71,11 @@ class UserDTO {
   isAdult: boolean;
 }
 
-const user = plainToClass(UserDTO, data);  // 326K ops/sec
+const user = plainToClass(UserDTO, data); // 326K ops/sec
 ```
 
 **om-data-mapper:**
+
 ```ts
 import { Mapper, Map, MapFrom, plainToInstance } from 'om-data-mapper';
 
@@ -86,10 +88,11 @@ class UserMapper {
   isAdult!: boolean;
 }
 
-const user = plainToInstance(UserMapper, data);  // 4.3M ops/sec (13.2x faster!)
+const user = plainToInstance(UserMapper, data); // 4.3M ops/sec (13.2x faster!)
 ```
 
 **Key Differences:**
+
 - ✅ **No reflect-metadata** - Zero dependencies
 - ✅ **TC39 Stage 3 decorators** - Modern standard, not experimental
 - ✅ **17.28x faster** - JIT compilation for optimal performance
@@ -100,12 +103,12 @@ const user = plainToInstance(UserMapper, data);  // 4.3M ops/sec (13.2x faster!)
 
 **17.28x faster than class-transformer on average!**
 
-| Scenario | class-transformer | om-data-mapper | Performance Gain |
-|----------|-------------------|----------------|------------------|
-| Simple Transformation | 326K ops/sec | 4.3M ops/sec | **12.3x faster** |
-| Complex Nested | 154K ops/sec | 6.7M ops/sec | **42.7x faster** |
-| Array (100 items) | 5.2K ops/sec | 69K ops/sec | **12.3x faster** |
-| Custom Logic | 333K ops/sec | 4.8M ops/sec | **13.4x faster** |
+| Scenario              | class-transformer | om-data-mapper | Performance Gain |
+| --------------------- | ----------------- | -------------- | ---------------- |
+| Simple Transformation | 326K ops/sec      | 4.3M ops/sec   | **12.3x faster** |
+| Complex Nested        | 154K ops/sec      | 6.7M ops/sec   | **42.7x faster** |
+| Array (100 items)     | 5.2K ops/sec      | 69K ops/sec    | **12.3x faster** |
+| Custom Logic          | 333K ops/sec      | 4.8M ops/sec   | **13.4x faster** |
 
 📊 See [Transformer Usage Guide](./docs/transformer-usage.md) for detailed performance comparisons
 
@@ -203,50 +206,52 @@ console.log(result);
 ### 🎯 Modern, Clean API
 
 **Before (class-transformer):**
+
 ```ts
-import 'reflect-metadata';  // ❌ Extra dependency
+import 'reflect-metadata'; // ❌ Extra dependency
 import { plainToClass, Expose, Transform } from 'class-transformer';
 
 class UserDTO {
-  @Expose({ name: 'first_name' })  // ❌ Verbose configuration
+  @Expose({ name: 'first_name' }) // ❌ Verbose configuration
   firstName: string;
 
-  @Transform(({ value }) => value.toUpperCase())  // ❌ Wrapper objects
+  @Transform(({ value }) => value.toUpperCase()) // ❌ Wrapper objects
   @Expose()
   name: string;
 }
 
-const result = plainToClass(UserDTO, data);  // ❌ Legacy decorators
+const result = plainToClass(UserDTO, data); // ❌ Legacy decorators
 ```
 
 **After (om-data-mapper):**
+
 ```ts
 import { Mapper, Map, MapFrom, plainToInstance } from 'om-data-mapper';
 
-@Mapper<Source, UserDTO>()  // ✅ TC39 Stage 3 decorators
+@Mapper<Source, UserDTO>() // ✅ TC39 Stage 3 decorators
 class UserMapper {
-  @Map('first_name')  // ✅ Simple, clear
+  @Map('first_name') // ✅ Simple, clear
   firstName!: string;
 
-  @MapFrom((src: Source) => src.name.toUpperCase())  // ✅ Direct access
+  @MapFrom((src: Source) => src.name.toUpperCase()) // ✅ Direct access
   name!: string;
 }
 
-const result = plainToInstance(UserMapper, data);  // ✅ Type-safe
+const result = plainToInstance(UserMapper, data); // ✅ Type-safe
 ```
 
 ### 💡 Key Advantages
 
-| Feature | class-transformer | om-data-mapper |
-|---------|------------------|----------------|
-| **Performance** | Baseline | **17.28x faster** |
-| **Dependencies** | reflect-metadata required | **Zero dependencies** |
-| **Bundle Size** | ~50KB | **~15KB (70% smaller)** |
-| **Decorators** | Legacy (experimental) | **TC39 Stage 3 (standard)** |
-| **Type Safety** | Runtime only | **Compile-time for transformers** |
-| **JIT Compilation** | ❌ | **✅ Optimized code generation** |
-| **Null Safety** | Manual | **Automatic optional chaining** |
-| **Error Handling** | Throws exceptions | **Structured error reporting** |
+| Feature             | class-transformer         | om-data-mapper                    |
+| ------------------- | ------------------------- | --------------------------------- |
+| **Performance**     | Baseline                  | **17.28x faster**                 |
+| **Dependencies**    | reflect-metadata required | **Zero dependencies**             |
+| **Bundle Size**     | ~50KB                     | **~15KB (70% smaller)**           |
+| **Decorators**      | Legacy (experimental)     | **TC39 Stage 3 (standard)**       |
+| **Type Safety**     | Runtime only              | **Compile-time for transformers** |
+| **JIT Compilation** | ❌                        | **✅ Optimized code generation**  |
+| **Null Safety**     | Manual                    | **Automatic optional chaining**   |
+| **Error Handling**  | Throws exceptions         | **Structured error reporting**    |
 
 ### 🎓 Developer Experience
 
@@ -303,6 +308,7 @@ import { plainToClass, Expose, Type } from 'om-data-mapper/class-transformer-com
 Your existing code works exactly the same, but **17.28x faster** on average!
 
 **Benefits:**
+
 - ✅ Same API, dramatically better performance
 - ✅ No reflect-metadata dependency
 - ✅ 70% smaller bundle size
@@ -355,33 +361,34 @@ om-data-mapper delivers **exceptional performance** through JIT compilation and 
 
 **17.28x faster on average!** See [Transformer Usage Guide](./docs/transformer-usage.md) for detailed comparisons.
 
-| Scenario | class-transformer | om-data-mapper | Improvement |
-|----------|-------------------|----------------|-------------|
-| Simple Transformation | 326K ops/sec | 4.3M ops/sec | **12.3x faster** |
-| Complex Nested | 154K ops/sec | 6.7M ops/sec | **42.7x faster** |
-| Array (100 items) | 5.2K ops/sec | 69K ops/sec | **12.3x faster** |
-| Custom Logic | 333K ops/sec | 4.8M ops/sec | **13.4x faster** |
+| Scenario              | class-transformer | om-data-mapper | Improvement      |
+| --------------------- | ----------------- | -------------- | ---------------- |
+| Simple Transformation | 326K ops/sec      | 4.3M ops/sec   | **12.3x faster** |
+| Complex Nested        | 154K ops/sec      | 6.7M ops/sec   | **42.7x faster** |
+| Array (100 items)     | 5.2K ops/sec      | 69K ops/sec    | **12.3x faster** |
+| Custom Logic          | 333K ops/sec      | 4.8M ops/sec   | **13.4x faster** |
 
 ### vs Vanilla JavaScript
 
 Performance is almost identical to hand-written code:
 
-| Scenario | OmDataMapper | Vanilla | Overhead |
-|----------|--------------|---------|----------|
-| **Simple Mapping** | 946M ops/sec | 977M ops/sec | **3%** ⚡ |
-| **Complex Transformations** | 21M ops/sec | 39M ops/sec | **89%** |
+| Scenario                    | OmDataMapper | Vanilla      | Overhead  |
+| --------------------------- | ------------ | ------------ | --------- |
+| **Simple Mapping**          | 946M ops/sec | 977M ops/sec | **3%** ⚡ |
+| **Complex Transformations** | 21M ops/sec  | 39M ops/sec  | **89%**   |
 
 **Key Takeaways:**
+
 - ✅ **17.28x faster** than class-transformer on average
 - ✅ **Near-native performance** for simple mappings (3% overhead)
 - ✅ **Production-ready**: Millions of operations per second
 - ✅ **Zero dependencies**: No reflect-metadata overhead
 
-
 <details>
 <summary>📊 Detailed Benchmark Data</summary>
 
 **Simple Mapping** (4 fields, nested access):
+
 ```js
 // Source → Target mapping
 { id, name, details: { age, address } } → { userId, fullName, age, location }
@@ -391,24 +398,28 @@ Vanilla:      977,313,179 ops/sec ±2.51% (96 runs)
 ```
 
 **Complex Transformations** (nested objects, arrays, custom functions):
+
 ```js
 // Multiple nested levels, array operations, custom transformers
 OmDataMapper: 20,662,738 ops/sec ±1.36% (95 runs)
 Vanilla:      38,985,378 ops/sec ±1.89% (96 runs)
 ```
 
-*Benchmarks located in `/benchmarks` directory. Run `npm run bench` to test on your machine.*
+_Benchmarks located in `/benchmarks` directory. Run `npm run bench` to test on your machine._
+
 </details>
 
 ### Continuous Performance Tracking
 
 We use automated benchmarks to track performance regressions:
+
 - 🔄 **Automatic**: Runs on every PR and commit to main
 - 📊 **PR Comments**: Results posted automatically to pull requests
 - 📈 **Historical Tracking**: Performance trends on [GitHub Pages](https://isqanderm.github.io/data-mapper/dev/bench/)
 - 🔔 **Alerts**: Automatic notifications on regressions >150%
 
 **Run benchmarks locally:**
+
 ```bash
 # Run class-transformer comparison
 npm run bench:compat
@@ -434,10 +445,10 @@ type Target = { name: string; isAdult: boolean };
 
 @Mapper<Source, Target>()
 class UserMapper {
-  @Map('firstName')  // Direct mapping
+  @Map('firstName') // Direct mapping
   name!: string;
 
-  @MapFrom((src: Source) => src.age >= 18)  // Custom transformation
+  @MapFrom((src: Source) => src.age >= 18) // Custom transformation
   isAdult!: boolean;
 }
 
@@ -467,7 +478,7 @@ type Target = {
 
 @Mapper<Source, Target>()
 class ProfileMapper {
-  @Map('user.profile.email')  // Nested path with automatic null-safety
+  @Map('user.profile.email') // Nested path with automatic null-safety
   email!: string;
 
   @Map('user.profile.address.city')
@@ -500,14 +511,14 @@ class UserMapper {
   @Map('name')
   userName!: string;
 
-  @MapWith(AddressMapper)  // Compose with another mapper
+  @MapWith(AddressMapper) // Compose with another mapper
   @Map('address')
   location!: AddressDTO;
 }
 
 const result = plainToInstance(UserMapper, {
   name: 'John',
-  address: { street: '123 Main St', city: 'New York' }
+  address: { street: '123 Main St', city: 'New York' },
 });
 // { userName: 'John', location: { fullAddress: '123 Main St, New York' } }
 ```
@@ -528,10 +539,10 @@ type Target = {
 
 @Mapper<Source, Target>()
 class CollectionMapper {
-  @MapFrom((src: Source) => src.users.map(u => u.id))
+  @MapFrom((src: Source) => src.users.map((u) => u.id))
   userIds!: number[];
 
-  @MapFrom((src: Source) => src.users.map(u => u.name))
+  @MapFrom((src: Source) => src.users.map((u) => u.name))
   userNames!: string[];
 }
 ```
@@ -544,8 +555,8 @@ Chain multiple decorators for complex logic:
 @Mapper<Source, Target>()
 class AdvancedMapper {
   @MapFrom((src: Source) => src.value)
-  @Transform((val: number | undefined) => val !== undefined ? val * 2 : undefined)
-  @Default(0)  // Fallback value
+  @Transform((val: number | undefined) => (val !== undefined ? val * 2 : undefined))
+  @Default(0) // Fallback value
   result!: number;
 
   @Map('email')
@@ -620,7 +631,7 @@ const plain = {
   id: 1,
   name: 'john',
   address: { street: '123 Main St', city: 'New York' },
-  password: 'secret'
+  password: 'secret',
 };
 
 const user = plainToClass(User, plain);
@@ -682,7 +693,7 @@ class UserApiMapper {
 }
 
 // Usage
-const apiResponse = await fetch('/api/users/1').then(r => r.json());
+const apiResponse = await fetch('/api/users/1').then((r) => r.json());
 const user = plainToInstance(UserApiMapper, apiResponse);
 ```
 
@@ -749,8 +760,8 @@ type FormData = {
   email: string;
   password: string;
   confirmPassword: string;
-  age: string;  // From input field
-  terms: string;  // 'on' or undefined
+  age: string; // From input field
+  terms: string; // 'on' or undefined
 };
 
 type RegistrationData = {
@@ -790,10 +801,12 @@ Complete documentation is available in both **English** and **Russian**:
 📖 **[Documentation Index](./docs/README.md)** - Start here for complete guides
 
 **User Guides:**
+
 - [Validation Module - User Guide](./docs/validation-usage.md) - Complete guide to validation decorators and functions
 - [Transformer Module - User Guide](./docs/transformer-usage.md) - Complete guide to transformation APIs (Decorator API & class-transformer compatibility)
 
 **Internal Architecture:**
+
 - [Validation JIT Compilation Internals](./docs/validation-jit-internals.md) - Deep dive into validation JIT compilation
 - [Transformer JIT Compilation Internals](./docs/transformer-jit-internals.md) - Deep dive into transformer JIT compilation
 
@@ -802,10 +815,12 @@ Complete documentation is available in both **English** and **Russian**:
 📖 **[Индекс документации](./docs-ru/README.md)** - Начните отсюда для полных руководств
 
 **Руководства пользователя:**
+
 - [Модуль валидации - Руководство пользователя](./docs-ru/validation-usage.md) - Полное руководство по декораторам и функциям валидации
 - [Модуль трансформации - Руководство пользователя](./docs-ru/transformer-usage.md) - Полное руководство по API трансформации
 
 **Внутренняя архитектура:**
+
 - [Внутреннее устройство JIT-компиляции валидации](./docs-ru/validation-jit-internals.md) - Глубокое погружение в JIT-компиляцию валидации
 - [Внутреннее устройство JIT-компиляции трансформации](./docs-ru/transformer-jit-internals.md) - Глубокое погружение в JIT-компиляцию трансформации
 
@@ -833,6 +848,7 @@ Complete documentation is available in both **English** and **Russian**:
 - **[`getMapper<S, T>(MapperClass)`](https://isqanderm.github.io/data-mapper/functions/getMapper.html)** - Get cached mapper instance (alias for createMapper)
 
 For complete API documentation, see:
+
 - **[Transformer Usage Guide](./docs/transformer-usage.md)** - Comprehensive guide with examples
 - **[API Reference](https://isqanderm.github.io/data-mapper/)** - Auto-generated TypeDoc documentation
 
@@ -845,6 +861,7 @@ For complete API documentation, see:
 ### Quick Navigation
 
 Jump to common issues:
+
 - [TypeScript Decorator Errors](#typescript-decorator-errors)
 - [Performance Not as Expected](#performance-not-as-expected)
 - [Migration from class-transformer](#migration-from-class-transformer-issues)
@@ -869,23 +886,25 @@ Jump to common issues:
 **Solution:** Ensure you're using TC39 Stage 3 decorators, not the legacy experimental decorators. Update your `tsconfig.json`:
 
 **❌ Incorrect Configuration:**
+
 ```json
 {
   "compilerOptions": {
-    "experimentalDecorators": true,  // Wrong! This enables legacy decorators
-    "emitDecoratorMetadata": true    // Not needed for om-data-mapper
+    "experimentalDecorators": true, // Wrong! This enables legacy decorators
+    "emitDecoratorMetadata": true // Not needed for om-data-mapper
   }
 }
 ```
 
 **✅ Correct Configuration (General):**
+
 ```json
 {
   "compilerOptions": {
-    "target": "ES2022",                    // Required for TC39 decorators
-    "experimentalDecorators": false,       // Must be false (or omit entirely)
-    "emitDecoratorMetadata": false,        // Must be false (or omit entirely)
-    "useDefineForClassFields": true        // Recommended
+    "target": "ES2022", // Required for TC39 decorators
+    "experimentalDecorators": false, // Must be false (or omit entirely)
+    "emitDecoratorMetadata": false, // Must be false (or omit entirely)
+    "useDefineForClassFields": true // Recommended
   }
 }
 ```
@@ -901,10 +920,10 @@ Jump to common issues:
 {
   "compilerOptions": {
     "target": "ES2022",
-    "module": "NodeNext",                  // Safe alternative to ESNext for Node
+    "module": "NodeNext", // Safe alternative to ESNext for Node
     "moduleResolution": "NodeNext",
-    "experimentalDecorators": false,       // Do not enable legacy decorators
-    "emitDecoratorMetadata": false,        // Not needed
+    "experimentalDecorators": false, // Do not enable legacy decorators
+    "emitDecoratorMetadata": false, // Not needed
     "useDefineForClassFields": true
   }
 }
@@ -922,9 +941,9 @@ Jump to common issues:
   "compilerOptions": {
     "target": "ES2022",
     "module": "ESNext",
-    "moduleResolution": "bundler",         // Recommended for bundlers
-    "experimentalDecorators": false,       // Do not enable
-    "emitDecoratorMetadata": false,        // Not needed
+    "moduleResolution": "bundler", // Recommended for bundlers
+    "experimentalDecorators": false, // Do not enable
+    "emitDecoratorMetadata": false, // Not needed
     "useDefineForClassFields": true
   }
 }
@@ -943,13 +962,15 @@ Jump to common issues:
 **Solution 1:** Reuse mapper instances instead of creating new ones for each transformation.
 
 **❌ Inefficient (creates new mapper each time):**
+
 ```ts
 function transformUsers(users: UserSource[]) {
-  return users.map(user => plainToInstance(UserMapper, user));
+  return users.map((user) => plainToInstance(UserMapper, user));
 }
 ```
 
 **✅ Efficient (reuses compiled mapper):**
+
 ```ts
 import { getMapper } from 'om-data-mapper';
 
@@ -957,18 +978,20 @@ import { getMapper } from 'om-data-mapper';
 const userMapper = getMapper<UserSource, UserDTO>(UserMapper);
 
 function transformUsers(users: UserSource[]) {
-  return users.map(user => userMapper.transform(user));
+  return users.map((user) => userMapper.transform(user));
 }
 ```
 
 **Solution 2:** Use `plainToInstanceArray` for batch transformations:
 
 **❌ Less efficient:**
+
 ```ts
-const results = sources.map(source => plainToInstance(MyMapper, source));
+const results = sources.map((source) => plainToInstance(MyMapper, source));
 ```
 
 **✅ More efficient:**
+
 ```ts
 const results = plainToInstanceArray(MyMapper, sources);
 ```
@@ -1015,12 +1038,14 @@ import { plainToClass, Expose, Type } from 'om-data-mapper/class-transformer-com
 **Solution 2:** Remove `reflect-metadata` import (not needed):
 
 **❌ Not needed with om-data-mapper:**
+
 ```ts
-import 'reflect-metadata';  // Remove this line
+import 'reflect-metadata'; // Remove this line
 import { plainToClass } from 'om-data-mapper/class-transformer-compat';
 ```
 
 **✅ Correct:**
+
 ```ts
 import { plainToClass } from 'om-data-mapper/class-transformer-compat';
 ```
@@ -1036,6 +1061,7 @@ import { plainToClass } from 'om-data-mapper/class-transformer-compat';
 **Solution:** Use `@MapWith` decorator to specify the nested mapper:
 
 **❌ Incorrect (nested object not transformed):**
+
 ```ts
 type UserSource = { name: string; address: { street: string; city: string } };
 type UserDTO = { name: string; address: AddressDTO };
@@ -1046,12 +1072,13 @@ class UserMapper {
   @Map('name')
   name!: string;
 
-  @Map('address')  // This won't transform the nested object
+  @Map('address') // This won't transform the nested object
   address!: AddressDTO;
 }
 ```
 
 **✅ Correct (nested object properly transformed):**
+
 ```ts
 // Define types
 type AddressSource = { street: string; city: string };
@@ -1075,7 +1102,7 @@ class UserMapper {
   @Map('name')
   name!: string;
 
-  @MapWith(AddressMapper)  // Use nested mapper
+  @MapWith(AddressMapper) // Use nested mapper
   @Map('address')
   address!: AddressDTO;
 }
@@ -1083,7 +1110,7 @@ class UserMapper {
 // Usage
 const source: UserSource = {
   name: 'John',
-  address: { street: '123 Main St', city: 'NYC' }
+  address: { street: '123 Main St', city: 'NYC' },
 };
 const result = plainToInstance(UserMapper, source);
 // result: { name: 'John', address: { street: '123 Main St', city: 'NYC' } }
@@ -1098,24 +1125,28 @@ const result = plainToInstance(UserMapper, source);
 **Solution:** Explicitly specify type parameters or use type annotations:
 
 **❌ Type inference may fail (result type is `any`):**
+
 ```ts
 const result = plainToInstance(UserMapper, source);
 // result: any - TypeScript can't infer the type
 ```
 
 **✅ Option 1: Explicit generic parameters:**
+
 ```ts
 const result = plainToInstance<UserSource, UserDTO>(UserMapper, source);
 // result: UserDTO - fully typed!
 ```
 
 **✅ Option 2: Type annotation on result:**
+
 ```ts
 const result: UserDTO = plainToInstance(UserMapper, source);
 // result: UserDTO - type is enforced
 ```
 
 **✅ Option 3: Use `createMapper` for better type inference:**
+
 ```ts
 const mapper = createMapper<UserSource, UserDTO>(UserMapper);
 const result = mapper.transform(source);
@@ -1123,6 +1154,7 @@ const result = mapper.transform(source);
 ```
 
 **✅ Option 4: Type annotation on function parameter:**
+
 ```ts
 function transformUser(source: UserSource): UserDTO {
   return plainToInstance(UserMapper, source);
@@ -1138,12 +1170,14 @@ function transformUser(source: UserSource): UserDTO {
 **Solution:** Use `tryPlainToInstance` or `tryTransform` for error visibility:
 
 **❌ Errors are hidden:**
+
 ```ts
 const result = plainToInstance(UserMapper, source);
 // If transformation fails, you won't know why
 ```
 
 **✅ Option 1: Use `tryPlainToInstance` (recommended for one-time transformations):**
+
 ```ts
 const { result, errors } = tryPlainToInstance(UserMapper, source);
 
@@ -1156,6 +1190,7 @@ if (errors.length > 0) {
 ```
 
 **✅ Option 2: Use `tryTransform` with mapper instance (recommended for reusable mappers):**
+
 ```ts
 import { getMapper } from 'om-data-mapper';
 
@@ -1171,6 +1206,7 @@ if (errors.length > 0) {
 ```
 
 **✅ Option 3: Use in API endpoints:**
+
 ```ts
 app.post('/api/users', (req, res) => {
   const { result, errors } = tryPlainToInstance(UserMapper, req.body);
@@ -1178,7 +1214,7 @@ app.post('/api/users', (req, res) => {
   if (errors.length > 0) {
     return res.status(400).json({
       message: 'Validation failed',
-      errors: errors
+      errors: errors,
     });
   }
 
@@ -1198,6 +1234,7 @@ app.post('/api/users', (req, res) => {
 **Solution:** Ensure `@Default` is placed **before** other decorators:
 
 **❌ Incorrect order:**
+
 ```ts
 @Map('name')
 @Default('Unknown')  // Won't work - must come before @Map
@@ -1205,6 +1242,7 @@ name!: string;
 ```
 
 **✅ Correct order:**
+
 ```ts
 @Default('Unknown')  // Correct - comes before @Map
 @Map('name')
@@ -1212,11 +1250,13 @@ name!: string;
 ```
 
 **When to use `@Default`:**
+
 - Handling optional API fields with fallback values
 - Providing sensible defaults for missing configuration
 - Ensuring non-null values in your DTOs
 
 **Example:**
+
 ```ts
 type UserSource = { name?: string; role?: string; status?: string };
 type UserDTO = { name: string; role: string; status: string };
@@ -1247,6 +1287,7 @@ const result = plainToInstance(UserMapper, {});
 **Problem:** Bundle size is larger than expected.
 
 **Good News:** `om-data-mapper` is designed for optimal tree-shaking:
+
 - ✅ Marked as `"sideEffects": false` in `package.json`
 - ✅ Provides ESM exports for modern bundlers
 - ✅ Zero runtime dependencies
@@ -1282,11 +1323,11 @@ export default defineConfig({
 ```js
 // webpack.config.js
 module.exports = {
-  mode: 'production',  // Enables tree-shaking automatically
+  mode: 'production', // Enables tree-shaking automatically
   optimization: {
-    usedExports: true,  // Mark unused exports
-    sideEffects: true   // Respect package.json "sideEffects" field
-  }
+    usedExports: true, // Mark unused exports
+    sideEffects: true, // Respect package.json "sideEffects" field
+  },
 };
 ```
 
@@ -1301,7 +1342,7 @@ module.exports = {
 // rollup.config.js
 export default {
   // Tree-shaking is enabled by default in Rollup
-  treeshake: true
+  treeshake: true,
 };
 ```
 
@@ -1331,8 +1372,8 @@ This helps identify if `om-data-mapper` is actually the cause of bundle size iss
 // tsconfig.json
 {
   "compilerOptions": {
-    "target": "ES2022",  // Don't downlevel to ES5 (decorators require ES2022+)
-    "module": "ESNext"   // Or "NodeNext" for Node.js projects
+    "target": "ES2022", // Don't downlevel to ES5 (decorators require ES2022+)
+    "module": "ESNext" // Or "NodeNext" for Node.js projects
   }
 }
 ```
@@ -1353,16 +1394,17 @@ module.exports = {
     minimizer: [
       new TerserPlugin({
         terserOptions: {
-          keep_classnames: /Mapper$/,  // Only preserve *Mapper classes (optional)
-          keep_fnames: false            // Function names not needed
-        }
-      })
-    ]
-  }
+          keep_classnames: /Mapper$/, // Only preserve *Mapper classes (optional)
+          keep_fnames: false, // Function names not needed
+        },
+      }),
+    ],
+  },
 };
 ```
 
 **When to preserve names:**
+
 - ✅ You need readable class names in error messages
 - ✅ You're using debugging/monitoring tools that rely on class names
 - ❌ Not needed for normal operation (increases bundle size)
@@ -1396,6 +1438,7 @@ If you're still experiencing issues:
 4. **Report a bug**: [Create a new issue](https://github.com/Isqanderm/data-mapper/issues/new)
 
 When reporting issues, please include:
+
 - Your TypeScript version (`tsc --version`)
 - Your `tsconfig.json` configuration
 - A minimal reproducible example

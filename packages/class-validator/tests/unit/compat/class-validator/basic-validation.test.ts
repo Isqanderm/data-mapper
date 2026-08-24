@@ -293,4 +293,3 @@ describe('class-validator-compat - Basic Validation', () => {
     });
   });
 });
-

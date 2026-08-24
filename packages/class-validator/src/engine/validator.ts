@@ -35,10 +35,7 @@ export async function validate(
  * Validate an object synchronously
  * Compatible with class-validator validateSync() function
  */
-export function validateSync(
-  object: any,
-  options?: ValidatorOptions,
-): ValidationError[] {
+export function validateSync(object: any, options?: ValidatorOptions): ValidationError[] {
   // Get validation metadata
   const metadata = getClassValidationMetadata(object);
 
@@ -69,20 +66,14 @@ export async function validateMany(
 /**
  * Validate an array of objects synchronously
  */
-export function validateManySync(
-  objects: any[],
-  options?: ValidatorOptions,
-): ValidationError[][] {
+export function validateManySync(objects: any[], options?: ValidatorOptions): ValidationError[][] {
   return objects.map((obj) => validateSync(obj, options));
 }
 
 /**
  * Validate and throw error if validation fails
  */
-export async function validateOrReject(
-  object: any,
-  options?: ValidatorOptions,
-): Promise<void> {
+export async function validateOrReject(object: any, options?: ValidatorOptions): Promise<void> {
   const errors = await validate(object, options);
 
   if (errors.length > 0) {
@@ -93,10 +84,7 @@ export async function validateOrReject(
 /**
  * Validate and throw error if validation fails (synchronous)
  */
-export function validateOrRejectSync(
-  object: any,
-  options?: ValidatorOptions,
-): void {
+export function validateOrRejectSync(object: any, options?: ValidatorOptions): void {
   const errors = validateSync(object, options);
 
   if (errors.length > 0) {
@@ -128,4 +116,3 @@ export class ValidationFailedError extends Error {
     return `Validation failed:\n${messages.join('\n')}`;
   }
 }
-

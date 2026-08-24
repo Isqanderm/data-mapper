@@ -44,12 +44,12 @@ interface PropertyValidationMetadata {
 }
 
 interface ValidationConstraint {
-  type: string;                    // e.g., 'isString', 'minLength'
-  value?: any;                     // Constraint parameters
-  message?: string | Function;     // Error message
-  groups?: string[];               // Validation groups
-  always?: boolean;                // Always validate flag
-  validator?: Function;            // Custom validator function
+  type: string; // e.g., 'isString', 'minLength'
+  value?: any; // Constraint parameters
+  message?: string | Function; // Error message
+  groups?: string[]; // Validation groups
+  always?: boolean; // Always validate flag
+  validator?: Function; // Custom validator function
 }
 ```
 
@@ -73,7 +73,7 @@ const validatorInstanceCache = new Map<
 >();
 
 export function getValidatorInstance(
-  validatorClass: new () => ValidatorConstraintInterface
+  validatorClass: new () => ValidatorConstraintInterface,
 ): ValidatorConstraintInterface {
   if (validatorInstanceCache.has(validatorClass)) {
     return validatorInstanceCache.get(validatorClass)!;
@@ -166,25 +166,25 @@ const opts = options || {};
 {
   const value = object?.name;
   const propertyErrors = {};
-  
+
   // Check if property should be validated
   if (value !== undefined && value !== null) {
     // Constraint: isString
     if (typeof value !== 'string') {
       propertyErrors.isString = 'name must be a string';
     }
-    
+
     // Constraint: minLength
     if (typeof value === 'string' && value.length < 3) {
       propertyErrors.minLength = 'name must be at least 3 characters';
     }
   }
-  
+
   if (Object.keys(propertyErrors).length > 0) {
     errors.push({
       property: 'name',
       value: value,
-      constraints: propertyErrors
+      constraints: propertyErrors,
     });
   }
 }
@@ -257,7 +257,7 @@ if (typeof value === 'string' && value.length < 3) { ... }
 Validation groups are checked at compile time:
 
 ```javascript
-if (opts.groups && opts.groups.length > 0 && opts.groups.some(g => ['admin'].includes(g))) {
+if (opts.groups && opts.groups.length > 0 && opts.groups.some((g) => ['admin'].includes(g))) {
   // Only validate if group matches
 }
 ```
@@ -290,12 +290,12 @@ if (hasValidationMetadata(value.constructor)) {
 
 Compared to class-validator (interpreted):
 
-| Validation Type | class-validator | om-data-mapper | Speedup |
-|----------------|-----------------|----------------|---------|
-| Simple (1 field) | ~50K ops/sec | ~500K ops/sec | **10x** |
-| Complex (10 fields) | ~10K ops/sec | ~100K ops/sec | **10x** |
-| Nested objects | ~5K ops/sec | ~50K ops/sec | **10x** |
-| Async validation | ~8K ops/sec | ~40K ops/sec | **5x** |
+| Validation Type     | class-validator | om-data-mapper | Speedup |
+| ------------------- | --------------- | -------------- | ------- |
+| Simple (1 field)    | ~50K ops/sec    | ~500K ops/sec  | **10x** |
+| Complex (10 fields) | ~10K ops/sec    | ~100K ops/sec  | **10x** |
+| Nested objects      | ~5K ops/sec     | ~50K ops/sec   | **10x** |
+| Async validation    | ~8K ops/sec     | ~40K ops/sec   | **5x**  |
 
 ### Memory Usage
 
@@ -320,7 +320,7 @@ const args = {
   constraints: constraintValue.constraints || [],
   targetName: object.constructor.name,
   object: object,
-  property: 'email'
+  property: 'email',
 };
 const result = validatorInstance.validate(value, args);
 if (!result) {
@@ -348,13 +348,14 @@ asyncTasks.push(task);
 
 ```typescript
 interface ValidationError {
-  property: string;              // Property name
-  value?: any;                   // Invalid value
-  constraints?: {                // Failed constraints
-    [type: string]: string;      // Error messages
+  property: string; // Property name
+  value?: any; // Invalid value
+  constraints?: {
+    // Failed constraints
+    [type: string]: string; // Error messages
   };
-  children?: ValidationError[];  // Nested errors
-  target?: any;                  // Object being validated
+  children?: ValidationError[]; // Nested errors
+  target?: any; // Object being validated
 }
 ```
 
@@ -383,7 +384,7 @@ import { compileValidator } from 'om-data-mapper/class-validator-compat/engine/c
 
 const metadata = getValidationMetadata(MyClass);
 const code = generateValidationCode(metadata);
-console.log(code);  // View generated JavaScript
+console.log(code); // View generated JavaScript
 ```
 
 ### Performance Profiling:
@@ -420,4 +421,3 @@ The JIT compilation approach provides:
 - ✅ **Extensible** with custom validators
 
 This architecture makes `om-data-mapper` one of the fastest validation libraries available for TypeScript/JavaScript.
-

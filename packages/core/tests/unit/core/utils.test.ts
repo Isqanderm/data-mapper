@@ -74,4 +74,3 @@ describe('getValueByPath()', () => {
     expect(mapPaths('data.items.[].[3].field')).toEqual(['data?.items', '[3]?.field']);
   });
 });
-

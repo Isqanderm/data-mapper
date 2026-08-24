@@ -564,4 +564,3 @@ export function getMapper<Source, Target>(
 ): MapperMethods<Source, Target> {
   return createMapper<Source, Target>(MapperClass);
 }
-

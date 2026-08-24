@@ -42,4 +42,3 @@ describe('Array Mapping Benchmark', () => {
     vanillaArrayMapper(items);
   });
 });
-

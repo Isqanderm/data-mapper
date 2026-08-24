@@ -120,6 +120,7 @@ This is a **major release** introducing a modern Decorator API with JIT compilat
   - Full TypeScript type safety out of the box
   - See [Ergonomic API Guide](docs/ERGONOMIC_API.md) for details
   - Example:
+
     ```typescript
     import { Mapper, Map, plainToInstance } from 'om-data-mapper';
 
@@ -141,6 +142,7 @@ This is a **major release** introducing a modern Decorator API with JIT compilat
   - Applies `@Transform` to nested mapper results (including undefined values)
   - Added 13 comprehensive tests covering all use cases
   - Example:
+
     ```typescript
     @Mapper()
     class AddressMapper {
@@ -247,6 +249,7 @@ This is a **major release** introducing a modern Decorator API with JIT compilat
 ### Migration
 
 For existing users:
+
 1. Both APIs work side-by-side (no breaking changes)
 2. Gradual migration supported
 3. See `docs/MIGRATION_GUIDE.md` for detailed instructions

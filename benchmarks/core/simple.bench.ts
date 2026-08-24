@@ -51,4 +51,3 @@ describe('Simple Mapping Benchmark', () => {
     vanillaMapper(sourceData);
   });
 });
-

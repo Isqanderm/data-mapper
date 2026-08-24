@@ -9,6 +9,7 @@ Welcome to the `om-data-mapper` documentation! This directory contains comprehen
 ### User Guides
 
 #### Validation Module
+
 - **[Validation Usage Guide](./validation-usage.md)** - Complete guide on how to use the validation module
   - Available validators and decorators
   - Validation functions (validate, validateSync, etc.)
@@ -18,6 +19,7 @@ Welcome to the `om-data-mapper` documentation! This directory contains comprehen
   - Best practices and examples
 
 #### Transformer Module
+
 - **[Transformer Usage Guide](./transformer-usage.md)** - Complete guide on how to use the transformer module
   - Decorator API (recommended for new projects)
   - class-transformer Compatibility API (for migration)
@@ -30,6 +32,7 @@ Welcome to the `om-data-mapper` documentation! This directory contains comprehen
 ### Internal Architecture
 
 #### Validation JIT Compilation
+
 - **[Validation JIT Internals](./validation-jit-internals.md)** - Deep dive into validation JIT compilation
   - Architecture components
   - Metadata storage system
@@ -40,6 +43,7 @@ Welcome to the `om-data-mapper` documentation! This directory contains comprehen
   - Debugging and profiling
 
 #### Transformer JIT Compilation
+
 - **[Transformer JIT Internals](./transformer-jit-internals.md)** - Deep dive into transformer JIT compilation
   - Architecture components
   - Metadata storage (Symbol-based vs WeakMap-based)
@@ -73,6 +77,7 @@ If you want to understand the internals or contribute:
 ## 📖 What's in Each Guide?
 
 ### Validation Usage Guide
+
 - ✅ Installation and setup
 - ✅ All available validators with examples
 - ✅ Validation functions (async and sync)
@@ -84,6 +89,7 @@ If you want to understand the internals or contribute:
 - ✅ Migration from class-validator
 
 ### Transformer Usage Guide
+
 - ✅ Two APIs: Decorator API and Compatibility API
 - ✅ All transformation decorators with examples
 - ✅ Transformation functions
@@ -94,6 +100,7 @@ If you want to understand the internals or contribute:
 - ✅ Migration from class-transformer
 
 ### Validation JIT Internals
+
 - ✅ Architecture overview
 - ✅ Metadata storage with Symbols
 - ✅ Validator registry and caching
@@ -105,6 +112,7 @@ If you want to understand the internals or contribute:
 - ✅ Debugging generated code
 
 ### Transformer JIT Internals
+
 - ✅ Architecture overview
 - ✅ Two metadata storage systems
 - ✅ JIT compilation process
@@ -121,21 +129,27 @@ If you want to understand the internals or contribute:
 ## 🎯 Choose Your Path
 
 ### I want to validate objects
+
 → Start with [Validation Usage Guide](./validation-usage.md)
 
 ### I want to transform objects
+
 → Start with [Transformer Usage Guide](./transformer-usage.md)
 
 ### I'm migrating from class-validator
+
 → Read the "Migration from class-validator" section in [Validation Usage Guide](./validation-usage.md)
 
 ### I'm migrating from class-transformer
+
 → Read the "Migration from class-transformer" section in [Transformer Usage Guide](./transformer-usage.md)
 
 ### I want to understand how it works internally
+
 → Read [Validation JIT Internals](./validation-jit-internals.md) and [Transformer JIT Internals](./transformer-jit-internals.md)
 
 ### I want to contribute
+
 → Read all internal architecture docs, then check the main repository README for contribution guidelines
 
 ---
@@ -143,6 +157,7 @@ If you want to understand the internals or contribute:
 ## 🔥 Key Features
 
 ### Validation Module
+
 - **10x faster** than class-validator
 - **100% API compatible** - drop-in replacement
 - **No dependencies** - no reflect-metadata needed
@@ -151,6 +166,7 @@ If you want to understand the internals or contribute:
 - **Nested validation** with full type safety
 
 ### Transformer Module
+
 - **10x faster** than class-transformer
 - **Two powerful APIs** - Decorator API and Compatibility API
 - **100% compatible** with class-transformer
@@ -165,36 +181,41 @@ If you want to understand the internals or contribute:
 Both modules use JIT compilation to achieve exceptional performance:
 
 ### Validation Performance
-| Validation Type | class-validator | om-data-mapper | Speedup |
-|----------------|-----------------|----------------|---------|
-| Simple (1 field) | ~50K ops/sec | ~500K ops/sec | **10x** |
-| Complex (10 fields) | ~10K ops/sec | ~100K ops/sec | **10x** |
-| Nested objects | ~5K ops/sec | ~50K ops/sec | **10x** |
+
+| Validation Type     | class-validator | om-data-mapper | Speedup |
+| ------------------- | --------------- | -------------- | ------- |
+| Simple (1 field)    | ~50K ops/sec    | ~500K ops/sec  | **10x** |
+| Complex (10 fields) | ~10K ops/sec    | ~100K ops/sec  | **10x** |
+| Nested objects      | ~5K ops/sec     | ~50K ops/sec   | **10x** |
 
 ### Transformation Performance
-| Transformation Type | class-transformer | om-data-mapper | Speedup |
-|--------------------|------------------|----------------|---------|
-| Simple mapping | 326K ops/sec | 3.2M ops/sec | **10x** |
-| Complex transformations | 150K ops/sec | 1.5M ops/sec | **10x** |
-| Nested objects | 80K ops/sec | 800K ops/sec | **10x** |
+
+| Transformation Type     | class-transformer | om-data-mapper | Speedup |
+| ----------------------- | ----------------- | -------------- | ------- |
+| Simple mapping          | 326K ops/sec      | 3.2M ops/sec   | **10x** |
+| Complex transformations | 150K ops/sec      | 1.5M ops/sec   | **10x** |
+| Nested objects          | 80K ops/sec       | 800K ops/sec   | **10x** |
 
 ---
 
 ## 💡 Best Practices
 
 ### General
+
 1. **Use TypeScript** - Full type safety and better developer experience
 2. **Reuse instances** - Mappers and validators are compiled once
 3. **Enable strict mode** - Catch errors early
 4. **Read the guides** - Comprehensive examples for common scenarios
 
 ### Validation
+
 1. **Use validateSync** when you don't need async validators
 2. **Leverage validation groups** for different scenarios
 3. **Create custom validators** for complex business logic
 4. **Use @IsOptional()** for optional fields
 
 ### Transformation
+
 1. **Choose the right API** - Decorator API for new projects, Compatibility API for migration
 2. **Reuse mapper instances** - Use createMapper() or getMapper()
 3. **Use @MapNested()** for nested objects
@@ -236,4 +257,3 @@ If you have questions or need help:
 ---
 
 **Happy coding! 🚀**
-

@@ -11,21 +11,23 @@ The ESM integration tests validate that the package can be correctly imported an
 Node.js ESM has strict requirements that differ from CommonJS:
 
 1. **Explicit File Extensions**: All relative imports must include `.js` extensions
+
    ```javascript
    // ❌ Breaks in Node.js ESM
-   import { Mapper } from './core/Mapper'
-   
+   import { Mapper } from './core/Mapper';
+
    // ✅ Works in Node.js ESM
-   import { Mapper } from './core/Mapper.js'
+   import { Mapper } from './core/Mapper.js';
    ```
 
 2. **Directory Imports**: Must explicitly reference `index.js`
+
    ```javascript
    // ❌ Breaks in Node.js ESM
-   import { Map } from './decorators'
-   
+   import { Map } from './decorators';
+
    // ✅ Works in Node.js ESM
-   import { Map } from './decorators/index.js'
+   import { Map } from './decorators/index.js';
    ```
 
 3. **Package Type Marker**: ESM directories need `package.json` with `"type": "module"`
@@ -35,9 +37,11 @@ Node.js ESM has strict requirements that differ from CommonJS:
 ## Test Files
 
 ### 1. `esm-integration.test.mjs`
+
 **Comprehensive integration test suite**
 
 Tests:
+
 - ✅ Static validation of all import/export statements
 - ✅ Package structure validation (`package.json` marker)
 - ✅ Main entry point imports
@@ -50,9 +54,11 @@ Tests:
 **Run:** `npm run test:esm:integration`
 
 ### 2. `esm-runtime-simple.test.mjs`
+
 **Quick smoke test**
 
 A minimal test that catches the most common ESM issues:
+
 - ✅ Can import main entry point
 - ✅ Can import decorator module
 - ✅ Can import core module
@@ -61,9 +67,11 @@ A minimal test that catches the most common ESM issues:
 **Run:** `npm run test:esm:simple`
 
 ### 3. `esm-post-install-simulation.test.mjs`
+
 **Post-installation simulation**
 
 Simulates how users would use the package after `npm install`:
+
 - ✅ Basic mapper usage
 - ✅ Simple field mapping
 - ✅ Array transformations
@@ -78,6 +86,7 @@ Simulates how users would use the package after `npm install`:
 ## Running Tests
 
 ### Run All ESM Tests
+
 ```bash
 npm run test:esm
 ```
@@ -85,6 +94,7 @@ npm run test:esm
 This runs all three test suites in sequence.
 
 ### Run Individual Test Suites
+
 ```bash
 # Integration tests
 npm run test:esm:integration
@@ -97,6 +107,7 @@ npm run test:esm:simulation
 ```
 
 ### Run All Tests (Unit + ESM)
+
 ```bash
 npm run test:all
 ```
@@ -106,13 +117,16 @@ npm run test:all
 The ESM tests are integrated into the GitHub Actions CI/CD pipeline:
 
 ### Pull Request Workflow
+
 1. **Unit Tests** run first (`npm test`)
 2. **Build** generates CJS and ESM outputs (`npm run build`)
 3. **ESM Validation** runs on Node.js 18, 20, and 22
 4. **PR Comment** shows validation results
 
 ### Release Workflow
+
 Before publishing to npm, the release workflow:
+
 1. Runs unit tests
 2. Builds the project
 3. **Runs ESM integration tests** ← Prevents broken ESM builds from being published
@@ -122,26 +136,31 @@ Before publishing to npm, the release workflow:
 ## What Gets Validated
 
 ### 1. Static Analysis
+
 - Scans all `.js` files in `build/esm/`
 - Verifies every import/export has proper `.js` or `.json` extension
 - Reports any missing extensions with file and line number
 
 ### 2. Package Structure
+
 - Verifies `build/esm/package.json` exists
 - Confirms it contains `"type": "module"`
 
 ### 3. Runtime Import Resolution
+
 - Actually imports modules in Node.js
 - Catches `ERR_MODULE_NOT_FOUND` errors
 - Validates all expected exports are accessible
 
 ### 4. Functionality Testing
+
 - Tests that imported code actually works
 - Validates mapper creation and execution
 - Tests array transformations
 - Verifies nested field access
 
 ### 5. Export Completeness
+
 - Checks all expected functions/classes are exported
 - Validates export types (function, object, etc.)
 - Ensures no exports are missing
@@ -149,28 +168,33 @@ Before publishing to npm, the release workflow:
 ## Common Issues Caught
 
 ### ❌ Missing `.js` Extensions
+
 ```javascript
 // build/esm/index.js
-export * from './core/Mapper'  // ❌ Will fail ESM tests
+export * from './core/Mapper'; // ❌ Will fail ESM tests
 ```
 
 **Fix:** Post-build script adds `.js` extensions
+
 ```javascript
-export * from './core/Mapper.js'  // ✅ Passes ESM tests
+export * from './core/Mapper.js'; // ✅ Passes ESM tests
 ```
 
 ### ❌ Incorrect Directory Imports
+
 ```javascript
 // build/esm/index.js
-export * from './decorators.js'  // ❌ File doesn't exist
+export * from './decorators.js'; // ❌ File doesn't exist
 ```
 
 **Fix:** Script detects directories and adds `/index.js`
+
 ```javascript
-export * from './decorators/index.js'  // ✅ Correct
+export * from './decorators/index.js'; // ✅ Correct
 ```
 
 ### ❌ Missing Package Marker
+
 ```
 build/esm/
   ├── index.js
@@ -179,6 +203,7 @@ build/esm/
 ```
 
 **Fix:** Build script creates `package.json`
+
 ```
 build/esm/
   ├── package.json  ← {"type": "module"}
@@ -196,6 +221,7 @@ npm run build:esm
 ```
 
 This runs:
+
 1. **TypeScript Compilation**: `tsc -p tsconfig.esm.json`
    - Uses `module: "ESNext"` and `moduleResolution: "bundler"`
    - Outputs clean ESM syntax without extensions
@@ -217,10 +243,11 @@ TypeScript's `node16`/`nodenext` module resolution would solve the extension pro
 
 ```typescript
 // With module: "node16", you'd have to write:
-import { Mapper } from './core/Mapper.js'  // .js in .ts file!
+import { Mapper } from './core/Mapper.js'; // .js in .ts file!
 ```
 
 This is confusing and non-standard. Instead, we use:
+
 - `module: "ESNext"` - Clean ESM output
 - `moduleResolution: "bundler"` - Optimized for bundlers
 - **Post-build script** - Adds extensions automatically
@@ -228,17 +255,20 @@ This is confusing and non-standard. Instead, we use:
 ## Debugging Failed Tests
 
 ### Test Fails with `ERR_MODULE_NOT_FOUND`
+
 1. Check the error message for the missing module path
 2. Look at `build/esm/` to see what was actually generated
 3. Run `npm run test:esm:integration` for detailed static analysis
 4. Check `scripts/fix-esm-imports.js` for transformation logic
 
 ### Test Fails with "Missing export"
+
 1. Check `build/esm/index.js` to see what's exported
 2. Verify the source file exports the symbol
 3. Check if the export chain is broken (A → B → C)
 
 ### Test Fails on Specific Node.js Version
+
 1. Check Node.js ESM compatibility for that version
 2. Look at the CI logs for the specific error
 3. Test locally with that Node.js version using `nvm`
@@ -246,21 +276,27 @@ This is confusing and non-standard. Instead, we use:
 ## Maintenance
 
 ### Adding New Exports
+
 When adding new exports to the package:
+
 1. Add the export to source files
 2. Run `npm run build`
 3. Run `npm run test:esm` to verify
 4. Update test expectations if needed
 
 ### Modifying Build Process
+
 If you modify the build process:
+
 1. Run `npm run build`
 2. Manually inspect `build/esm/` output
 3. Run `npm run test:esm` to validate
 4. Test in a real Node.js ESM project
 
 ### Updating Tests
+
 When updating tests:
+
 1. Ensure they test real-world usage scenarios
 2. Don't use decorators in test files (they require compilation)
 3. Use the legacy `Mapper.create()` API for testing
@@ -275,8 +311,8 @@ When updating tests:
 ## Questions?
 
 If you encounter ESM-related issues:
+
 1. Check this documentation
 2. Run the ESM tests locally
 3. Look at the CI logs
 4. Open an issue with the error message and Node.js version
-

@@ -148,4 +148,3 @@ export class ComplexUserDto {
   @IsString()
   bio?: string;
 }
-

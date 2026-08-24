@@ -15,22 +15,9 @@
   "excludeProtected": false,
   "excludeInternal": true,
   "categorizeByGroup": true,
-  "categoryOrder": [
-    "Decorators",
-    "Functions",
-    "Types",
-    "Interfaces",
-    "Classes",
-    "*"
-  ],
+  "categoryOrder": ["Decorators", "Functions", "Types", "Interfaces", "Classes", "*"],
   "sort": ["source-order"],
-  "kindSortOrder": [
-    "Class",
-    "Interface",
-    "TypeAlias",
-    "Function",
-    "Variable"
-  ],
+  "kindSortOrder": ["Class", "Interface", "TypeAlias", "Function", "Variable"],
   "navigation": {
     "includeCategories": true,
     "includeGroups": true
@@ -51,4 +38,3 @@
   "lightHighlightTheme": "light-plus",
   "darkHighlightTheme": "dark-plus"
 }
-

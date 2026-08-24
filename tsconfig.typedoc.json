@@ -1,8 +1,4 @@
 {
   "extends": "./tsconfig.json",
-  "include": [
-    "packages/core/src",
-    "packages/class-transformer/src",
-    "packages/class-validator/src"
-  ]
+  "include": ["packages/core/src", "packages/class-transformer/src", "packages/class-validator/src"]
 }

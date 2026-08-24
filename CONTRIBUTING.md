@@ -43,21 +43,25 @@ This project and everyone participating in it is governed by our [Code of Conduc
 ## Development Setup
 
 1. Install dependencies:
+
    ```bash
    npm install
    ```
 
 2. Build the project:
+
    ```bash
    npm run build
    ```
 
 3. Run tests:
+
    ```bash
    npm test
    ```
 
 4. Run linting:
+
    ```bash
    npm run lint
    ```
@@ -92,6 +96,7 @@ git checkout -b fix/your-bug-fix
 ```
 
 Branch naming conventions:
+
 - `feature/` - New features
 - `fix/` - Bug fixes
 - `docs/` - Documentation changes
@@ -155,6 +160,7 @@ BREAKING CHANGE: The create method now requires explicit type parameters"
 ### Scope (Optional)
 
 The scope should be the name of the affected module:
+
 - `mapper`
 - `utils`
 - `types`
@@ -162,6 +168,7 @@ The scope should be the name of the affected module:
 - `deps`
 
 Example:
+
 ```bash
 git commit -m "feat(mapper): add caching support"
 ```
@@ -171,12 +178,14 @@ git commit -m "feat(mapper): add caching support"
 ### Before Submitting
 
 1. Update your branch with the latest changes from upstream:
+
    ```bash
    git fetch upstream
    git rebase upstream/main
    ```
 
 2. Ensure all checks pass:
+
    ```bash
    npm run build
    npm test
@@ -189,6 +198,7 @@ git commit -m "feat(mapper): add caching support"
 ### Submitting a Pull Request
 
 1. Push your branch to your fork:
+
    ```bash
    git push origin feature/your-feature-name
    ```
@@ -251,6 +261,7 @@ src/
 - ❌ **Coverage decreased** → PR is automatically blocked
 
 When you submit a PR, the CI will:
+
 1. Run tests on your branch and collect coverage
 2. Run tests on the main branch and collect coverage
 3. Compare the coverage metrics
@@ -258,6 +269,7 @@ When you submit a PR, the CI will:
 5. **Block the PR from merging** if coverage decreases
 
 See the [Coverage Protection Guide](./docs/COVERAGE_PROTECTION.md) for detailed information on:
+
 - How to check coverage locally
 - How to identify uncovered code
 - How to fix coverage issues
@@ -280,11 +292,13 @@ import { Mapper } from '../src';
 describe('Feature Name', () => {
   it('should do something specific', () => {
     // Arrange
-    const input = { /* ... */ };
-    
+    const input = {
+      /* ... */
+    };
+
     // Act
     const result = Mapper.create(/* ... */).execute(input);
-    
+
     // Assert
     expect(result).toEqual(/* ... */);
   });
@@ -324,6 +338,7 @@ open coverage/index.html
 ```
 
 The HTML report will highlight:
+
 - ✅ **Green**: Covered lines
 - ❌ **Red**: Uncovered lines
 - ⚠️ **Yellow**: Partially covered branches
@@ -349,6 +364,7 @@ Focus on covering the red and yellow lines in your tests.
 ### Examples
 
 Add examples to the `example/` directory:
+
 - Create a new directory for your example
 - Include a README explaining the example
 - Provide runnable code
@@ -364,6 +380,7 @@ Add examples to the `example/` directory:
 ### Reporting Bugs
 
 Use the [bug report template](.github/ISSUE_TEMPLATE/bug_report.yml) and include:
+
 - Clear description of the issue
 - Steps to reproduce
 - Expected vs actual behavior
@@ -373,6 +390,7 @@ Use the [bug report template](.github/ISSUE_TEMPLATE/bug_report.yml) and include
 ### Requesting Features
 
 Use the [feature request template](.github/ISSUE_TEMPLATE/feature_request.yml) and include:
+
 - Clear description of the feature
 - Use cases and benefits
 - Proposed API (if applicable)
@@ -381,6 +399,7 @@ Use the [feature request template](.github/ISSUE_TEMPLATE/feature_request.yml) a
 ## Recognition
 
 Contributors will be recognized in:
+
 - GitHub contributors list
 - Release notes (for significant contributions)
 - CHANGELOG.md
@@ -392,4 +411,3 @@ By contributing to `om-data-mapper`, you agree that your contributions will be l
 ---
 
 Thank you for contributing to `om-data-mapper`! 🎉
-

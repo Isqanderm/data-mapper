@@ -113,9 +113,9 @@ describe('Integration: Validation and Mapping', () => {
       // Validate the transformed instance
       const errors = await validate(user);
       expect(errors.length).toBeGreaterThan(0);
-      expect(errors.some(e => e.property === 'name')).toBe(true);
-      expect(errors.some(e => e.property === 'email')).toBe(true);
-      expect(errors.some(e => e.property === 'age')).toBe(true);
+      expect(errors.some((e) => e.property === 'name')).toBe(true);
+      expect(errors.some((e) => e.property === 'email')).toBe(true);
+      expect(errors.some((e) => e.property === 'age')).toBe(true);
     });
   });
 
@@ -366,15 +366,15 @@ describe('Integration: Validation and Mapping', () => {
       const errors = validateSync(user);
       expect(errors.length).toBe(3);
 
-      const usernameError = errors.find(e => e.property === 'username');
+      const usernameError = errors.find((e) => e.property === 'username');
       expect(usernameError).toBeDefined();
       expect(usernameError!.constraints).toHaveProperty('minLength');
 
-      const emailError = errors.find(e => e.property === 'email');
+      const emailError = errors.find((e) => e.property === 'email');
       expect(emailError).toBeDefined();
       expect(emailError!.constraints).toHaveProperty('isEmail');
 
-      const ageError = errors.find(e => e.property === 'age');
+      const ageError = errors.find((e) => e.property === 'age');
       expect(ageError).toBeDefined();
       expect(ageError!.constraints).toHaveProperty('max');
     });
@@ -401,8 +401,8 @@ describe('Integration: Validation and Mapping', () => {
       // Validate - should catch type errors
       const errors = validateSync(product);
       expect(errors.length).toBe(2);
-      expect(errors.some(e => e.property === 'name')).toBe(true);
-      expect(errors.some(e => e.property === 'price')).toBe(true);
+      expect(errors.some((e) => e.property === 'name')).toBe(true);
+      expect(errors.some((e) => e.property === 'price')).toBe(true);
     });
 
     it('should validate nested objects and report all errors', () => {
@@ -442,10 +442,10 @@ describe('Integration: Validation and Mapping', () => {
 
       // Should have error for name and nested contact errors
       expect(errors.length).toBeGreaterThan(0);
-      const nameError = errors.find(e => e.property === 'name');
+      const nameError = errors.find((e) => e.property === 'name');
       expect(nameError).toBeDefined();
 
-      const contactError = errors.find(e => e.property === 'contact');
+      const contactError = errors.find((e) => e.property === 'contact');
       expect(contactError).toBeDefined();
       expect(contactError!.children).toBeDefined();
       expect(contactError!.children!.length).toBe(2);
@@ -526,8 +526,8 @@ describe('Integration: Validation and Mapping', () => {
       const errors = validateSync(product);
 
       expect(errors.length).toBe(2);
-      expect(errors.some(e => e.property === 'description')).toBe(true);
-      expect(errors.some(e => e.property === 'price')).toBe(true);
+      expect(errors.some((e) => e.property === 'description')).toBe(true);
+      expect(errors.some((e) => e.property === 'price')).toBe(true);
     });
 
     it('should handle @IsOptional with @Exclude correctly', () => {
@@ -691,8 +691,8 @@ describe('Integration: Validation and Mapping', () => {
       // Validate with 'create' group - should fail
       const errors = validateSync(product, { groups: ['create'] });
       expect(errors.length).toBe(2);
-      expect(errors.some(e => e.property === 'name')).toBe(true);
-      expect(errors.some(e => e.property === 'price')).toBe(true);
+      expect(errors.some((e) => e.property === 'name')).toBe(true);
+      expect(errors.some((e) => e.property === 'price')).toBe(true);
     });
   });
 
@@ -793,7 +793,9 @@ describe('Integration: Validation and Mapping', () => {
         shippingAddress!: ShippingAddressDto;
 
         @Expose()
-        @Transform(({ obj }) => obj.items.reduce((sum: number, item: any) => sum + (item.price * item.quantity), 0))
+        @Transform(({ obj }) =>
+          obj.items.reduce((sum: number, item: any) => sum + item.price * item.quantity, 0),
+        )
         @IsNumber()
         @Min(0)
         totalAmount!: number;
@@ -939,14 +941,14 @@ describe('Integration: Validation and Mapping', () => {
       // Should have errors for nested objects
       expect(errors.length).toBeGreaterThan(0);
 
-      const customerError = errors.find(e => e.property === 'customer');
+      const customerError = errors.find((e) => e.property === 'customer');
       expect(customerError).toBeDefined();
       expect(customerError!.children).toBeDefined();
 
-      const itemsError = errors.find(e => e.property === 'items');
+      const itemsError = errors.find((e) => e.property === 'items');
       expect(itemsError).toBeDefined();
 
-      const addressError = errors.find(e => e.property === 'shippingAddress');
+      const addressError = errors.find((e) => e.property === 'shippingAddress');
       expect(addressError).toBeDefined();
       expect(addressError!.children).toBeDefined();
     });
@@ -1234,10 +1236,10 @@ describe('Integration: Validation and Mapping', () => {
       expect(productDtos[0]).toBeInstanceOf(ProductDto);
 
       // Validate all products
-      const validationPromises = productDtos.map(p => validate(p));
+      const validationPromises = productDtos.map((p) => validate(p));
       const results = await Promise.all(validationPromises);
 
-      results.forEach(errors => {
+      results.forEach((errors) => {
         expect(errors).toHaveLength(0);
       });
     });

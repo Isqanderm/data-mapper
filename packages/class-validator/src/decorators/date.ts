@@ -65,4 +65,3 @@ export function MaxDate(date: Date, options?: ValidationDecoratorOptions) {
     });
   };
 }
-

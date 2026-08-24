@@ -59,11 +59,12 @@ interface PropertyMetadata {
   excludeOptions?: ExcludeOptions;
   typeFunction?: TypeHelpFunction;
   transformFn?: TransformFn;
-  name?: string;  // Property name mapping
+  name?: string; // Property name mapping
 }
 ```
 
 **Key Differences:**
+
 - **Decorator API**: Symbol-based, attached to class constructor
 - **Compatibility API**: WeakMap-based, prevents memory leaks
 - **Both**: Use TC39 Stage 3 decorators
@@ -175,7 +176,7 @@ if (source?.address) {
   const nestedResult = nestedMapper.execute(source.address);
   target.address = nestedResult.result;
   if (nestedResult.errors.length > 0) {
-    __errors.push(...nestedResult.errors.map(e => 'address.' + e));
+    __errors.push(...nestedResult.errors.map((e) => 'address.' + e));
   }
 }
 ```
@@ -193,7 +194,7 @@ target.itemNames = cache['itemNames__transformer'](source);
 
 // For nested arrays with mapper:
 if (Array.isArray(source?.items)) {
-  target.items = source.items.map(item => {
+  target.items = source.items.map((item) => {
     const nestedMapper = cache['items__nestedMapper'];
     return nestedMapper.execute(item).result;
   });
@@ -222,6 +223,7 @@ function generateSafePropertyAccess(sourcePath: string): string {
 ```
 
 **Why Optional Chaining?**
+
 - ✅ Faster than try-catch
 - ✅ More readable generated code
 - ✅ Native JavaScript feature (ES2020+)
@@ -288,13 +290,14 @@ Transformer functions are stored in a cache object:
 
 ```typescript
 const cache = {
-  'fullName__transformer': (src) => src.firstName + ' ' + src.lastName,
-  'age__condition': (src) => src.age !== undefined,
-  '__defValues': { score: 0, status: 'active' }
+  fullName__transformer: (src) => src.firstName + ' ' + src.lastName,
+  age__condition: (src) => src.age !== undefined,
+  __defValues: { score: 0, status: 'active' },
 };
 ```
 
 **Benefits:**
+
 - Avoids closure overhead
 - Enables function reuse
 - Simplifies generated code
@@ -319,7 +322,7 @@ Only generates code for properties that exist:
 // If no @Ignore() decorator, generates code
 // If @Ignore() decorator, skips code generation
 if (mapping.type === 'ignore') {
-  continue;  // Skip this property
+  continue; // Skip this property
 }
 ```
 
@@ -364,13 +367,13 @@ transformPlainToClass(UserDto, plainObject, 'plainToClass', options)
 
 ### Key Differences from Decorator API:
 
-| Feature | Decorator API | class-transformer Compat |
-|---------|--------------|-------------------------|
-| Compilation | JIT at instantiation | Interpreted at runtime |
-| Performance | 10x faster | Compatible with class-transformer |
-| Metadata | Symbol-based | WeakMap-based |
-| API | `@Map()`, `@MapFrom()` | `@Expose()`, `@Type()` |
-| Use Case | New projects | Migration from class-transformer |
+| Feature     | Decorator API          | class-transformer Compat          |
+| ----------- | ---------------------- | --------------------------------- |
+| Compilation | JIT at instantiation   | Interpreted at runtime            |
+| Performance | 10x faster             | Compatible with class-transformer |
+| Metadata    | Symbol-based           | WeakMap-based                     |
+| API         | `@Map()`, `@MapFrom()` | `@Expose()`, `@Type()`            |
+| Use Case    | New projects           | Migration from class-transformer  |
 
 ---
 
@@ -386,12 +389,12 @@ transformPlainToClass(UserDto, plainObject, 'plainToClass', options)
 
 Compared to class-transformer:
 
-| Transformation Type | class-transformer | om-data-mapper | Speedup |
-|--------------------|------------------|----------------|---------|
-| Simple mapping | 326K ops/sec | **3.2M ops/sec** | **10x** |
-| Complex transformations | 150K ops/sec | **1.5M ops/sec** | **10x** |
-| Nested objects | 80K ops/sec | **800K ops/sec** | **10x** |
-| Array transformations | 50K ops/sec | **500K ops/sec** | **10x** |
+| Transformation Type     | class-transformer | om-data-mapper   | Speedup |
+| ----------------------- | ----------------- | ---------------- | ------- |
+| Simple mapping          | 326K ops/sec      | **3.2M ops/sec** | **10x** |
+| Complex transformations | 150K ops/sec      | **1.5M ops/sec** | **10x** |
+| Nested objects          | 80K ops/sec       | **800K ops/sec** | **10x** |
+| Array transformations   | 50K ops/sec       | **500K ops/sec** | **10x** |
 
 ### Memory Usage
 
@@ -481,7 +484,7 @@ function transform(source, target, __errors, cache) {
     const nestedResult = nestedMapper.execute(source.address);
     target.address = nestedResult.result;
     if (nestedResult.errors.length > 0) {
-      __errors.push(...nestedResult.errors.map(e => 'address.' + e));
+      __errors.push(...nestedResult.errors.map((e) => 'address.' + e));
     }
   }
 }
@@ -512,7 +515,7 @@ class UserMapper {
         mapping,
         cache,
         defaultValues,
-        false
+        false,
       );
       if (code) codeLines.push(code);
     }
@@ -558,14 +561,14 @@ console.timeEnd('1000 executions');
 
 The Decorator API uses the same JIT compilation approach as BaseMapper but with better ergonomics:
 
-| Feature | BaseMapper | Decorator API |
-|---------|-----------|---------------|
-| API Style | Imperative | Declarative |
-| Type Safety | Manual | Automatic |
-| Code Generation | ✅ Yes | ✅ Yes |
-| Performance | Fast | **Faster** (less overhead) |
-| Maintainability | Medium | High |
-| Recommended | ❌ Legacy | ✅ Modern |
+| Feature         | BaseMapper | Decorator API              |
+| --------------- | ---------- | -------------------------- |
+| API Style       | Imperative | Declarative                |
+| Type Safety     | Manual     | Automatic                  |
+| Code Generation | ✅ Yes     | ✅ Yes                     |
+| Performance     | Fast       | **Faster** (less overhead) |
+| Maintainability | Medium     | High                       |
+| Recommended     | ❌ Legacy  | ✅ Modern                  |
 
 ---
 
@@ -590,4 +593,3 @@ The JIT compilation approach provides:
 - ✅ **Extensible** with custom transformers
 
 This architecture makes `om-data-mapper` one of the fastest object transformation libraries available for TypeScript/JavaScript.
-

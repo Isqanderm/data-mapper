@@ -3,14 +3,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import {
-  IsString,
-  IsEmail,
-  MinLength,
-  IsNumber,
-  Min,
-  validateSync,
-} from '../../../../src';
+import { IsString, IsEmail, MinLength, IsNumber, Min, validateSync } from '../../../../src';
 
 describe('Validation Groups', () => {
   it('should validate only constraints in specified groups', () => {
@@ -35,16 +28,16 @@ describe('Validation Groups', () => {
     // Validate with 'create' group - should check username and email
     const createErrors = validateSync(user, { groups: ['create'] });
     expect(createErrors.length).toBeGreaterThan(0);
-    expect(createErrors.some(e => e.property === 'username')).toBe(true);
-    expect(createErrors.some(e => e.property === 'email')).toBe(true);
-    expect(createErrors.some(e => e.property === 'age')).toBe(false); // age not in 'create' group
+    expect(createErrors.some((e) => e.property === 'username')).toBe(true);
+    expect(createErrors.some((e) => e.property === 'email')).toBe(true);
+    expect(createErrors.some((e) => e.property === 'age')).toBe(false); // age not in 'create' group
 
     // Validate with 'update' group - should check email and age
     const updateErrors = validateSync(user, { groups: ['update'] });
     expect(updateErrors.length).toBeGreaterThan(0);
-    expect(updateErrors.some(e => e.property === 'username')).toBe(false); // username not in 'update' group
-    expect(updateErrors.some(e => e.property === 'email')).toBe(true);
-    expect(updateErrors.some(e => e.property === 'age')).toBe(true);
+    expect(updateErrors.some((e) => e.property === 'username')).toBe(false); // username not in 'update' group
+    expect(updateErrors.some((e) => e.property === 'email')).toBe(true);
+    expect(updateErrors.some((e) => e.property === 'age')).toBe(true);
   });
 
   it('should validate all constraints when no groups specified', () => {
@@ -88,8 +81,8 @@ describe('Validation Groups', () => {
     // Validate with 'create' group
     const createErrors = validateSync(product, { groups: ['create'] });
     expect(createErrors.length).toBe(2);
-    expect(createErrors.some(e => e.property === 'name')).toBe(true);
-    expect(createErrors.some(e => e.property === 'price')).toBe(true);
+    expect(createErrors.some((e) => e.property === 'name')).toBe(true);
+    expect(createErrors.some((e) => e.property === 'price')).toBe(true);
 
     // Validate with 'delete' group - only name isString should be validated (no minLength in delete)
     const deleteErrors = validateSync(product, { groups: ['delete'] });
@@ -119,9 +112,9 @@ describe('Validation Groups', () => {
     // Validate with multiple groups
     const errors = validateSync(user, { groups: ['group1', 'group2'] });
     expect(errors.length).toBe(2);
-    expect(errors.some(e => e.property === 'field1')).toBe(true);
-    expect(errors.some(e => e.property === 'field2')).toBe(true);
-    expect(errors.some(e => e.property === 'field3')).toBe(false);
+    expect(errors.some((e) => e.property === 'field1')).toBe(true);
+    expect(errors.some((e) => e.property === 'field2')).toBe(true);
+    expect(errors.some((e) => e.property === 'field3')).toBe(false);
   });
 
   it('should handle mixed grouped and non-grouped constraints', () => {
@@ -149,8 +142,8 @@ describe('Validation Groups', () => {
     dto.value = 'not a number' as any; // Change to invalid type for strict validation
     const strictErrors = validateSync(dto, { groups: ['strict'] });
     expect(strictErrors.length).toBe(2);
-    expect(strictErrors.some(e => e.property === 'name' && e.constraints?.minLength)).toBe(true);
-    expect(strictErrors.some(e => e.property === 'value' && e.constraints?.isNumber)).toBe(true);
+    expect(strictErrors.some((e) => e.property === 'name' && e.constraints?.minLength)).toBe(true);
+    expect(strictErrors.some((e) => e.property === 'value' && e.constraints?.isNumber)).toBe(true);
   });
 
   it('should work with empty groups array', () => {
@@ -172,4 +165,3 @@ describe('Validation Groups', () => {
     expect(errors[0].property).toBe('email');
   });
 });
-

@@ -1,9 +1,9 @@
 /**
  * Ergonomic API Example
- * 
+ *
  * This example demonstrates the new ergonomic API that provides
  * TypeScript type safety without requiring verbose type assertions.
- * 
+ *
  * Inspired by class-transformer's API design.
  */
 
@@ -121,10 +121,10 @@ console.log('\nValid product:', validResult);
 console.log('Errors:', validErrors);
 // Output: { name: 'Laptop', formattedPrice: '$999.99' }, []
 
-const { result: invalidResult, errors: invalidErrors } = tryPlainToInstance<ProductSource, ProductDTO>(
-  ProductMapper,
-  invalidProduct,
-);
+const { result: invalidResult, errors: invalidErrors } = tryPlainToInstance<
+  ProductSource,
+  ProductDTO
+>(ProductMapper, invalidProduct);
 console.log('\nInvalid product:', invalidResult);
 console.log('Errors:', invalidErrors);
 // Output: { name: 'Mouse' }, ['Mapping error at field by function ...']
@@ -137,8 +137,18 @@ console.log('Errors:', invalidErrors);
 const userMapper = createMapper<UserSource, UserDTO>(UserMapper);
 
 // Use it multiple times
-const user1 = userMapper.transform({ firstName: 'Alice', lastName: 'Wonder', age: 28, email: 'alice@example.com' });
-const user2 = userMapper.transform({ firstName: 'Bob', lastName: 'Builder', age: 35, email: 'bob@example.com' });
+const user1 = userMapper.transform({
+  firstName: 'Alice',
+  lastName: 'Wonder',
+  age: 28,
+  email: 'alice@example.com',
+});
+const user2 = userMapper.transform({
+  firstName: 'Bob',
+  lastName: 'Builder',
+  age: 35,
+  email: 'bob@example.com',
+});
 
 console.log('\nReusable mapper results:');
 console.log('User 1:', user1);
@@ -190,7 +200,9 @@ class PersonMapper {
   isAdult!: boolean;
 
   // Use plainToInstance for nested transformation
-  @MapFrom((src: PersonSource) => plainToInstance<AddressSource, AddressDTO>(AddressMapper, src.address))
+  @MapFrom((src: PersonSource) =>
+    plainToInstance<AddressSource, AddressDTO>(AddressMapper, src.address),
+  )
   location!: AddressDTO;
 }
 
@@ -281,4 +293,3 @@ console.log('✅ Similar to class-transformer');
 console.log('✅ Works with nested mappers');
 console.log('✅ Supports error handling');
 console.log('✅ Reusable mapper instances');
-

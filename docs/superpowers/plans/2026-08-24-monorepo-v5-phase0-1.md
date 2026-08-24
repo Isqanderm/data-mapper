@@ -29,6 +29,7 @@
 ### Task 1: Phase 0 — delete cruft
 
 **Files:**
+
 - Delete: `ANNOUNCEMENT_v4.1.0.md`, `RELEASE_NOTES_v4.1.0.md`, `INTEGRATION_SUMMARY.md`, `DOCUMENTATION_IMPROVEMENTS.md`
 - Delete: `.augment/` (tracked), `benchmarks/suites/compat/build-cv/`, `benchmarks/suites/compat/build-om-validation/`, `benchmarks/package.json`
 - Modify: `.gitignore`
@@ -70,11 +71,13 @@ git add -A && git commit -m "chore: remove stale release cruft, tracked IDE dirs
 ### Task 2: pnpm workspace bootstrap
 
 **Files:**
+
 - Create: `pnpm-workspace.yaml`
 - Modify: `package.json` (root becomes private workspace root)
 - Delete: `package-lock.json`
 
 **Interfaces:**
+
 - Produces: workspace root that later tasks add packages into; root devDependencies are shared by all packages (pnpm resolves devDeps from root for scripts run via `pnpm -r`, and vitest/tsc are invoked through root-installed binaries).
 
 - [ ] **Step 1: Create `pnpm-workspace.yaml`**
@@ -139,12 +142,14 @@ git add -A && git commit -m "chore: switch to pnpm workspace root, drop semantic
 ### Task 3: Create `packages/core`
 
 **Files:**
+
 - Move: `src/core/`, `src/decorators/`, `src/index.ts` → `packages/core/src/`
 - Move: `tests/unit/core/`, `tests/unit/decorators/`, `tests/smoke/` → `packages/core/tests/unit/...`, `packages/core/tests/smoke/`
 - Move: `test/esm-runtime-simple.test.mjs`, `test/esm-integration.test.mjs`, `test/ESM_TESTING.md` → `packages/core/test/`
 - Create: `packages/core/package.json`, `packages/core/tsconfig.json`, `packages/core/tsconfig.esm.json`, `packages/core/vitest.config.mts`
 
 **Interfaces:**
+
 - Produces: package `@om-data-mapper/core@1.0.0` exporting everything the current `src/index.ts` exports (`Mapper` class + legacy interfaces from `core/`, decorators `Mapper, Map, MapFrom, Default, Transform, MapWith, Ignore`, functions `createMapper, plainToInstance, plainToClass, plainToInstanceArray, plainToClassArray, tryPlainToInstance, tryPlainToInstanceArray, getMapper`, types `MapperOptions, PropertyMapping, MapperMetadata, TransformOptions`). Consumed by Task 6 (meta re-export).
 
 - [ ] **Step 1: Move source**
@@ -275,11 +280,13 @@ git add -A && git commit -m "refactor: extract @om-data-mapper/core package"
 ### Task 4: Create `packages/class-transformer`
 
 **Files:**
+
 - Move: `packages/core/src/compat/class-transformer/` (5 files: `index.ts`, `decorators.ts`, `functions.ts`, `metadata.ts`, `types.ts`) → `packages/class-transformer/src/`
 - Move: `tests/unit/compat/class-transformer.test.ts`, `tests/unit/compat/class-transformer-decorators.test.ts` → `packages/class-transformer/tests/unit/compat/`
 - Create: `packages/class-transformer/package.json`, `tsconfig.json`, `tsconfig.esm.json`, `vitest.config.mts`
 
 **Interfaces:**
+
 - Produces: package `@om-data-mapper/class-transformer@1.0.0` exporting the compat API (`Expose, Exclude, Type, Transform, TransformClassToPlain, TransformClassToClass, TransformPlainToClass`, `plainToInstance`, metadata helpers). Consumed by Task 6.
 
 - [ ] **Step 1: Move source and tests**
@@ -308,7 +315,11 @@ cd ../..
   "name": "@om-data-mapper/class-transformer",
   "version": "1.0.0",
   "description": "class-transformer compatibility adapter for om-data-mapper: JIT-compiled Expose/Exclude/Type/Transform decorators and plainToInstance.",
-  "repository": { "type": "git", "url": "git+https://github.com/Isqanderm/data-mapper.git", "directory": "packages/class-transformer" },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Isqanderm/data-mapper.git",
+    "directory": "packages/class-transformer"
+  },
   "scripts": {
     "clean": "rm -rf build",
     "build": "rm -rf build && tsc -p tsconfig.json && tsc -p tsconfig.esm.json && node ../../scripts/fix-esm-imports.js && echo '{\"type\":\"module\"}' > build/esm/package.json",
@@ -344,12 +355,14 @@ git add -A && git commit -m "refactor: extract @om-data-mapper/class-transformer
 ### Task 5: Create `packages/class-validator`
 
 **Files:**
+
 - Move: `packages/core/src/compat/class-validator/` (16 files: `index.ts`, `types.ts`, `decorators/` ×10, `engine/` ×4) → `packages/class-validator/src/`
 - Move: `tests/unit/compat/class-validator/` (20 test files) → `packages/class-validator/tests/unit/compat/class-validator/`
 - Create: `packages/class-validator/package.json`, `tsconfig.json`, `tsconfig.esm.json`, `vitest.config.mts`
 - Delete (now empty): `packages/core/src/compat/`, `tests/unit/compat/`
 
 **Interfaces:**
+
 - Produces: package `@om-data-mapper/class-validator@1.0.0` exporting the compat API (`validate`, `validateSync`, all validator decorators, `ValidationError`, `ValidatorOptions` types). Subdirectory imports like `.../decorators` must keep working for the meta tests (Task 6 aliases handle it). Consumed by Task 6.
 
 - [ ] **Step 1: Move source and tests**
@@ -377,7 +390,11 @@ cd ../..
   "name": "@om-data-mapper/class-validator",
   "version": "1.0.0",
   "description": "class-validator compatibility adapter for om-data-mapper: JIT-compiled validation engine and decorators.",
-  "repository": { "type": "git", "url": "git+https://github.com/Isqanderm/data-mapper.git", "directory": "packages/class-validator" }
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Isqanderm/data-mapper.git",
+    "directory": "packages/class-validator"
+  }
 }
 ```
 
@@ -404,6 +421,7 @@ git add -A && git commit -m "refactor: extract @om-data-mapper/class-validator p
 ### Task 6: Create meta-package `packages/om-data-mapper`
 
 **Files:**
+
 - Create: `packages/om-data-mapper/src/index.ts`, `src/class-transformer-compat.ts`, `src/class-validator-compat.ts`
 - Create: `packages/om-data-mapper/package.json`, `tsconfig.json`, `tsconfig.esm.json`, `vitest.config.mts`
 - Move: `tests/integration/real-world-scenarios.test.ts`, `tests/unit/integration/validation-and-mapping.test.ts`, `tests/benchmarks/regression.test.ts`, `tests/benchmarks/memory-leak.test.ts` → `packages/om-data-mapper/tests/`
@@ -411,6 +429,7 @@ git add -A && git commit -m "refactor: extract @om-data-mapper/class-validator p
 - Delete (now empty): `tests/`, `test/`
 
 **Interfaces:**
+
 - Consumes: the three packages from Tasks 3–5 as `workspace:^` dependencies.
 - Produces: package `om-data-mapper@5.0.0` whose root export re-exports `@om-data-mapper/core`, and whose subpaths `./class-transformer-compat` / `./class-validator-compat` re-export the adapters — the exact v4 public surface.
 
@@ -558,6 +577,7 @@ rmdir test tests/integration tests/unit tests/benchmarks tests 2>/dev/null || tr
 ```
 
 Open `packages/om-data-mapper/test/esm-post-install-simulation.test.mjs` and update paths:
+
 - the build dir it inspects → `packages/om-data-mapper/build/esm` (relative to the file: `join(__dirname, '..', 'build', 'esm')`);
 - any reference to `build/esm/compat/class-transformer/...` → `build/esm/class-transformer-compat.js` (same for class-validator);
 - if it simulates `import 'om-data-mapper'` from a temp dir, ensure it can resolve the workspace deps (run it after `pnpm -r build`; workspace symlinks in `node_modules` make bare-specifier imports of `@om-data-mapper/*` resolve).
@@ -589,10 +609,12 @@ git add -A && git commit -m "feat: add om-data-mapper meta-package preserving v4
 ### Task 7: Root wiring — vitest projects, coverage, eslint, tsconfig, typedoc
 
 **Files:**
+
 - Modify: `vitest.config.mts` (root), `tsconfig.json` (root), `eslint.config.mjs`, `typedoc.json`
 - Delete: root `tsconfig.esm.json` (per-package copies exist now)
 
 **Interfaces:**
+
 - Consumes: the 4 package `vitest.config.mts` files (Tasks 3–6).
 - Produces: `pnpm test` at root runs **all** suites with coverage; this is the command CI uses (Task 9).
 
@@ -609,12 +631,7 @@ export default defineConfig({
       reportsDirectory: 'coverage',
       reporter: ['text', 'lcov', 'json', 'json-summary', 'html'],
       include: ['packages/*/src/**/*.ts'],
-      exclude: [
-        '**/*.d.ts',
-        '**/types.ts',
-        '**/interfaces.ts',
-        'packages/om-data-mapper/src/**',
-      ],
+      exclude: ['**/*.d.ts', '**/types.ts', '**/interfaces.ts', 'packages/om-data-mapper/src/**'],
       all: true,
       thresholds: { lines: 70, functions: 80, branches: 70, statements: 70 },
     },
@@ -641,6 +658,7 @@ pnpm test 2>&1 | tail -8
 ```
 
 Expected — **must match the pre-split baseline exactly**:
+
 - `Test Files  34 passed (34)`
 - `Tests  518 passed (518)`
 - coverage table prints; thresholds pass.
@@ -662,11 +680,13 @@ git add -A && git commit -m "chore: wire root vitest projects, coverage, eslint 
 ### Task 8: Changesets
 
 **Files:**
+
 - Create: `.changeset/config.json`
 - Delete: `.releaserc.json`
 - Modify: root `package.json` (add changesets devDep + release scripts)
 
 **Interfaces:**
+
 - Produces: `pnpm changeset` workflow used by the release CI (Task 9) and by Phase 5 to publish.
 
 - [ ] **Step 1: Install and init**
@@ -719,12 +739,14 @@ git add -A && git commit -m "chore: replace semantic-release with changesets"
 ### Task 9: Rewrite CI workflows
 
 **Files:**
+
 - Rewrite: `.github/workflows/ci.yml` (764 lines → ~60)
 - Rewrite: `.github/workflows/release.yml` (changesets action)
 - Replace: `.github/workflows/benchmark.yml` (stub until Phase 3)
 - Keep: `.github/workflows/codeql.yml` (untouched)
 
 **Interfaces:**
+
 - Consumes: root scripts from Task 7 (`pnpm test`, `pnpm lint`, `pnpm run build`, `pnpm run test:esm`) and Task 8 (`pnpm run release`, `pnpm run version-packages`).
 
 - [ ] **Step 1: Rewrite `.github/workflows/ci.yml`**
@@ -883,6 +905,7 @@ Expected: CI matrix (Node 20/22/24) green. If a matrix job fails on Node 24 for 
 The spec (`docs/superpowers/specs/2026-08-24-monorepo-v5-design.md`) is the source of truth; this is the committed scope so nothing gets lost:
 
 **Phase 2 — compat honesty (`packages/class-validator`, `packages/class-transformer`), TDD:**
+
 - Implement in `engine/compiler.ts` + `engine/validator.ts` all 7 dead `ValidatorOptions` with class-validator semantics: `skipMissingProperties` / `skipUndefinedProperties` (skip validators when the property is `undefined`, except `@IsDefined`), `skipNullProperties` (same for `null`), `whitelist` (strip properties that have no validation decorators; requires implementing `@Allow`), `forbidNonWhitelisted` (error instead of stripping, `whitelistValidation` constraint), `forbidUnknownValues` (объект без метаданных → error, default true as in class-validator ≥0.14), `stopAtFirstError` (per-property short-circuit).
 - Function-form `message: (args: ValidationArguments) => string` in `getErrorMessage` (`engine/compiler.ts:~1376`); add `ValidationArguments` construction (value, constraints, targetName, object, property).
 - `registerDecorator()` + minimal `getMetadataStorage()`; `ValidationError.target`/`.value` + `validationError: {target, value}` options.
@@ -890,16 +913,19 @@ The spec (`docs/superpowers/specs/2026-08-24-monorepo-v5-design.md`) is the sour
 - Compat tables (implemented / not implemented) in each package README; missing ~20 decorators stay missing but documented.
 
 **Phase 3 — honest benchmarks:**
+
 - Delete `benchmarks/comparisons/validation-comparison/` (measures a no-op) and its fabricated `RESULTS.md`.
 - New private workspace package `packages/benchmarks` (not published): tinybench suites comparing `@om-data-mapper/class-transformer` vs `class-transformer` and `@om-data-mapper/class-validator` vs `class-validator`, using **each library's own decorators** on equivalent models; JSON output for CI.
 - One command: `pnpm bench`. Rebuild `benchmark.yml` from the stub: run on main, `benchmark-action/github-action-benchmark` for trend tracking, **no `|| echo` masking**.
 
 **Phase 4 — documentation:**
+
 - Root README rewritten ≤300 lines: what/why, install, quick start (mapper + validator), honest benchmark table generated from Phase 3 JSON, links to per-package READMEs and `docs/`; class-validator adapter gets first-class billing. Remove the self-contradicting claims ("17.28x", "42.7x", vanilla table, "98% coverage").
 - Per-package READMEs (npm landing pages) with compat tables from Phase 2.
 - `docs/migration-v4-to-v5.md`; move the troubleshooting manual from README into `docs/`; sync `docs-ru/` (add missing `migration-class-transformer.md` translation); fix the broken `docs/COVERAGE_PROTECTION.md` link; update CHANGELOG note that changelogs are now per-package.
 
 **Phase 5 — release & revival:**
+
 - Verify npm org `om-data-mapper` + `NPM_TOKEN` scope rights; changeset for all 4 packages (scoped 1.0.0, meta 5.0.0 major with migration notes); merge → changesets PR → publish.
 - `npm deprecate` nothing (meta keeps the name alive); verify `npm install om-data-mapper@5` in a scratch project (CJS + ESM + both subpaths).
 - Merge the 5 dependabot PRs (rebased onto monorepo); close or convert PR #21 into a `@om-data-mapper/nestjs` plan; announce (release notes with honest numbers).

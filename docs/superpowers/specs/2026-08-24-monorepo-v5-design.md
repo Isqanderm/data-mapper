@@ -49,12 +49,12 @@ Broken:
 
 ## Decisions (approved by owner)
 
-| Decision | Choice |
-|---|---|
-| npm naming | `om-data-mapper` becomes a **meta-package** re-exporting everything; core lives at `@om-data-mapper/core` |
-| Tooling | **pnpm workspaces + changesets**; semantic-release removed |
-| Package set | **4 packages**: core, class-transformer, class-validator (engine included), meta. NestJS adapter deferred |
-| Order | **Structure first**, then compat honesty, then benchmarks, then docs, then release |
+| Decision    | Choice                                                                                                                                                                        |
+| ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| npm naming  | `om-data-mapper` becomes a **meta-package** re-exporting everything; core lives at `@om-data-mapper/core`                                                                     |
+| Tooling     | **pnpm workspaces + changesets**; semantic-release removed                                                                                                                    |
+| Package set | **4 packages**: core, class-transformer, class-validator (engine included), meta. NestJS adapter deferred                                                                     |
+| Order       | **Structure first**, then compat honesty, then benchmarks, then docs, then release                                                                                            |
 | Compat gaps | **Implement the key parts** (all 7 ValidatorOptions, message functions, registerDecorator/getMetadataStorage, ValidationError.target/value); honest compat table for the rest |
 
 ## Architecture

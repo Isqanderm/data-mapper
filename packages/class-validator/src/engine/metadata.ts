@@ -59,7 +59,7 @@ export function addValidationConstraint(
 
   // Check if this exact constraint already exists to prevent duplicates
   // This can happen because addInitializer runs on every instance creation
-  const isDuplicate = propertyMetadata.constraints.some(existing => {
+  const isDuplicate = propertyMetadata.constraints.some((existing) => {
     // Compare constraint type and value
     if (existing.type !== constraint.type) return false;
     if (existing.value !== constraint.value) return false;
@@ -126,10 +126,7 @@ export function setNestedValidationType(
 /**
  * Mark property as array
  */
-export function markPropertyAsArray(
-  target: any,
-  propertyKey: string | symbol,
-): void {
+export function markPropertyAsArray(target: any, propertyKey: string | symbol): void {
   const propertyMetadata = getPropertyMetadata(target, propertyKey);
   propertyMetadata.isArray = true;
 }
@@ -137,10 +134,7 @@ export function markPropertyAsArray(
 /**
  * Mark property as nested (for ValidateNested)
  */
-export function markPropertyAsNested(
-  target: any,
-  propertyKey: string | symbol,
-): void {
+export function markPropertyAsNested(target: any, propertyKey: string | symbol): void {
   const propertyMetadata = getPropertyMetadata(target, propertyKey);
   propertyMetadata.isNested = true;
 }
@@ -159,4 +153,3 @@ export function getClassValidationMetadata(instance: any): ClassValidationMetada
 export function hasValidationMetadata(target: any): boolean {
   return !!target[VALIDATION_METADATA];
 }
-

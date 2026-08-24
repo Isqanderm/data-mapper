@@ -69,4 +69,3 @@ describe('Nested Mapping Benchmark', () => {
     vanillaNestedMapper(nestedSourceData);
   });
 });
-

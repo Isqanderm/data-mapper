@@ -38,4 +38,3 @@ export type { TransformOptions } from './functions';
 
 // Internal types - not part of public API
 // IMapper and MapperMethods are used internally by the decorator and helper functions
-

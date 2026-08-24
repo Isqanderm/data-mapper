@@ -180,7 +180,7 @@ describe('100% Coverage Tests', () => {
       class AsyncUniqueValidator implements ValidatorConstraintInterface {
         async validate(value: any, args: ValidationArguments) {
           // Simulate async database check
-          await new Promise(resolve => setTimeout(resolve, 10));
+          await new Promise((resolve) => setTimeout(resolve, 10));
           return value !== 'taken';
         }
 
@@ -385,7 +385,7 @@ describe('100% Coverage Tests', () => {
           validator: {
             validate: async (value: any, args: ValidationArguments) => {
               // Simulate async database check
-              await new Promise(resolve => setTimeout(resolve, 10));
+              await new Promise((resolve) => setTimeout(resolve, 10));
               return value !== 'admin';
             },
             defaultMessage: (args: ValidationArguments) => {
@@ -434,4 +434,3 @@ describe('100% Coverage Tests', () => {
     });
   });
 });
-

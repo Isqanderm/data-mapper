@@ -18,17 +18,14 @@ console.log('🧪 ESM Runtime Smoke Test\n');
 // Test 1: Import main entry point
 console.log('1. Testing main entry point import...');
 try {
-  const {
-    Mapper,
-    Map,
-    MapFrom,
-    plainToInstance,
-    plainToClass,
-    createMapper,
-  } = await import(`${esmBuildDir}/index.js`);
+  const { Mapper, Map, MapFrom, plainToInstance, plainToClass, createMapper } = await import(
+    `${esmBuildDir}/index.js`
+  );
 
   console.log('   ✓ Main entry point imported successfully');
-  console.log(`   ✓ Found ${Object.keys({ Mapper, Map, MapFrom, plainToInstance, plainToClass, createMapper }).length} exports`);
+  console.log(
+    `   ✓ Found ${Object.keys({ Mapper, Map, MapFrom, plainToInstance, plainToClass, createMapper }).length} exports`,
+  );
 } catch (error) {
   console.error('   ✗ Failed to import main entry point:', error.message);
   process.exit(1);
@@ -76,7 +73,9 @@ try {
   }
 
   console.log('   ✓ Mapper API works correctly');
-  console.log(`   ✓ Mapped: ${JSON.stringify(source)} → { name: "${result.name}", age: ${result.age} }`);
+  console.log(
+    `   ✓ Mapped: ${JSON.stringify(source)} → { name: "${result.name}", age: ${result.age} }`,
+  );
 } catch (error) {
   console.error('   ✗ Functionality test failed:', error.message);
   console.error(error.stack);
@@ -84,4 +83,3 @@ try {
 }
 
 console.log('\n✅ All smoke tests passed!\n');
-

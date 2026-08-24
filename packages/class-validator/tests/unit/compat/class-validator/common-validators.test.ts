@@ -296,7 +296,7 @@ describe('Common Validators', () => {
       }
 
       const valid1 = new TestDto();
-      valid1.longitude = -74.0060;
+      valid1.longitude = -74.006;
       expect(validateSync(valid1)).toHaveLength(0);
 
       const valid2 = new TestDto();
@@ -342,4 +342,3 @@ describe('Common Validators', () => {
     });
   });
 });
-

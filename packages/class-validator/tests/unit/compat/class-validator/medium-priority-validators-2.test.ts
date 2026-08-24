@@ -30,8 +30,7 @@ describe('class-validator-compat - Medium Priority Validators (Network & Formats
       }
 
       const valid = new TorrentDto();
-      valid.magnetLink =
-        'magnet:?xt=urn:btih:c12fe1c06bba254a9dc9f519b335aa7c1367a88a';
+      valid.magnetLink = 'magnet:?xt=urn:btih:c12fe1c06bba254a9dc9f519b335aa7c1367a88a';
 
       const errors = await validate(valid);
       expect(errors).toHaveLength(0);

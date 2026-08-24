@@ -55,7 +55,7 @@ class IsEqualToConstraint implements ValidatorConstraintInterface {
 class IsUniqueUsernameConstraint implements ValidatorConstraintInterface {
   async validate(value: string, args: ValidationArguments) {
     // Simulate async database check
-    await new Promise(resolve => setTimeout(resolve, 10));
+    await new Promise((resolve) => setTimeout(resolve, 10));
     // Simulate checking if username exists
     return value !== 'taken';
   }
@@ -238,8 +238,8 @@ describe('Custom Validator Classes', () => {
 
       const invalidErrors = await validate(invalid);
       expect(invalidErrors.length).toBeGreaterThan(0);
-      expect(invalidErrors.some(e => e.property === 'lastName')).toBe(true);
-      expect(invalidErrors.some(e => e.property === 'username')).toBe(true);
+      expect(invalidErrors.some((e) => e.property === 'lastName')).toBe(true);
+      expect(invalidErrors.some((e) => e.property === 'username')).toBe(true);
     });
   });
 
@@ -275,8 +275,8 @@ describe('Custom Validator Classes', () => {
 
       const errors = validateSync(invalid);
       expect(errors.length).toBeGreaterThan(0);
-      expect(errors.some(e => e.property === 'lastName')).toBe(true);
-      expect(errors.some(e => e.property === 'address')).toBe(true);
+      expect(errors.some((e) => e.property === 'lastName')).toBe(true);
+      expect(errors.some((e) => e.property === 'address')).toBe(true);
     });
 
     it('should work with validation groups', () => {
@@ -300,13 +300,13 @@ describe('Custom Validator Classes', () => {
       // Validate with 'create' group
       const createErrors = validateSync(user, { groups: ['create'] });
       expect(createErrors.length).toBeGreaterThan(0);
-      expect(createErrors.some(e => e.property === 'username')).toBe(true);
-      expect(createErrors.some(e => e.property === 'lastName')).toBe(true);
+      expect(createErrors.some((e) => e.property === 'username')).toBe(true);
+      expect(createErrors.some((e) => e.property === 'lastName')).toBe(true);
 
       // Validate with 'update' group
       const updateErrors = validateSync(user, { groups: ['update'] });
-      expect(updateErrors.some(e => e.property === 'lastName')).toBe(true);
-      expect(updateErrors.some(e => e.property === 'username')).toBe(false);
+      expect(updateErrors.some((e) => e.property === 'lastName')).toBe(true);
+      expect(updateErrors.some((e) => e.property === 'username')).toBe(false);
     });
   });
 
@@ -345,4 +345,3 @@ describe('Custom Validator Classes', () => {
     });
   });
 });
-

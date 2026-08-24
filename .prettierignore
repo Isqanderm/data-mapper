@@ -4,7 +4,10 @@ node_modules/
 # Build output
 dist/
 build/
+**/build/
 coverage/
+**/coverage/
+docs/api/
 
 # Reports
 reports/
@@ -16,6 +19,9 @@ benchmarks/node_modules/
 package-lock.json
 pnpm-lock.yaml
 yarn.lock
+
+# Generated / session artifacts
+.superpowers/
 
 # Logs
 *.log

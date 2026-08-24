@@ -83,8 +83,8 @@ describe('Nested Validation', () => {
 
       // Check nested error properties
       const nestedErrors = errors[0].children!;
-      expect(nestedErrors.some(e => e.property === 'street')).toBe(true);
-      expect(nestedErrors.some(e => e.property === 'city')).toBe(true);
+      expect(nestedErrors.some((e) => e.property === 'street')).toBe(true);
+      expect(nestedErrors.some((e) => e.property === 'city')).toBe(true);
     });
 
     it('should handle deeply nested objects', () => {
@@ -203,8 +203,8 @@ describe('Nested Validation', () => {
 
       // Check that errors have array indices in property names
       const nestedErrors = errors[0].children!;
-      expect(nestedErrors.some(e => e.property.includes('[0]'))).toBe(true);
-      expect(nestedErrors.some(e => e.property.includes('[1]'))).toBe(true);
+      expect(nestedErrors.some((e) => e.property.includes('[0]'))).toBe(true);
+      expect(nestedErrors.some((e) => e.property.includes('[1]'))).toBe(true);
     });
 
     it('should validate complex nested array structures', () => {
@@ -314,14 +314,13 @@ describe('Nested Validation', () => {
       expect(errors).toHaveLength(2);
 
       // One error for name, one for contact
-      expect(errors.some(e => e.property === 'name')).toBe(true);
-      expect(errors.some(e => e.property === 'contact')).toBe(true);
+      expect(errors.some((e) => e.property === 'name')).toBe(true);
+      expect(errors.some((e) => e.property === 'contact')).toBe(true);
 
       // Contact error should have children
-      const contactError = errors.find(e => e.property === 'contact');
+      const contactError = errors.find((e) => e.property === 'contact');
       expect(contactError?.children).toBeDefined();
       expect(contactError?.children).toHaveLength(1);
     });
   });
 });
-

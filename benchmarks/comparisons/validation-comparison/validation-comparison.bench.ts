@@ -120,7 +120,7 @@ const validUserArray = Array.from({ length: 100 }, (_, i) =>
     email: `user${i}@example.com`,
     age: 20 + (i % 50),
     score: 50 + (i % 50),
-  })
+  }),
 );
 
 const invalidUserArray = Array.from({ length: 100 }, (_, i) =>
@@ -130,7 +130,7 @@ const invalidUserArray = Array.from({ length: 100 }, (_, i) =>
     email: `user${i}@example.com`,
     age: i % 15 === 0 ? 200 : 20 + (i % 50), // Every 15th is invalid
     score: 50 + (i % 50),
-  })
+  }),
 );
 
 // ============================================================================
@@ -287,7 +287,9 @@ new Suite('Scenario 1a: Simple Validation - Valid')
       classValidator: Math.round(cvHz).toLocaleString() + ' ops/sec',
       improvement: improvement.toFixed(2) + '%',
     });
-    console.log(`  → om-data-mapper is ${improvement > 0 ? improvement.toFixed(2) + '% faster' : Math.abs(improvement).toFixed(2) + '% slower'}\n`);
+    console.log(
+      `  → om-data-mapper is ${improvement > 0 ? improvement.toFixed(2) + '% faster' : Math.abs(improvement).toFixed(2) + '% slower'}\n`,
+    );
   })
   .run({ async: false });
 
@@ -313,7 +315,9 @@ new Suite('Scenario 1b: Simple Validation - Invalid')
       classValidator: Math.round(cvHz).toLocaleString() + ' ops/sec',
       improvement: improvement.toFixed(2) + '%',
     });
-    console.log(`  → om-data-mapper is ${improvement > 0 ? improvement.toFixed(2) + '% faster' : Math.abs(improvement).toFixed(2) + '% slower'}\n`);
+    console.log(
+      `  → om-data-mapper is ${improvement > 0 ? improvement.toFixed(2) + '% faster' : Math.abs(improvement).toFixed(2) + '% slower'}\n`,
+    );
   })
   .run({ async: false });
 
@@ -339,7 +343,9 @@ new Suite('Scenario 2a: Optional Fields - Valid')
       classValidator: Math.round(cvHz).toLocaleString() + ' ops/sec',
       improvement: improvement.toFixed(2) + '%',
     });
-    console.log(`  → om-data-mapper is ${improvement > 0 ? improvement.toFixed(2) + '% faster' : Math.abs(improvement).toFixed(2) + '% slower'}\n`);
+    console.log(
+      `  → om-data-mapper is ${improvement > 0 ? improvement.toFixed(2) + '% faster' : Math.abs(improvement).toFixed(2) + '% slower'}\n`,
+    );
   })
   .run({ async: false });
 
@@ -365,7 +371,9 @@ new Suite('Scenario 2b: Optional Fields - Invalid')
       classValidator: Math.round(cvHz).toLocaleString() + ' ops/sec',
       improvement: improvement.toFixed(2) + '%',
     });
-    console.log(`  → om-data-mapper is ${improvement > 0 ? improvement.toFixed(2) + '% faster' : Math.abs(improvement).toFixed(2) + '% slower'}\n`);
+    console.log(
+      `  → om-data-mapper is ${improvement > 0 ? improvement.toFixed(2) + '% faster' : Math.abs(improvement).toFixed(2) + '% slower'}\n`,
+    );
   })
   .run({ async: false });
 
@@ -391,7 +399,9 @@ new Suite('Scenario 3a: Array Validation - Valid')
       classValidator: Math.round(cvHz).toLocaleString() + ' ops/sec',
       improvement: improvement.toFixed(2) + '%',
     });
-    console.log(`  → om-data-mapper is ${improvement > 0 ? improvement.toFixed(2) + '% faster' : Math.abs(improvement).toFixed(2) + '% slower'}\n`);
+    console.log(
+      `  → om-data-mapper is ${improvement > 0 ? improvement.toFixed(2) + '% faster' : Math.abs(improvement).toFixed(2) + '% slower'}\n`,
+    );
   })
   .run({ async: false });
 
@@ -417,7 +427,9 @@ new Suite('Scenario 3b: Array Validation - Invalid')
       classValidator: Math.round(cvHz).toLocaleString() + ' ops/sec',
       improvement: improvement.toFixed(2) + '%',
     });
-    console.log(`  → om-data-mapper is ${improvement > 0 ? improvement.toFixed(2) + '% faster' : Math.abs(improvement).toFixed(2) + '% slower'}\n`);
+    console.log(
+      `  → om-data-mapper is ${improvement > 0 ? improvement.toFixed(2) + '% faster' : Math.abs(improvement).toFixed(2) + '% slower'}\n`,
+    );
   })
   .run({ async: false });
 
@@ -443,7 +455,9 @@ new Suite('Scenario 4a: Complex Validation - Valid')
       classValidator: Math.round(cvHz).toLocaleString() + ' ops/sec',
       improvement: improvement.toFixed(2) + '%',
     });
-    console.log(`  → om-data-mapper is ${improvement > 0 ? improvement.toFixed(2) + '% faster' : Math.abs(improvement).toFixed(2) + '% slower'}\n`);
+    console.log(
+      `  → om-data-mapper is ${improvement > 0 ? improvement.toFixed(2) + '% faster' : Math.abs(improvement).toFixed(2) + '% slower'}\n`,
+    );
   })
   .run({ async: false });
 
@@ -469,7 +483,9 @@ new Suite('Scenario 4b: Complex Validation - Invalid')
       classValidator: Math.round(cvHz).toLocaleString() + ' ops/sec',
       improvement: improvement.toFixed(2) + '%',
     });
-    console.log(`  → om-data-mapper is ${improvement > 0 ? improvement.toFixed(2) + '% faster' : Math.abs(improvement).toFixed(2) + '% slower'}\n`);
+    console.log(
+      `  → om-data-mapper is ${improvement > 0 ? improvement.toFixed(2) + '% faster' : Math.abs(improvement).toFixed(2) + '% slower'}\n`,
+    );
   })
   .run({ async: false });
 
@@ -495,7 +511,9 @@ new Suite('Scenario 5a: Large Objects - Valid')
       classValidator: Math.round(cvHz).toLocaleString() + ' ops/sec',
       improvement: improvement.toFixed(2) + '%',
     });
-    console.log(`  → om-data-mapper is ${improvement > 0 ? improvement.toFixed(2) + '% faster' : Math.abs(improvement).toFixed(2) + '% slower'}\n`);
+    console.log(
+      `  → om-data-mapper is ${improvement > 0 ? improvement.toFixed(2) + '% faster' : Math.abs(improvement).toFixed(2) + '% slower'}\n`,
+    );
   })
   .run({ async: false });
 
@@ -521,7 +539,9 @@ new Suite('Scenario 5b: Large Objects - Invalid')
       classValidator: Math.round(cvHz).toLocaleString() + ' ops/sec',
       improvement: improvement.toFixed(2) + '%',
     });
-    console.log(`  → om-data-mapper is ${improvement > 0 ? improvement.toFixed(2) + '% faster' : Math.abs(improvement).toFixed(2) + '% slower'}\n`);
+    console.log(
+      `  → om-data-mapper is ${improvement > 0 ? improvement.toFixed(2) + '% faster' : Math.abs(improvement).toFixed(2) + '% slower'}\n`,
+    );
 
     // Print summary
     console.log('\n' + '='.repeat(80));
@@ -532,7 +552,9 @@ new Suite('Scenario 5b: Large Objects - Invalid')
     // Calculate average improvement
     const improvements = results.map((r) => parseFloat(r.improvement));
     const avgImprovement = improvements.reduce((a, b) => a + b, 0) / improvements.length;
-    console.log(`\nAverage Performance: ${avgImprovement > 0 ? avgImprovement.toFixed(2) + '% faster' : Math.abs(avgImprovement).toFixed(2) + '% slower'}`);
+    console.log(
+      `\nAverage Performance: ${avgImprovement > 0 ? avgImprovement.toFixed(2) + '% faster' : Math.abs(avgImprovement).toFixed(2) + '% slower'}`,
+    );
 
     // Find best and worst scenarios
     const maxImprovement = Math.max(...improvements);
@@ -540,8 +562,12 @@ new Suite('Scenario 5b: Large Objects - Invalid')
     const bestScenario = results.find((r) => parseFloat(r.improvement) === maxImprovement);
     const worstScenario = results.find((r) => parseFloat(r.improvement) === minImprovement);
 
-    console.log(`\nBest Performance: ${bestScenario?.scenario} (${maxImprovement.toFixed(2)}% ${maxImprovement > 0 ? 'faster' : 'slower'})`);
-    console.log(`Worst Performance: ${worstScenario?.scenario} (${minImprovement.toFixed(2)}% ${minImprovement > 0 ? 'faster' : 'slower'})`);
+    console.log(
+      `\nBest Performance: ${bestScenario?.scenario} (${maxImprovement.toFixed(2)}% ${maxImprovement > 0 ? 'faster' : 'slower'})`,
+    );
+    console.log(
+      `Worst Performance: ${worstScenario?.scenario} (${minImprovement.toFixed(2)}% ${minImprovement > 0 ? 'faster' : 'slower'})`,
+    );
 
     console.log('\n' + '='.repeat(80));
     console.log('NOTES:');

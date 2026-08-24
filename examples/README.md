@@ -5,33 +5,31 @@ This directory contains practical examples demonstrating various features and us
 ## 📁 Directory Structure
 
 ### 01-basic/
+
 Basic examples for getting started with om-data-mapper.
 
 - **simple-mapping/** - Simple property mapping
   - Direct field mapping
   - Basic transformations
-  
 - **nested-mapping/** - Working with nested objects
   - Deep property access
   - Nested object transformations
-  
 - **array-mapping/** - Array transformations
   - Mapping arrays of objects
   - Array element transformations
 
 ### 02-advanced/
+
 Advanced examples showcasing powerful features.
 
 - **complex-transformations/** - Complex mapping scenarios
   - Multiple transformations
   - Conditional mapping
   - Custom transformers
-  
 - **error-handling/** - Error handling patterns
   - Validation
   - Error collection
   - Safe mode vs unsafe mode
-  
 - **composition/** - Mapper composition
   - Nested mappers
   - Reusable mapping configurations
@@ -75,4 +73,3 @@ We recommend following this order:
 - [API Documentation](../README.md#api-documentation)
 - [Performance Benchmarks](../benchmarks/README.md)
 - [Contributing Guide](../CONTRIBUTING.md)
-

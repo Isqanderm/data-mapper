@@ -107,14 +107,7 @@ export {
 } from './array';
 
 // Type checker decorators
-export {
-  IsBoolean,
-  IsDate,
-  IsObject,
-  IsEnum,
-  IsInstance,
-  IsNotEmptyObject,
-} from './typechecker';
+export { IsBoolean, IsDate, IsObject, IsEnum, IsInstance, IsNotEmptyObject } from './typechecker';
 
 // Geographic validators
 export { IsLatLong, IsLatitude, IsLongitude } from './geo';
@@ -131,4 +124,3 @@ export {
   type ValidatorConstraintInterface,
   type ValidatorConstraintOptions,
 } from './custom';
-

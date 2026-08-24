@@ -96,7 +96,7 @@ import {
   plainToInstanceArray,
   tryPlainToInstance,
   createMapper,
-  getMapper
+  getMapper,
 } from 'om-data-mapper';
 ```
 
@@ -122,6 +122,7 @@ class UnsafeUserMapper {
 ```
 
 **Опции:**
+
 - `unsafe?: boolean` - Disable error handling for maximum performance
 - `useUnsafe?: boolean` - Alias for `unsafe`
 
@@ -258,7 +259,7 @@ class UserMapper {
   name!: string;
 
   @Ignore()
-  internalField!: string;  // Won't be mapped
+  internalField!: string; // Won't be mapped
 }
 ```
 
@@ -405,7 +406,7 @@ const product = {
   price: 1000,
   discount: 10,
   category: { id: 'cat1', name: 'Electronics' },
-  tags: ['new', 'featured']
+  tags: ['new', 'featured'],
 };
 
 const dto = plainToInstance(ProductMapper, product);
@@ -507,7 +508,7 @@ import {
   Transform,
   TransformClassToPlain,
   TransformClassToClass,
-  TransformPlainToClass
+  TransformPlainToClass,
 } from 'om-data-mapper/class-transformer-compat';
 ```
 
@@ -536,6 +537,7 @@ class UserDTO {
 ```
 
 **Опции:**
+
 - `name?: string` - Map from different property name
 - `groups?: string[]` - Only expose in specific groups
 - `since?: number` - Expose starting from Версия
@@ -563,6 +565,7 @@ class UserDTO {
 ```
 
 **Опции:**
+
 - `toClassOnly?: boolean` - Only exclude when transforming to class
 - `toPlainOnly?: boolean` - Only exclude when transforming to plain
 
@@ -597,7 +600,7 @@ class UserDTO {
 const plain = {
   name: 'John',
   address: { street: '123 Main St', city: 'NYC' },
-  createdAt: '2024-01-01'
+  createdAt: '2024-01-01',
 };
 
 const user = plainToClass(UserDTO, plain);
@@ -628,6 +631,7 @@ class UserDTO {
 ```
 
 **Transform Function Параметры:**
+
 - `value` - The property value
 - `key` - The property key
 - `obj` - The source object
@@ -635,6 +639,7 @@ class UserDTO {
 - `options` - Transformation options
 
 **Опции:**
+
 - `toClassOnly?: boolean` - Only apply when transforming to class
 - `toPlainOnly?: boolean` - Only apply when transforming to plain
 
@@ -745,9 +750,9 @@ interface ClassTransformOptions {
 
 ```typescript
 const user = plainToClass(UserDTO, plain, {
-  excludeExtraneousValues: true,  // Only @Expose properties
-  groups: ['admin'],               // Only admin group
-  version: 2.0                     // Version 2.0 properties
+  excludeExtraneousValues: true, // Only @Expose properties
+  groups: ['admin'], // Only admin group
+  version: 2.0, // Version 2.0 properties
 });
 ```
 
@@ -792,10 +797,10 @@ const plain = {
       name: 'Vacation',
       photos: [
         { url: 'photo1.jpg', uploadedAt: '2024-01-01' },
-        { url: 'photo2.jpg', uploadedAt: '2024-01-02' }
-      ]
-    }
-  ]
+        { url: 'photo2.jpg', uploadedAt: '2024-01-02' },
+      ],
+    },
+  ],
 };
 
 const user = plainToClass(UserDTO, plain);
@@ -876,6 +881,7 @@ import { plainToClass, Expose, Type } from 'om-data-mapper/class-transformer-com
 ```
 
 **Преимущества:**
+
 - ✅ 10x better performance
 - ✅ No reflect-metadata dependency
 - ✅ Same API - no code changes needed
@@ -885,12 +891,12 @@ import { plainToClass, Expose, Type } from 'om-data-mapper/class-transformer-com
 
 ## Производительность Comparison
 
-| Operation | class-трансформер | om-data-маппер | Speedup |
-|-----------|------------------|----------------|---------|
-| Simple трансформация | 326K ops/sec | **3.2M ops/sec** | **10x** |
-| Nested objects | 80K ops/sec | **800K ops/sec** | **10x** |
-| Array трансформация | 50K ops/sec | **500K ops/sec** | **10x** |
-| Complex трансформацияs | 150K ops/sec | **1.5M ops/sec** | **10x** |
+| Operation              | class-трансформер | om-data-маппер   | Speedup |
+| ---------------------- | ----------------- | ---------------- | ------- |
+| Simple трансформация   | 326K ops/sec      | **3.2M ops/sec** | **10x** |
+| Nested objects         | 80K ops/sec       | **800K ops/sec** | **10x** |
+| Array трансформация    | 50K ops/sec       | **500K ops/sec** | **10x** |
+| Complex трансформацияs | 150K ops/sec      | **1.5M ops/sec** | **10x** |
 
 ---
 
@@ -1286,6 +1292,7 @@ Ensure your `tsconfig.json` is configured correctly:
 ```
 
 **Важно:**
+
 - ✅ `experimentalDecorators: false` - Use TC39 Stage 3 декораторs
 - ✅ `useDefineForClassFields: true` - Обязательно for декораторs
 - ✅ `target: "ES2022"` - For optional chaining support
@@ -1297,9 +1304,11 @@ Ensure your `tsconfig.json` is configured correctly:
 ### Decorator API
 
 **Class Decorators:**
+
 - `@Mapper<Source, Target>(options?)` - Mark class as маппер
 
 **Property Decorators:**
+
 - `@Map(sourcePath)` - Map from source path
 - `@MapFrom(transformer)` - Map using трансформер function
 - `@Transform(transformer)` - Transform value after mapping
@@ -1309,6 +1318,7 @@ Ensure your `tsconfig.json` is configured correctly:
 - `@MapNested(MapperClass)` - Map nested object
 
 **Functions:**
+
 - `plainToInstance(MapperClass, source)` - Transform to instance
 - `plainToInstanceArray(MapperClass, sources)` - Transform array
 - `tryPlainToInstance(MapperClass, source)` - Transform with errors
@@ -1318,6 +1328,7 @@ Ensure your `tsconfig.json` is configured correctly:
 ### API совместимости
 
 **Decorators:**
+
 - `@Expose(options?)` - Expose property
 - `@Exclude(options?)` - Exclude property
 - `@Type(typeFunction, options?)` - Specify type
@@ -1327,6 +1338,7 @@ Ensure your `tsconfig.json` is configured correctly:
 - `@TransformPlainToClass(classType, options?)` - Method декоратор
 
 **Functions:**
+
 - `plainToClass(Class, plain, options?)` - Plain to class
 - `plainToInstance(Class, plain, options?)` - Alias for plainToClass
 - `plainToClassFromExist(instance, plain, options?)` - Update instance
@@ -1353,4 +1365,3 @@ The трансформер module provides:
 - ✅ **Production-ready** - battle-tested and reliable
 
 Start transforming with confidence! 🚀
-

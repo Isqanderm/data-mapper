@@ -99,7 +99,7 @@ describe('Advanced Validators', () => {
       class TestDto {
         requireAddress!: boolean;
 
-        @ValidateIf(o => o.requireAddress === true)
+        @ValidateIf((o) => o.requireAddress === true)
         @IsString()
         @MinLength(5)
         address?: string;
@@ -128,7 +128,7 @@ describe('Advanced Validators', () => {
       class TestDto {
         type!: string;
 
-        @ValidateIf(o => o.type === 'premium')
+        @ValidateIf((o) => o.type === 'premium')
         @IsNumber()
         @Min(100)
         price?: number;
@@ -146,7 +146,7 @@ describe('Advanced Validators', () => {
       class TestDto {
         type!: string;
 
-        @ValidateIf(o => o.type === 'premium')
+        @ValidateIf((o) => o.type === 'premium')
         @IsNumber()
         @Min(100)
         price?: number;
@@ -167,7 +167,7 @@ describe('Advanced Validators', () => {
         country!: string;
         state?: string;
 
-        @ValidateIf(o => o.country === 'USA' && o.state !== undefined)
+        @ValidateIf((o) => o.country === 'USA' && o.state !== undefined)
         @IsString()
         @MinLength(2)
         zipCode?: string;
@@ -203,7 +203,7 @@ describe('Advanced Validators', () => {
       class TestDto {
         hasEmail!: boolean;
 
-        @ValidateIf(o => o.hasEmail)
+        @ValidateIf((o) => o.hasEmail)
         @IsString()
         @MinLength(5)
         @IsNotEmpty()
@@ -428,4 +428,3 @@ describe('Advanced Validators', () => {
     });
   });
 });
-

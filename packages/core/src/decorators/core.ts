@@ -191,7 +191,7 @@ export function Mapper<Source = any, Target = any>(options: MapperOptions = {}) 
           'target',
           '__errors',
           'cache',
-          functionBody
+          functionBody,
         ) as (source: any, target: any, errors: string[], cache: any) => void;
 
         // Create a minimal BaseMapper-compatible object
@@ -256,9 +256,7 @@ export function Mapper<Source = any, Target = any>(options: MapperOptions = {}) 
         // Handle value transformation
         if (mapping.transformValue) {
           cache[`${key}__valueTransform`] = mapping.transformValue;
-          const defaultPart = hasDefault
-            ? ` ?? cache['__defValues']['${key}']`
-            : '';
+          const defaultPart = hasDefault ? ` ?? cache['__defValues']['${key}']` : '';
 
           const body = `
             target.${key} = cache['${key}__valueTransform'](source?.${safeSourcePath})${defaultPart};
@@ -268,9 +266,7 @@ export function Mapper<Source = any, Target = any>(options: MapperOptions = {}) 
         }
 
         // Simple path mapping with optional default
-        const defaultPart = hasDefault
-          ? ` ?? cache['__defValues']['${key}']`
-          : '';
+        const defaultPart = hasDefault ? ` ?? cache['__defValues']['${key}']` : '';
 
         const body = `
           target.${key} = source?.${safeSourcePath}${defaultPart};
@@ -413,9 +409,7 @@ export function Mapper<Source = any, Target = any>(options: MapperOptions = {}) 
           cache[`${key}__transformer`] = mapping.transformer;
 
           if (hasTransformValue) {
-            const defaultPart = hasDefault
-              ? ` ?? cache['__defValues']['${key}']`
-              : '';
+            const defaultPart = hasDefault ? ` ?? cache['__defValues']['${key}']` : '';
 
             body = `
               const __nestedSource = cache['${key}__transformer'](source);
@@ -425,9 +419,7 @@ export function Mapper<Source = any, Target = any>(options: MapperOptions = {}) 
               target.${key} = cache['${key}__valueTransform'](__nestedResult)${defaultPart};
             `;
           } else {
-            const defaultPart = hasDefault
-              ? ` ?? cache['__defValues']['${key}']`
-              : '';
+            const defaultPart = hasDefault ? ` ?? cache['__defValues']['${key}']` : '';
 
             body = `
               const __nestedSource = cache['${key}__transformer'](source);
@@ -442,9 +434,7 @@ export function Mapper<Source = any, Target = any>(options: MapperOptions = {}) 
           const safeSourcePath = generateSafePropertyAccess(mapping.sourcePath);
 
           if (hasTransformValue) {
-            const defaultPart = hasDefault
-              ? ` ?? cache['__defValues']['${key}']`
-              : '';
+            const defaultPart = hasDefault ? ` ?? cache['__defValues']['${key}']` : '';
 
             body = `
               const __nestedSource = source?.${safeSourcePath};
@@ -454,9 +444,7 @@ export function Mapper<Source = any, Target = any>(options: MapperOptions = {}) 
               target.${key} = cache['${key}__valueTransform'](__nestedResult)${defaultPart};
             `;
           } else {
-            const defaultPart = hasDefault
-              ? ` ?? cache['__defValues']['${key}']`
-              : '';
+            const defaultPart = hasDefault ? ` ?? cache['__defValues']['${key}']` : '';
 
             body = `
               const __nestedSource = source?.${safeSourcePath};
@@ -469,18 +457,14 @@ export function Mapper<Source = any, Target = any>(options: MapperOptions = {}) 
         // No source specified, use entire source object
         else {
           if (hasTransformValue) {
-            const defaultPart = hasDefault
-              ? ` ?? cache['__defValues']['${key}']`
-              : '';
+            const defaultPart = hasDefault ? ` ?? cache['__defValues']['${key}']` : '';
 
             body = `
               const __nestedResult = cache['${key}__nestedMapper'].transform(source);
               target.${key} = cache['${key}__valueTransform'](__nestedResult)${defaultPart};
             `;
           } else {
-            const defaultPart = hasDefault
-              ? ` ?? cache['__defValues']['${key}']`
-              : '';
+            const defaultPart = hasDefault ? ` ?? cache['__defValues']['${key}']` : '';
 
             body = `
               target.${key} = cache['${key}__nestedMapper'].transform(source)${defaultPart};
@@ -1182,4 +1166,3 @@ export function Ignore() {
     });
   };
 }
-

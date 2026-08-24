@@ -186,7 +186,9 @@ describe('class-transformer decorators - Advanced scenarios', () => {
       class Post {
         @Expose()
         @Type(() => Tag)
-        @Transform(({ value }) => value.map((tag: Tag) => ({ ...tag, name: tag.name.toUpperCase() })))
+        @Transform(({ value }) =>
+          value.map((tag: Tag) => ({ ...tag, name: tag.name.toUpperCase() })),
+        )
         tags!: Tag[];
       }
 
@@ -320,4 +322,3 @@ describe('class-transformer decorators - Advanced scenarios', () => {
     });
   });
 });
-

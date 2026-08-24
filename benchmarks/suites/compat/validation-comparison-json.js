@@ -256,4 +256,3 @@ function outputResults() {
 
 // Run benchmarks
 runAllBenchmarks().catch(console.error);
-

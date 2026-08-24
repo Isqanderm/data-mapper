@@ -323,7 +323,9 @@ new Suite('Scenario 1: Simple Transformation')
       classTransformer: Math.round(ctHz).toLocaleString() + ' ops/sec',
       improvement: improvement.toFixed(2) + '%',
     });
-    console.log(`  → om-data-mapper is ${improvement > 0 ? improvement.toFixed(2) + '% faster' : Math.abs(improvement).toFixed(2) + '% slower'}\n`);
+    console.log(
+      `  → om-data-mapper is ${improvement > 0 ? improvement.toFixed(2) + '% faster' : Math.abs(improvement).toFixed(2) + '% slower'}\n`,
+    );
   })
   .run({ async: false });
 
@@ -349,7 +351,9 @@ new Suite('Scenario 2: Nested Objects')
       classTransformer: Math.round(ctHz).toLocaleString() + ' ops/sec',
       improvement: improvement.toFixed(2) + '%',
     });
-    console.log(`  → om-data-mapper is ${improvement > 0 ? improvement.toFixed(2) + '% faster' : Math.abs(improvement).toFixed(2) + '% slower'}\n`);
+    console.log(
+      `  → om-data-mapper is ${improvement > 0 ? improvement.toFixed(2) + '% faster' : Math.abs(improvement).toFixed(2) + '% slower'}\n`,
+    );
   })
   .run({ async: false });
 
@@ -375,7 +379,9 @@ new Suite('Scenario 3: Array Transformation')
       classTransformer: Math.round(ctHz).toLocaleString() + ' ops/sec',
       improvement: improvement.toFixed(2) + '%',
     });
-    console.log(`  → om-data-mapper is ${improvement > 0 ? improvement.toFixed(2) + '% faster' : Math.abs(improvement).toFixed(2) + '% slower'}\n`);
+    console.log(
+      `  → om-data-mapper is ${improvement > 0 ? improvement.toFixed(2) + '% faster' : Math.abs(improvement).toFixed(2) + '% slower'}\n`,
+    );
   })
   .run({ async: false });
 
@@ -401,7 +407,9 @@ new Suite('Scenario 4: Complex Decorators')
       classTransformer: Math.round(ctHz).toLocaleString() + ' ops/sec',
       improvement: improvement.toFixed(2) + '%',
     });
-    console.log(`  → om-data-mapper is ${improvement > 0 ? improvement.toFixed(2) + '% faster' : Math.abs(improvement).toFixed(2) + '% slower'}\n`);
+    console.log(
+      `  → om-data-mapper is ${improvement > 0 ? improvement.toFixed(2) + '% faster' : Math.abs(improvement).toFixed(2) + '% slower'}\n`,
+    );
   })
   .run({ async: false });
 
@@ -427,7 +435,9 @@ new Suite('Scenario 5: Serialization')
       classTransformer: Math.round(ctHz).toLocaleString() + ' ops/sec',
       improvement: improvement.toFixed(2) + '%',
     });
-    console.log(`  → om-data-mapper is ${improvement > 0 ? improvement.toFixed(2) + '% faster' : Math.abs(improvement).toFixed(2) + '% slower'}\n`);
+    console.log(
+      `  → om-data-mapper is ${improvement > 0 ? improvement.toFixed(2) + '% faster' : Math.abs(improvement).toFixed(2) + '% slower'}\n`,
+    );
   })
   .run({ async: false });
 
@@ -453,7 +463,9 @@ new Suite('Scenario 6: Large Objects')
       classTransformer: Math.round(ctHz).toLocaleString() + ' ops/sec',
       improvement: improvement.toFixed(2) + '%',
     });
-    console.log(`  → om-data-mapper is ${improvement > 0 ? improvement.toFixed(2) + '% faster' : Math.abs(improvement).toFixed(2) + '% slower'}\n`);
+    console.log(
+      `  → om-data-mapper is ${improvement > 0 ? improvement.toFixed(2) + '% faster' : Math.abs(improvement).toFixed(2) + '% slower'}\n`,
+    );
 
     // Print summary
     console.log('\n' + '='.repeat(80));
@@ -464,7 +476,9 @@ new Suite('Scenario 6: Large Objects')
     // Calculate average improvement
     const improvements = results.map((r) => parseFloat(r.improvement));
     const avgImprovement = improvements.reduce((a, b) => a + b, 0) / improvements.length;
-    console.log(`\nAverage Performance: ${avgImprovement > 0 ? avgImprovement.toFixed(2) + '% faster' : Math.abs(avgImprovement).toFixed(2) + '% slower'}`);
+    console.log(
+      `\nAverage Performance: ${avgImprovement > 0 ? avgImprovement.toFixed(2) + '% faster' : Math.abs(avgImprovement).toFixed(2) + '% slower'}`,
+    );
 
     // Find best and worst scenarios
     const maxImprovement = Math.max(...improvements);
@@ -472,10 +486,13 @@ new Suite('Scenario 6: Large Objects')
     const bestScenario = results.find((r) => parseFloat(r.improvement) === maxImprovement);
     const worstScenario = results.find((r) => parseFloat(r.improvement) === minImprovement);
 
-    console.log(`\nBest Performance: ${bestScenario?.scenario} (${maxImprovement.toFixed(2)}% ${maxImprovement > 0 ? 'faster' : 'slower'})`);
-    console.log(`Worst Performance: ${worstScenario?.scenario} (${minImprovement.toFixed(2)}% ${minImprovement > 0 ? 'faster' : 'slower'})`);
+    console.log(
+      `\nBest Performance: ${bestScenario?.scenario} (${maxImprovement.toFixed(2)}% ${maxImprovement > 0 ? 'faster' : 'slower'})`,
+    );
+    console.log(
+      `Worst Performance: ${worstScenario?.scenario} (${minImprovement.toFixed(2)}% ${minImprovement > 0 ? 'faster' : 'slower'})`,
+    );
 
     console.log('\n' + '='.repeat(80) + '\n');
   })
   .run({ async: false });
-

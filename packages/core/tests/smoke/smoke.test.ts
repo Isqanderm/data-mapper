@@ -64,4 +64,3 @@ describe('Smoke Test - Decorator API', () => {
     expect(result.userEmail).toBe('alice@example.com');
   });
 });
-

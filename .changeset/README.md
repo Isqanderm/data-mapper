@@ -3,6 +3,7 @@
 ## What are changesets?
 
 Changesets are a way of managing and documenting changes to a monorepo. They allow teams to:
+
 - Document changes with clear descriptions
 - Manage versioning across multiple packages
 - Automate changelog generation
@@ -17,6 +18,7 @@ pnpm changeset
 ```
 
 This will prompt you to:
+
 1. Select which packages have changed
 2. Determine the type of change (major, minor, or patch)
 3. Write a summary of the change

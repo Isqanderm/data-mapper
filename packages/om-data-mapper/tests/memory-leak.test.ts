@@ -43,7 +43,7 @@ function forceGC(): void {
 async function measureMemoryGrowth(
   operation: () => void,
   iterations: number,
-  warmupIterations: number = 1000
+  warmupIterations: number = 1000,
 ): Promise<{ initialMB: number; finalMB: number; growthMB: number; growthPercent: number }> {
   // Warmup phase - let JIT compiler optimize
   for (let i = 0; i < warmupIterations; i++) {
@@ -52,7 +52,7 @@ async function measureMemoryGrowth(
 
   // Force GC before measurement
   forceGC();
-  await new Promise(resolve => setTimeout(resolve, 100));
+  await new Promise((resolve) => setTimeout(resolve, 100));
   forceGC();
 
   const initialMemory = getMemoryUsageMB();
@@ -64,7 +64,7 @@ async function measureMemoryGrowth(
 
   // Force GC after operations
   forceGC();
-  await new Promise(resolve => setTimeout(resolve, 100));
+  await new Promise((resolve) => setTimeout(resolve, 100));
   forceGC();
 
   const finalMemory = getMemoryUsageMB();
@@ -106,10 +106,12 @@ describe('Memory Leak Tests - Simple Validation', () => {
         validateSync(dto);
       },
       10000,
-      1000
+      1000,
     );
 
-    console.log(`Simple validation memory: ${result.initialMB.toFixed(2)}MB -> ${result.finalMB.toFixed(2)}MB (${result.growthMB >= 0 ? '+' : ''}${result.growthMB.toFixed(2)}MB, ${result.growthPercent >= 0 ? '+' : ''}${result.growthPercent.toFixed(2)}%)`);
+    console.log(
+      `Simple validation memory: ${result.initialMB.toFixed(2)}MB -> ${result.finalMB.toFixed(2)}MB (${result.growthMB >= 0 ? '+' : ''}${result.growthMB.toFixed(2)}MB, ${result.growthPercent >= 0 ? '+' : ''}${result.growthPercent.toFixed(2)}%)`,
+    );
 
     // Memory growth should be reasonable (< 10MB absolute growth)
     // Note: Negative growth (memory decrease) is good - it means GC is working
@@ -126,10 +128,12 @@ describe('Memory Leak Tests - Simple Validation', () => {
         validateSync(dto);
       },
       5000,
-      500
+      500,
     );
 
-    console.log(`Create + validate memory: ${result.initialMB.toFixed(2)}MB -> ${result.finalMB.toFixed(2)}MB (${result.growthMB >= 0 ? '+' : ''}${result.growthMB.toFixed(2)}MB, ${result.growthPercent >= 0 ? '+' : ''}${result.growthPercent.toFixed(2)}%)`);
+    console.log(
+      `Create + validate memory: ${result.initialMB.toFixed(2)}MB -> ${result.finalMB.toFixed(2)}MB (${result.growthMB >= 0 ? '+' : ''}${result.growthMB.toFixed(2)}MB, ${result.growthPercent >= 0 ? '+' : ''}${result.growthPercent.toFixed(2)}%)`,
+    );
 
     // Memory growth should be reasonable (< 15MB absolute growth)
     expect(Math.abs(result.growthMB)).toBeLessThan(15);
@@ -194,10 +198,12 @@ describe('Memory Leak Tests - Complex Validation', () => {
         validateSync(dto);
       },
       5000,
-      500
+      500,
     );
 
-    console.log(`Nested validation memory: ${result.initialMB.toFixed(2)}MB -> ${result.finalMB.toFixed(2)}MB (${result.growthMB >= 0 ? '+' : ''}${result.growthMB.toFixed(2)}MB, ${result.growthPercent >= 0 ? '+' : ''}${result.growthPercent.toFixed(2)}%)`);
+    console.log(
+      `Nested validation memory: ${result.initialMB.toFixed(2)}MB -> ${result.finalMB.toFixed(2)}MB (${result.growthMB >= 0 ? '+' : ''}${result.growthMB.toFixed(2)}MB, ${result.growthPercent >= 0 ? '+' : ''}${result.growthPercent.toFixed(2)}%)`,
+    );
 
     // Memory growth should be reasonable (< 10MB absolute growth)
     expect(Math.abs(result.growthMB)).toBeLessThan(10);
@@ -243,10 +249,12 @@ describe('Memory Leak Tests - Array Validation', () => {
         validateSync(dto);
       },
       3000,
-      300
+      300,
     );
 
-    console.log(`Array validation memory: ${result.initialMB.toFixed(2)}MB -> ${result.finalMB.toFixed(2)}MB (${result.growthMB >= 0 ? '+' : ''}${result.growthMB.toFixed(2)}MB, ${result.growthPercent >= 0 ? '+' : ''}${result.growthPercent.toFixed(2)}%)`);
+    console.log(
+      `Array validation memory: ${result.initialMB.toFixed(2)}MB -> ${result.finalMB.toFixed(2)}MB (${result.growthMB >= 0 ? '+' : ''}${result.growthMB.toFixed(2)}MB, ${result.growthPercent >= 0 ? '+' : ''}${result.growthPercent.toFixed(2)}%)`,
+    );
 
     // Memory growth should be reasonable (< 10MB absolute growth)
     expect(Math.abs(result.growthMB)).toBeLessThan(10);
@@ -277,10 +285,12 @@ describe('Memory Leak Tests - Transformation', () => {
         plainToInstance(UserDto, plain);
       },
       10000,
-      1000
+      1000,
     );
 
-    console.log(`Transformation memory: ${result.initialMB.toFixed(2)}MB -> ${result.finalMB.toFixed(2)}MB (${result.growthMB >= 0 ? '+' : ''}${result.growthMB.toFixed(2)}MB, ${result.growthPercent >= 0 ? '+' : ''}${result.growthPercent.toFixed(2)}%)`);
+    console.log(
+      `Transformation memory: ${result.initialMB.toFixed(2)}MB -> ${result.finalMB.toFixed(2)}MB (${result.growthMB >= 0 ? '+' : ''}${result.growthMB.toFixed(2)}MB, ${result.growthPercent >= 0 ? '+' : ''}${result.growthPercent.toFixed(2)}%)`,
+    );
 
     // Memory growth should be reasonable (< 10MB absolute growth)
     expect(Math.abs(result.growthMB)).toBeLessThan(10);
@@ -314,13 +324,14 @@ describe('Memory Leak Tests - Combined Operations', () => {
         validateSync(dto);
       },
       5000,
-      500
+      500,
     );
 
-    console.log(`Transform + validate memory: ${result.initialMB.toFixed(2)}MB -> ${result.finalMB.toFixed(2)}MB (${result.growthMB >= 0 ? '+' : ''}${result.growthMB.toFixed(2)}MB, ${result.growthPercent >= 0 ? '+' : ''}${result.growthPercent.toFixed(2)}%)`);
+    console.log(
+      `Transform + validate memory: ${result.initialMB.toFixed(2)}MB -> ${result.finalMB.toFixed(2)}MB (${result.growthMB >= 0 ? '+' : ''}${result.growthMB.toFixed(2)}MB, ${result.growthPercent >= 0 ? '+' : ''}${result.growthPercent.toFixed(2)}%)`,
+    );
 
     // Memory growth should be reasonable (< 15MB absolute growth)
     expect(Math.abs(result.growthMB)).toBeLessThan(15);
   });
 });
-

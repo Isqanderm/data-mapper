@@ -9,26 +9,31 @@ The benchmark suite tests various validation scenarios to demonstrate the perfor
 ## Benchmark Scenarios
 
 ### 1. Simple Property Validation (5-10 properties)
+
 - **Valid Data**: Tests validation performance when all data passes validation
 - **Invalid Data**: Tests validation performance when data contains validation errors
 - Includes: `@IsString()`, `@MinLength()`, `@MaxLength()`, `@IsInt()`, `@Min()`, `@Max()`, `@IsPositive()`
 
 ### 2. Optional Fields
+
 - **Valid Data**: Tests optional field handling with missing optional properties
 - **Invalid Data**: Tests optional field handling with invalid optional values
 - Includes: `@IsOptional()`, `@IsDefined()`, `@IsNotEmpty()`
 
 ### 3. Array Validation (100 objects)
+
 - **Valid Data**: Validates 100 objects with all valid data
 - **Invalid Data**: Validates 100 objects with some invalid entries
 - Tests bulk validation performance
 
 ### 4. Complex Validation (Multiple Constraints)
+
 - **Valid Data**: Tests complex DTOs with multiple validation rules per property
 - **Invalid Data**: Tests error accumulation with multiple constraint violations
 - Includes: Product DTO with 6 properties and multiple constraints each
 
 ### 5. Large Objects (50+ properties)
+
 - **Valid Data**: Tests validation of objects with many properties
 - **Invalid Data**: Tests error detection across many properties
 - Demonstrates scalability of validation engine
@@ -96,17 +101,20 @@ The benchmark demonstrates that om-data-mapper provides:
 The benchmark tests the following decorators:
 
 ### Common
+
 - `@IsOptional()`
 - `@IsDefined()`
 - `@IsNotEmpty()`
 
 ### String
+
 - `@IsString()`
 - `@MinLength(min)`
 - `@MaxLength(max)`
 - `@Length(min, max)`
 
 ### Number
+
 - `@IsNumber()`
 - `@IsInt()`
 - `@Min(min)`
@@ -117,20 +125,25 @@ The benchmark tests the following decorators:
 ## Interpreting Results
 
 ### Operations per Second (ops/sec)
+
 Higher is better. Indicates how many validation operations can be performed per second.
 
 ### Improvement Percentage
+
 - **Positive %**: om-data-mapper is faster
 - **Negative %**: class-validator is faster
 
 ### Typical Results
+
 Based on JIT compilation approach, expect:
+
 - **20,000-40,000% faster** for simple validations
 - **30,000-60,000% faster** for complex validations
 - **35,000-50,000% faster** for array validations (100 objects)
 - **Performance scales with object complexity and validation count**
 
 Note: The massive performance improvement is due to:
+
 1. JIT compilation eliminates reflection overhead
 2. Compiled validators are cached and reused
 3. Direct property access instead of metadata lookups
@@ -146,7 +159,9 @@ Note: The massive performance improvement is due to:
 ## Troubleshooting
 
 ### TypeScript Errors
+
 Ensure you're using TypeScript 5.3+ with decorator support:
+
 ```json
 {
   "compilerOptions": {
@@ -157,12 +172,15 @@ Ensure you're using TypeScript 5.3+ with decorator support:
 ```
 
 ### Import Errors
+
 Make sure both libraries are installed:
+
 ```bash
 npm install class-validator
 ```
 
 ### Performance Variations
+
 - Run the benchmark multiple times for consistent results
 - Close other applications to reduce system load
 - Use Node.js 18+ for best performance
@@ -179,4 +197,3 @@ To add new validation scenarios:
 ## License
 
 MIT
-

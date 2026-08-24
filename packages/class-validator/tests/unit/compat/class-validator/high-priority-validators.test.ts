@@ -270,4 +270,3 @@ describe('class-validator-compat - High Priority Validators', () => {
     });
   });
 });
-

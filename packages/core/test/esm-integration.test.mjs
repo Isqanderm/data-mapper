@@ -105,7 +105,7 @@ async function testStaticImportValidation() {
     } else {
       failedTests++;
       logError(`Found ${issues.length} imports without proper extensions:`);
-      issues.forEach(issue => {
+      issues.forEach((issue) => {
         console.log(`    ${issue.file}:${issue.line} - "${issue.import}"`);
       });
       return false;
@@ -170,7 +170,7 @@ async function testMainEntryPoint() {
       'getMapper',
     ];
 
-    const missingExports = expectedExports.filter(name => !(name in mainModule));
+    const missingExports = expectedExports.filter((name) => !(name in mainModule));
 
     if (missingExports.length === 0) {
       passedTests++;
@@ -211,7 +211,7 @@ async function testDecoratorModule() {
       'getMapper',
     ];
 
-    const missingExports = expectedExports.filter(name => !(name in decoratorModule));
+    const missingExports = expectedExports.filter((name) => !(name in decoratorModule));
 
     if (missingExports.length === 0) {
       passedTests++;
@@ -241,7 +241,11 @@ async function testCoreModule() {
 
     assert.ok('Mapper' in coreModule, 'Core Mapper should be exported');
     assert.ok(coreModule.Mapper, 'Mapper should exist');
-    assert.strictEqual(typeof coreModule.Mapper.create, 'function', 'Mapper.create should be a function');
+    assert.strictEqual(
+      typeof coreModule.Mapper.create,
+      'function',
+      'Mapper.create should be a function',
+    );
 
     passedTests++;
     logSuccess('Core module imports successfully');
@@ -314,7 +318,7 @@ async function testArrayTransformation() {
       { name: 'Charlie', age: 35 },
     ];
 
-    const results = sources.map(source => mapper.execute(source).result);
+    const results = sources.map((source) => mapper.execute(source).result);
 
     assert.strictEqual(results.length, 3, 'Should transform all items');
     assert.strictEqual(results[0].fullName, 'Alice', 'First item should be mapped');
@@ -371,7 +375,7 @@ async function testExportTypes() {
     } else {
       failedTests++;
       logError(`Type validation failed:`);
-      typeErrors.forEach(err => console.log(`    ${err}`));
+      typeErrors.forEach((err) => console.log(`    ${err}`));
       return false;
     }
   } catch (error) {
@@ -422,9 +426,8 @@ async function runTests() {
 }
 
 // Run tests
-runTests().catch(error => {
+runTests().catch((error) => {
   logError(`Test runner crashed: ${error.message}`);
   console.error(error);
   process.exit(1);
 });
-

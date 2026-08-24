@@ -673,4 +673,3 @@ describe('class-transformer Compatibility (TC39 Stage 3 Decorators)', () => {
     });
   });
 });
-

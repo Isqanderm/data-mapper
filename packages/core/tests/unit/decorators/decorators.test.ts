@@ -1,13 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import {
-  Mapper,
-  Map,
-  MapFrom,
-  Default,
-  Transform,
-  MapWith,
-  Ignore,
-} from '../../../src/decorators';
+import { Mapper, Map, MapFrom, Default, Transform, MapWith, Ignore } from '../../../src/decorators';
 
 describe('Decorator-Based Mapper', () => {
   describe('@Mapper decorator', () => {

@@ -74,4 +74,3 @@ export function getValidatorName(validatorClass: new () => ValidatorConstraintIn
   const metadata = (validatorClass as any).__validatorMetadata;
   return metadata?.name || validatorClass.name;
 }
-

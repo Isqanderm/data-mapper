@@ -112,7 +112,7 @@ export interface IMapper<Source = any, Target = any> {
 export type MapperMethods<Source = any, Target = any> = {
   transform: (source: Source) => Target;
   tryTransform: (source: Source) => { result: Target; errors: string[] };
-}
+};
 
 /**
  * Metadata for a single property mapping
@@ -272,4 +272,3 @@ export function updatePropertyMapping<Source = any, Target = any>(
   };
   metadata.properties.set(propertyKey, { ...existing, ...updates });
 }
-

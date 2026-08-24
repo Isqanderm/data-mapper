@@ -88,9 +88,15 @@ function printResults(omResult: BenchmarkResult, cvResult: BenchmarkResult) {
   const improvement = cvResult.avgTime / omResult.avgTime;
   const opsImprovement = omResult.opsPerSecond / cvResult.opsPerSecond;
 
-  console.log(`  om-data-mapper: ${formatTime(omResult.avgTime)} (${formatNumber(omResult.opsPerSecond)} ops/sec)`);
-  console.log(`  class-validator: ${formatTime(cvResult.avgTime)} (${formatNumber(cvResult.opsPerSecond)} ops/sec)`);
-  console.log(`  ⚡ Improvement: ${formatNumber(improvement)}x faster (${formatNumber(opsImprovement)}x more ops/sec)`);
+  console.log(
+    `  om-data-mapper: ${formatTime(omResult.avgTime)} (${formatNumber(omResult.opsPerSecond)} ops/sec)`,
+  );
+  console.log(
+    `  class-validator: ${formatTime(cvResult.avgTime)} (${formatNumber(cvResult.opsPerSecond)} ops/sec)`,
+  );
+  console.log(
+    `  ⚡ Improvement: ${formatNumber(improvement)}x faster (${formatNumber(opsImprovement)}x more ops/sec)`,
+  );
 }
 
 // ============================================================================
@@ -160,7 +166,12 @@ async function benchmarkSimpleValidation() {
   dtoCV.country = 'USA';
 
   const omResult = await benchmark('om-data-mapper', () => omValidateSync(dto), 10000, 1000);
-  const cvResult = await benchmark('class-validator', () => classValidator.validateSync(dtoCV), 10000, 1000);
+  const cvResult = await benchmark(
+    'class-validator',
+    () => classValidator.validateSync(dtoCV),
+    10000,
+    1000,
+  );
 
   printResults(omResult, cvResult);
 }
@@ -256,7 +267,12 @@ async function benchmarkNestedValidation() {
   userCV.billingAddress.zipCode = '90001';
 
   const omResult = await benchmark('om-data-mapper', () => omValidateSync(user), 5000, 500);
-  const cvResult = await benchmark('class-validator', () => classValidator.validateSync(userCV), 5000, 500);
+  const cvResult = await benchmark(
+    'class-validator',
+    () => classValidator.validateSync(userCV),
+    5000,
+    500,
+  );
 
   printResults(omResult, cvResult);
 }
@@ -339,7 +355,12 @@ async function benchmarkArrayValidation() {
   }
 
   const omResult = await benchmark('om-data-mapper', () => omValidateSync(order), 1000, 100);
-  const cvResult = await benchmark('class-validator', () => classValidator.validateSync(orderCV), 1000, 100);
+  const cvResult = await benchmark(
+    'class-validator',
+    () => classValidator.validateSync(orderCV),
+    1000,
+    100,
+  );
 
   printResults(omResult, cvResult);
 }
@@ -367,7 +388,12 @@ async function benchmarkValidationWithErrors() {
   dtoCV.country = '';
 
   const omResult = await benchmark('om-data-mapper', () => omValidateSync(dto), 5000, 500);
-  const cvResult = await benchmark('class-validator', () => classValidator.validateSync(dtoCV), 5000, 500);
+  const cvResult = await benchmark(
+    'class-validator',
+    () => classValidator.validateSync(dtoCV),
+    5000,
+    500,
+  );
 
   printResults(omResult, cvResult);
 }
@@ -399,4 +425,3 @@ async function main() {
 }
 
 main().catch(console.error);
-

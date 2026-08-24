@@ -257,4 +257,3 @@ export interface ClassValidationMetadata {
    */
   properties: Map<string | symbol, PropertyValidationMetadata>;
 }
-

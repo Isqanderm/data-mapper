@@ -4,11 +4,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import {
-  IsUUID,
-  IsIP,
-  validateSync,
-} from '../../../../src';
+import { IsUUID, IsIP, validateSync } from '../../../../src';
 import { Type } from '@om-data-mapper/class-transformer';
 import { ValidateNested } from '../../../../src/decorators/nested';
 
@@ -250,10 +246,7 @@ describe('Final Coverage Gaps', () => {
       post.comments = [
         {
           text: 'Great post!',
-          tags: [
-            { name: 'helpful' } as TagDto,
-            { name: 'informative' } as TagDto,
-          ],
+          tags: [{ name: 'helpful' } as TagDto, { name: 'informative' } as TagDto],
         } as CommentDto,
       ];
 
@@ -263,4 +256,3 @@ describe('Final Coverage Gaps', () => {
     });
   });
 });
-

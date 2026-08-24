@@ -3,13 +3,7 @@
  * These classes will be compiled and used in performance comparisons
  */
 
-import {
-  Mapper,
-  Map,
-  MapFrom,
-  Transform,
-  Default,
-} from '../../src/decorators';
+import { Mapper, Map, MapFrom, Transform, Default } from '../../src/decorators';
 
 // ============================================================================
 // Simple Mapping Mapper
@@ -228,12 +222,15 @@ export class ConditionalDecoratorMapper {
 
   @Transform((src: ConditionalSource) => {
     switch (src.status) {
-      case 'active': return 'Active User';
-      case 'inactive': return 'Inactive User';
-      case 'pending': return 'Pending Activation';
-      default: return 'Unknown';
+      case 'active':
+        return 'Active User';
+      case 'inactive':
+        return 'Inactive User';
+      case 'pending':
+        return 'Pending Activation';
+      default:
+        return 'Unknown';
     }
   })
   statusLabel!: string;
 }
-

@@ -44,12 +44,12 @@ interface PropertyValidationMetadata {
 }
 
 interface ValidationConstraint {
-  type: string;                    // например, 'isString', 'minLength'
-  value?: any;                     // Параметры ограничения
-  message?: string | Function;     // Сообщение об ошибке
-  groups?: string[];               // Группы валидации
-  always?: boolean;                // Флаг постоянной валидации
-  validator?: Function;            // Функция пользовательского валидатора
+  type: string; // например, 'isString', 'minLength'
+  value?: any; // Параметры ограничения
+  message?: string | Function; // Сообщение об ошибке
+  groups?: string[]; // Группы валидации
+  always?: boolean; // Флаг постоянной валидации
+  validator?: Function; // Функция пользовательского валидатора
 }
 ```
 
@@ -73,7 +73,7 @@ const validatorInstanceCache = new Map<
 >();
 
 export function getValidatorInstance(
-  validatorClass: new () => ValidatorConstraintInterface
+  validatorClass: new () => ValidatorConstraintInterface,
 ): ValidatorConstraintInterface {
   if (validatorInstanceCache.has(validatorClass)) {
     return validatorInstanceCache.get(validatorClass)!;
@@ -166,25 +166,25 @@ const opts = options || {};
 {
   const value = object?.name;
   const propertyErrors = {};
-  
+
   // Проверка, должно ли свойство валидироваться
   if (value !== undefined && value !== null) {
     // Ограничение: isString
     if (typeof value !== 'string') {
       propertyErrors.isString = 'name must be a string';
     }
-    
+
     // Ограничение: minLength
     if (typeof value === 'string' && value.length < 3) {
       propertyErrors.minLength = 'name must be at least 3 characters';
     }
   }
-  
+
   if (Object.keys(propertyErrors).length > 0) {
     errors.push({
       property: 'name',
       value: value,
-      constraints: propertyErrors
+      constraints: propertyErrors,
     });
   }
 }
@@ -257,7 +257,7 @@ if (typeof value === 'string' && value.length < 3) { ... }
 Группы валидации проверяются во время компиляции:
 
 ```javascript
-if (opts.groups && opts.groups.length > 0 && opts.groups.some(g => ['admin'].includes(g))) {
+if (opts.groups && opts.groups.length > 0 && opts.groups.some((g) => ['admin'].includes(g))) {
   // Валидировать только если группа совпадает
 }
 ```
@@ -290,12 +290,12 @@ if (hasValidationMetadata(value.constructor)) {
 
 По сравнению с class-validator (интерпретируемый):
 
-| Тип валидации | class-validator | om-data-mapper | Ускорение |
-|--------------|-----------------|----------------|-----------|
-| Простая (1 поле) | ~50K оп/сек | ~500K оп/сек | **10x** |
-| Сложная (10 полей) | ~10K оп/сек | ~100K оп/сек | **10x** |
-| Вложенные объекты | ~5K оп/сек | ~50K оп/сек | **10x** |
-| Асинхронная валидация | ~8K оп/сек | ~40K оп/сек | **5x** |
+| Тип валидации         | class-validator | om-data-mapper | Ускорение |
+| --------------------- | --------------- | -------------- | --------- |
+| Простая (1 поле)      | ~50K оп/сек     | ~500K оп/сек   | **10x**   |
+| Сложная (10 полей)    | ~10K оп/сек     | ~100K оп/сек   | **10x**   |
+| Вложенные объекты     | ~5K оп/сек      | ~50K оп/сек    | **10x**   |
+| Асинхронная валидация | ~8K оп/сек      | ~40K оп/сек    | **5x**    |
 
 ### Использование памяти
 
@@ -320,7 +320,7 @@ const args = {
   constraints: constraintValue.constraints || [],
   targetName: object.constructor.name,
   object: object,
-  property: 'email'
+  property: 'email',
 };
 const result = validatorInstance.validate(value, args);
 if (!result) {
@@ -348,13 +348,14 @@ asyncTasks.push(task);
 
 ```typescript
 interface ValidationError {
-  property: string;              // Имя свойства
-  value?: any;                   // Невалидное значение
-  constraints?: {                // Неудавшиеся ограничения
-    [type: string]: string;      // Сообщения об ошибках
+  property: string; // Имя свойства
+  value?: any; // Невалидное значение
+  constraints?: {
+    // Неудавшиеся ограничения
+    [type: string]: string; // Сообщения об ошибках
   };
-  children?: ValidationError[];  // Вложенные ошибки
-  target?: any;                  // Валидируемый объект
+  children?: ValidationError[]; // Вложенные ошибки
+  target?: any; // Валидируемый объект
 }
 ```
 
@@ -383,7 +384,7 @@ import { compileValidator } from 'om-data-mapper/class-validator-compat/engine/c
 
 const metadata = getValidationMetadata(MyClass);
 const code = generateValidationCode(metadata);
-console.log(code);  // Просмотр сгенерированного JavaScript
+console.log(code); // Просмотр сгенерированного JavaScript
 ```
 
 ### Профилирование производительности:
@@ -420,6 +421,3 @@ console.timeEnd('execution');
 - ✅ **Расширяемость** с пользовательскими валидаторами
 
 Эта архитектура делает `om-data-mapper` одной из самых быстрых библиотек валидации, доступных для TypeScript/JavaScript.
-
-
-

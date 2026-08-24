@@ -40,7 +40,7 @@ describe('Property-Based Testing - Email Validation', () => {
         const errors = validateSync(dto);
         return errors.length === 0;
       }),
-      { numRuns: 100 }
+      { numRuns: 100 },
     );
   });
 
@@ -52,13 +52,13 @@ describe('Property-Based Testing - Email Validation', () => {
 
     // Generate strings that are NOT valid emails
     const invalidEmails = fc.oneof(
-      fc.string({ minLength: 1, maxLength: 20 }).filter(s => !s.includes('@')),
+      fc.string({ minLength: 1, maxLength: 20 }).filter((s) => !s.includes('@')),
       fc.constant(''),
       fc.constant('invalid'),
       fc.constant('@example.com'),
       fc.constant('user@'),
       fc.constant('user@domain'),
-      fc.constant('user domain@example.com')
+      fc.constant('user domain@example.com'),
     );
 
     fc.assert(
@@ -68,7 +68,7 @@ describe('Property-Based Testing - Email Validation', () => {
         const errors = validateSync(dto);
         return errors.length > 0;
       }),
-      { numRuns: 50 }
+      { numRuns: 50 },
     );
   });
 });
@@ -87,7 +87,7 @@ describe('Property-Based Testing - URL Validation', () => {
         const errors = validateSync(dto);
         return errors.length === 0;
       }),
-      { numRuns: 100 }
+      { numRuns: 100 },
     );
   });
 });
@@ -106,7 +106,7 @@ describe('Property-Based Testing - UUID Validation', () => {
         const errors = validateSync(dto);
         return errors.length === 0;
       }),
-      { numRuns: 100 }
+      { numRuns: 100 },
     );
   });
 
@@ -121,7 +121,7 @@ describe('Property-Based Testing - UUID Validation', () => {
       fc.constant(''),
       fc.constant('not-a-uuid'),
       fc.constant('12345678-1234-1234-1234-12345678901'),
-      fc.constant('xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx')
+      fc.constant('xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'),
     );
 
     fc.assert(
@@ -131,7 +131,7 @@ describe('Property-Based Testing - UUID Validation', () => {
         const errors = validateSync(dto);
         return errors.length > 0;
       }),
-      { numRuns: 50 }
+      { numRuns: 50 },
     );
   });
 });
@@ -144,17 +144,14 @@ describe('Property-Based Testing - ISO8601 Date Validation', () => {
     }
 
     fc.assert(
-      fc.property(
-        fc.integer({ min: 0, max: 2147483647 }),
-        (timestamp) => {
-          const dto = new DateDto();
-          const date = new Date(timestamp * 1000);
-          dto.date = date.toISOString();
-          const errors = validateSync(dto);
-          return errors.length === 0;
-        }
-      ),
-      { numRuns: 100 }
+      fc.property(fc.integer({ min: 0, max: 2147483647 }), (timestamp) => {
+        const dto = new DateDto();
+        const date = new Date(timestamp * 1000);
+        dto.date = date.toISOString();
+        const errors = validateSync(dto);
+        return errors.length === 0;
+      }),
+      { numRuns: 100 },
     );
   });
 });
@@ -173,7 +170,7 @@ describe('Property-Based Testing - Number Validation', () => {
         const errors = validateSync(dto);
         return errors.length === 0;
       }),
-      { numRuns: 100 }
+      { numRuns: 100 },
     );
   });
 
@@ -185,15 +182,15 @@ describe('Property-Based Testing - Number Validation', () => {
 
     fc.assert(
       fc.property(
-        fc.double({ noNaN: true }).filter(n => Number.isFinite(n) && !Number.isInteger(n)),
+        fc.double({ noNaN: true }).filter((n) => Number.isFinite(n) && !Number.isInteger(n)),
         (num) => {
           const dto = new IntDto();
           dto.value = num;
           const errors = validateSync(dto);
           return errors.length > 0;
-        }
+        },
       ),
-      { numRuns: 50 }
+      { numRuns: 50 },
     );
   });
 
@@ -210,7 +207,7 @@ describe('Property-Based Testing - Number Validation', () => {
         const errors = validateSync(dto);
         return errors.length === 0;
       }),
-      { numRuns: 100 }
+      { numRuns: 100 },
     );
   });
 
@@ -227,7 +224,7 @@ describe('Property-Based Testing - Number Validation', () => {
         const errors = validateSync(dto);
         return errors.length > 0;
       }),
-      { numRuns: 50 }
+      { numRuns: 50 },
     );
   });
 
@@ -244,7 +241,7 @@ describe('Property-Based Testing - Number Validation', () => {
         const errors = validateSync(dto);
         return errors.length === 0;
       }),
-      { numRuns: 100 }
+      { numRuns: 100 },
     );
   });
 
@@ -263,7 +260,7 @@ describe('Property-Based Testing - Number Validation', () => {
         const errors = validateSync(dto);
         return errors.length === 0;
       }),
-      { numRuns: 100 }
+      { numRuns: 100 },
     );
   });
 
@@ -277,7 +274,7 @@ describe('Property-Based Testing - Number Validation', () => {
 
     const outOfRange = fc.oneof(
       fc.integer({ min: -1000, max: 9 }),
-      fc.integer({ min: 101, max: 1000 })
+      fc.integer({ min: 101, max: 1000 }),
     );
 
     fc.assert(
@@ -287,7 +284,7 @@ describe('Property-Based Testing - Number Validation', () => {
         const errors = validateSync(dto);
         return errors.length > 0;
       }),
-      { numRuns: 50 }
+      { numRuns: 50 },
     );
   });
 });
@@ -307,7 +304,7 @@ describe('Property-Based Testing - String Length Validation', () => {
         const errors = validateSync(dto);
         return errors.length === 0;
       }),
-      { numRuns: 100 }
+      { numRuns: 100 },
     );
   });
 
@@ -325,7 +322,7 @@ describe('Property-Based Testing - String Length Validation', () => {
         const errors = validateSync(dto);
         return errors.length > 0;
       }),
-      { numRuns: 50 }
+      { numRuns: 50 },
     );
   });
 
@@ -343,7 +340,7 @@ describe('Property-Based Testing - String Length Validation', () => {
         const errors = validateSync(dto);
         return errors.length === 0;
       }),
-      { numRuns: 100 }
+      { numRuns: 100 },
     );
   });
 
@@ -362,7 +359,7 @@ describe('Property-Based Testing - String Length Validation', () => {
         const errors = validateSync(dto);
         return errors.length === 0;
       }),
-      { numRuns: 100 }
+      { numRuns: 100 },
     );
   });
 });
@@ -375,8 +372,12 @@ describe('Property-Based Testing - String Format Validation', () => {
     }
 
     // Generate strings with only letters (a-z, A-Z)
-    const alphaChar = fc.constantFrom(...'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'.split(''));
-    const alphaString = fc.array(alphaChar, { minLength: 1, maxLength: 20 }).map(arr => arr.join(''));
+    const alphaChar = fc.constantFrom(
+      ...'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'.split(''),
+    );
+    const alphaString = fc
+      .array(alphaChar, { minLength: 1, maxLength: 20 })
+      .map((arr) => arr.join(''));
 
     fc.assert(
       fc.property(alphaString, (str) => {
@@ -385,7 +386,7 @@ describe('Property-Based Testing - String Format Validation', () => {
         const errors = validateSync(dto);
         return errors.length === 0;
       }),
-      { numRuns: 50 }
+      { numRuns: 50 },
     );
   });
 
@@ -396,8 +397,12 @@ describe('Property-Based Testing - String Format Validation', () => {
     }
 
     // Generate strings with only letters and numbers
-    const alphanumericChar = fc.constantFrom(...'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'.split(''));
-    const alphanumericString = fc.array(alphanumericChar, { minLength: 1, maxLength: 20 }).map(arr => arr.join(''));
+    const alphanumericChar = fc.constantFrom(
+      ...'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'.split(''),
+    );
+    const alphanumericString = fc
+      .array(alphanumericChar, { minLength: 1, maxLength: 20 })
+      .map((arr) => arr.join(''));
 
     fc.assert(
       fc.property(alphanumericString, (str) => {
@@ -406,7 +411,7 @@ describe('Property-Based Testing - String Format Validation', () => {
         const errors = validateSync(dto);
         return errors.length === 0;
       }),
-      { numRuns: 50 }
+      { numRuns: 50 },
     );
   });
 
@@ -419,8 +424,8 @@ describe('Property-Based Testing - String Format Validation', () => {
     // Generate valid hex colors (3 or 6 hex digits)
     const hexDigit = fc.constantFrom(...'0123456789abcdefABCDEF'.split(''));
     const hexColor = fc.oneof(
-      fc.array(hexDigit, { minLength: 6, maxLength: 6 }).map(arr => `#${arr.join('')}`),
-      fc.array(hexDigit, { minLength: 3, maxLength: 3 }).map(arr => `#${arr.join('')}`)
+      fc.array(hexDigit, { minLength: 6, maxLength: 6 }).map((arr) => `#${arr.join('')}`),
+      fc.array(hexDigit, { minLength: 3, maxLength: 3 }).map((arr) => `#${arr.join('')}`),
     );
 
     fc.assert(
@@ -430,7 +435,7 @@ describe('Property-Based Testing - String Format Validation', () => {
         const errors = validateSync(dto);
         return errors.length === 0;
       }),
-      { numRuns: 100 }
+      { numRuns: 100 },
     );
   });
 
@@ -447,7 +452,7 @@ describe('Property-Based Testing - String Format Validation', () => {
         const errors = validateSync(dto);
         return errors.length === 0;
       }),
-      { numRuns: 100 }
+      { numRuns: 100 },
     );
   });
 
@@ -459,7 +464,7 @@ describe('Property-Based Testing - String Format Validation', () => {
 
     const invalidPorts = fc.oneof(
       fc.integer({ min: 65536, max: 100000 }),
-      fc.integer({ min: -100000, max: -1 })
+      fc.integer({ min: -100000, max: -1 }),
     );
 
     fc.assert(
@@ -469,7 +474,7 @@ describe('Property-Based Testing - String Format Validation', () => {
         const errors = validateSync(dto);
         return errors.length > 0;
       }),
-      { numRuns: 50 }
+      { numRuns: 50 },
     );
   });
 });
@@ -491,7 +496,7 @@ describe('Property-Based Testing - Edge Cases', () => {
       fc.property(fc.constant(''), () => {
         return errors.length > 0;
       }),
-      { numRuns: 10 }
+      { numRuns: 10 },
     );
   });
 
@@ -509,7 +514,7 @@ describe('Property-Based Testing - Edge Cases', () => {
         // Should pass if it's a valid number (not NaN or Infinity)
         return errors.length === 0 || !Number.isFinite(num);
       }),
-      { numRuns: 100 }
+      { numRuns: 100 },
     );
   });
 
@@ -526,8 +531,7 @@ describe('Property-Based Testing - Edge Cases', () => {
         const errors = validateSync(dto);
         return errors.length === 0;
       }),
-      { numRuns: 50 }
+      { numRuns: 50 },
     );
   });
 });
-

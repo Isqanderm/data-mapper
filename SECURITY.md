@@ -92,7 +92,7 @@ This library uses dynamic code generation (`new Function()`) for performance opt
 // ✅ SAFE: Developer-defined configuration
 const userMapper = Mapper.create({
   name: 'user.fullName',
-  email: 'user.email'
+  email: 'user.email',
 });
 
 // ✅ SAFE: Using Decorator API (recommended)
@@ -134,4 +134,3 @@ If you have suggestions on how this process could be improved, please submit a p
 ---
 
 Thank you for helping keep `om-data-mapper` and its users safe!
-

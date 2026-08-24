@@ -237,4 +237,3 @@ export function IsDecimal(options?: ValidationDecoratorOptions) {
     });
   };
 }
-

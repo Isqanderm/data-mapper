@@ -37,7 +37,10 @@ const METADATA_INITIALIZED = Symbol('class-transformer-compat:initialized');
  * ```
  */
 export function Expose(options: ExposeOptions = {}) {
-  return function (target: undefined, context: ClassFieldDecoratorContext | ClassDecoratorContext): any {
+  return function (
+    target: undefined,
+    context: ClassFieldDecoratorContext | ClassDecoratorContext,
+  ): any {
     // Handle class decorator
     if (context.kind === 'class') {
       // Class-level @Expose() - not commonly used in class-transformer but supported
@@ -91,7 +94,10 @@ export function Expose(options: ExposeOptions = {}) {
  * ```
  */
 export function Exclude(options: ExcludeOptions = {}) {
-  return function (target: undefined, context: ClassFieldDecoratorContext | ClassDecoratorContext): any {
+  return function (
+    target: undefined,
+    context: ClassFieldDecoratorContext | ClassDecoratorContext,
+  ): any {
     // Handle class decorator
     if (context.kind === 'class') {
       // Class-level @Exclude() - marks all properties as excluded by default
@@ -255,4 +261,3 @@ export function TransformPlainToClass(classType: any, options: ClassTransformOpt
     };
   };
 }
-

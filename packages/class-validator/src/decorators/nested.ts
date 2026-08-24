@@ -3,7 +3,11 @@
  * Using TC39 Stage 3 decorators
  */
 
-import { addValidationConstraint, markPropertyAsNested, markPropertyAsConditional } from '../engine/metadata';
+import {
+  addValidationConstraint,
+  markPropertyAsNested,
+  markPropertyAsConditional,
+} from '../engine/metadata';
 import type { ValidationDecoratorOptions } from '../types';
 
 /**
@@ -109,4 +113,3 @@ export function ValidatePromise(options?: ValidationDecoratorOptions) {
     });
   };
 }
-

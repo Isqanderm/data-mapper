@@ -22,7 +22,8 @@ describe('class-validator-compat - High Priority Validators (Part 2)', () => {
       }
 
       const valid = new TestDto();
-      valid.token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c';
+      valid.token =
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c';
 
       const errors = await validate(valid);
       expect(errors).toHaveLength(0);
@@ -305,7 +306,8 @@ describe('class-validator-compat - High Priority Validators (Part 2)', () => {
       }
 
       const valid = new TestDto();
-      valid.token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0.dozjgNryP4J3jVmNHl0w5N_XgL0n3I9PlFUP0THsR8U';
+      valid.token =
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0.dozjgNryP4J3jVmNHl0w5N_XgL0n3I9PlFUP0THsR8U';
       valid.port = '3000';
 
       const errors = validateSync(valid);
@@ -313,4 +315,3 @@ describe('class-validator-compat - High Priority Validators (Part 2)', () => {
     });
   });
 });
-

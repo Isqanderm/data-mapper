@@ -274,4 +274,3 @@ describe('Mapper Helper Functions', () => {
     });
   });
 });
-

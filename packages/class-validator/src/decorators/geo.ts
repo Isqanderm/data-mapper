@@ -89,4 +89,3 @@ export function IsLongitude(options?: ValidationDecoratorOptions) {
     });
   };
 }
-

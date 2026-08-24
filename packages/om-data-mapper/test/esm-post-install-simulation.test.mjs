@@ -56,7 +56,7 @@ const legacyMapperPath = join(
   'build',
   'esm',
   'core',
-  'Mapper.js'
+  'Mapper.js',
 );
 
 console.log('📦 Post-Installation Simulation Test\n');
@@ -132,7 +132,7 @@ await asyncTest('Map with default values', async () => {
     {
       timeout: 5000,
       retries: 3,
-    }
+    },
   );
 
   const source = {};
@@ -158,7 +158,7 @@ await asyncTest('Transform array of objects', async () => {
     { id: 3, value: 'C' },
   ];
 
-  const results = sources.map(s => mapper.execute(s).result);
+  const results = sources.map((s) => mapper.execute(s).result);
 
   assert.strictEqual(results.length, 3);
   assert.strictEqual(results[0].itemId, 1);
@@ -249,9 +249,21 @@ await asyncTest('All decorators are re-exported from main', async () => {
   const mainExports = await import(`${packageRoot}/index.js`);
 
   const requiredExports = [
-    'Mapper', 'Map', 'MapFrom', 'Default', 'Transform', 'MapWith', 'Ignore',
-    'plainToInstance', 'plainToClass', 'plainToInstanceArray', 'plainToClassArray',
-    'tryPlainToInstance', 'tryPlainToInstanceArray', 'createMapper', 'getMapper',
+    'Mapper',
+    'Map',
+    'MapFrom',
+    'Default',
+    'Transform',
+    'MapWith',
+    'Ignore',
+    'plainToInstance',
+    'plainToClass',
+    'plainToInstanceArray',
+    'plainToClassArray',
+    'tryPlainToInstance',
+    'tryPlainToInstanceArray',
+    'createMapper',
+    'getMapper',
   ];
 
   for (const exportName of requiredExports) {
@@ -264,7 +276,14 @@ console.log('\nScenario 9: Compat Subpath Exports');
 await asyncTest('class-transformer-compat re-exports the class-transformer adapter', async () => {
   const compat = await import(`${packageRoot}/class-transformer-compat.js`);
 
-  for (const exportName of ['plainToInstance', 'plainToClass', 'Expose', 'Exclude', 'Type', 'Transform']) {
+  for (const exportName of [
+    'plainToInstance',
+    'plainToClass',
+    'Expose',
+    'Exclude',
+    'Type',
+    'Transform',
+  ]) {
     assert.ok(exportName in compat, `Missing export: ${exportName}`);
   }
 });
@@ -293,4 +312,3 @@ if (testsFailed === 0) {
   console.log('\n❌ Package has issues that need to be fixed!\n');
   process.exit(1);
 }
-

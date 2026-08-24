@@ -103,4 +103,3 @@ describe('Complex Mapping Benchmark', () => {
     vanillaComplexMapper(complexSourceData);
   });
 });
-

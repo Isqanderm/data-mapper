@@ -203,7 +203,9 @@ setTimeout(() => {
 
 // Scenario 3: Product DTO Validation (Number validators)
 setTimeout(() => {
-  console.log(chalk.yellow('📊 Scenario 3: Product DTO Validation (4 properties, number validators)'));
+  console.log(
+    chalk.yellow('📊 Scenario 3: Product DTO Validation (4 properties, number validators)'),
+  );
   const suite3 = new Benchmark.Suite('Product DTO');
 
   suite3
@@ -411,7 +413,6 @@ function printSummary() {
   } else if (cvWins > omWins) {
     console.log(chalk.bold.yellow('\n⚠️  class-validator is the overall winner.\n'));
   } else {
-    console.log(chalk.bold.cyan('\n🤝 It\'s a tie!\n'));
+    console.log(chalk.bold.cyan("\n🤝 It's a tie!\n"));
   }
 }
-

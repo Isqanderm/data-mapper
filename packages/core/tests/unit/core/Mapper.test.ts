@@ -422,10 +422,7 @@ describe('BaseMapper (Legacy API)', () => {
       });
 
       const source: Source = {
-        users: [
-          { profile: { name: 'Alice' } },
-          { profile: { name: 'Bob' } },
-        ],
+        users: [{ profile: { name: 'Alice' } }, { profile: { name: 'Bob' } }],
       };
 
       const result = mapper.execute(source);
@@ -552,4 +549,3 @@ describe('BaseMapper (Legacy API)', () => {
     });
   });
 });
-

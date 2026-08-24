@@ -10,7 +10,15 @@
  */
 
 // Export decorators
-export { Expose, Exclude, Type, Transform, TransformClassToPlain, TransformClassToClass, TransformPlainToClass } from './decorators';
+export {
+  Expose,
+  Exclude,
+  Type,
+  Transform,
+  TransformClassToPlain,
+  TransformClassToClass,
+  TransformPlainToClass,
+} from './decorators';
 
 // Export transformation functions
 export {
@@ -41,6 +49,11 @@ export type {
 } from './types';
 
 // Export metadata utilities (for advanced use cases)
-export { getCompatMetadata, setCompatMetadata, updateCompatMetadata, shouldExposeProperty, getSourcePropertyName } from './metadata';
+export {
+  getCompatMetadata,
+  setCompatMetadata,
+  updateCompatMetadata,
+  shouldExposeProperty,
+  getSourcePropertyName,
+} from './metadata';
 export type { PropertyMetadata, ClassMetadata } from './metadata';
-

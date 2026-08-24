@@ -193,4 +193,3 @@ export interface TransformFnParams {
  * Transform function type
  */
 export type TransformFn = (params: TransformFnParams) => any;
-

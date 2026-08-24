@@ -86,6 +86,7 @@ Located in `core/`:
 Located in `comparisons/`:
 
 #### 1. class-transformer-comparison/
+
 Compares om-data-mapper's class-transformer compatibility layer with the original library.
 
 - **6 comprehensive scenarios**
@@ -94,6 +95,7 @@ Compares om-data-mapper's class-transformer compatibility layer with the origina
 - See [comparisons/class-transformer-comparison/](./comparisons/class-transformer-comparison/) for details
 
 #### 2. validation-comparison/
+
 Compares om-data-mapper's JIT-compiled validation with class-validator.
 
 - **10 comprehensive scenarios**
@@ -102,6 +104,7 @@ Compares om-data-mapper's JIT-compiled validation with class-validator.
 - See [comparisons/validation-comparison/README.md](./comparisons/validation-comparison/README.md) for details
 
 #### 3. library-comparison/
+
 Multi-library comparison benchmark.
 
 - Compares against multiple mapping libraries
@@ -118,6 +121,7 @@ Vanilla mapper x 977,313,179 ops/sec ±2.51% (96 runs sampled)
 ```
 
 **Metrics:**
+
 - **ops/sec**: Operations per second (higher is better)
 - **±%**: Relative margin of error (lower is better)
 - **runs sampled**: Number of test iterations
@@ -125,6 +129,7 @@ Vanilla mapper x 977,313,179 ops/sec ±2.51% (96 runs sampled)
 ### JSON Output
 
 Each benchmark also outputs JSON for programmatic analysis:
+
 ```json
 [
   {
@@ -143,6 +148,7 @@ Each benchmark also outputs JSON for programmatic analysis:
 Used for library comparisons to provide accurate, statistically significant results.
 
 **Advantages:**
+
 - ✅ Industry standard for JavaScript benchmarking
 - ✅ Minimal overhead - measures true performance
 - ✅ Statistical analysis and confidence intervals
@@ -150,6 +156,7 @@ Used for library comparisons to provide accurate, statistically significant resu
 - ✅ Cross-platform consistency
 
 **Use Cases:**
+
 - 📊 Library comparisons
 - 📈 Performance documentation
 - 🎯 Absolute performance numbers
@@ -160,27 +167,30 @@ Used for library comparisons to provide accurate, statistically significant resu
 Used for core functionality benchmarks and CI/CD integration.
 
 **Advantages:**
+
 - ✅ Integrated with test suite
 - ✅ Automated CI/CD tracking
 - ✅ Historical performance data
 - ✅ Easy to run alongside tests
 
 **Use Cases:**
+
 - 🔄 Continuous performance monitoring
 - 📉 Regression detection
 - 🎯 Development workflow integration
 
 ### Comparison
 
-| Aspect | Benchmark.js | Vitest Bench |
-|--------|--------------|--------------|
-| **Location** | `comparisons/` | `core/` |
-| **Performance** | 946M ops/sec | 30M ops/sec |
-| **Overhead** | Minimal | Framework overhead |
-| **Use Case** | Library comparisons | Core performance tracking |
-| **Automation** | Manual | Automated |
+| Aspect          | Benchmark.js        | Vitest Bench              |
+| --------------- | ------------------- | ------------------------- |
+| **Location**    | `comparisons/`      | `core/`                   |
+| **Performance** | 946M ops/sec        | 30M ops/sec               |
+| **Overhead**    | Minimal             | Framework overhead        |
+| **Use Case**    | Library comparisons | Core performance tracking |
+| **Automation**  | Manual              | Automated                 |
 
 **Both are valuable:**
+
 - Benchmark.js shows theoretical maximum performance for comparisons
 - Vitest Bench tracks real-world performance over time in CI/CD
 
@@ -189,6 +199,7 @@ Used for core functionality benchmarks and CI/CD integration.
 ### Core Benchmarks (Vitest)
 
 1. Create a new `.bench.ts` file in `core/`:
+
    ```typescript
    import { bench, describe } from 'vitest';
    import { Mapper } from '../../src/core/Mapper';
@@ -208,11 +219,13 @@ Used for core functionality benchmarks and CI/CD integration.
 ### Comparison Benchmarks (Benchmark.js)
 
 1. Create a new directory in `comparisons/`:
+
    ```bash
    mkdir comparisons/my-comparison
    ```
 
 2. Create a `.bench.ts` file:
+
    ```typescript
    import { Suite } from 'benchmark';
    import 'reflect-metadata';
@@ -242,6 +255,7 @@ Used for core functionality benchmarks and CI/CD integration.
 ## Best Practices
 
 ### General
+
 1. **Warm-up**: Both tools automatically handle warm-up cycles
 2. **Sample size**: Let the tools determine optimal sample size
 3. **Consistency**: Run benchmarks multiple times to verify results
@@ -249,11 +263,13 @@ Used for core functionality benchmarks and CI/CD integration.
 5. **Comparison**: Always include a baseline implementation
 
 ### Core Benchmarks
+
 - Use Vitest bench for tracking performance over time
 - Run in CI/CD to catch regressions early
 - Keep benchmarks focused and simple
 
 ### Comparison Benchmarks
+
 - Use Benchmark.js for accurate library comparisons
 - Document test scenarios clearly
 - Include both valid and invalid data tests
@@ -283,6 +299,7 @@ npx tsc --noEmit
 ### Module Not Found
 
 Make sure you're in the correct directory:
+
 ```bash
 cd benchmarks
 npx ts-node comparisons/validation-comparison/validation-comparison.bench.ts
@@ -295,17 +312,20 @@ Some benchmarks use experimental decorators (class-validator) while others use T
 ## Performance Results Summary
 
 ### Core Performance
+
 - **Simple mapping**: ~30M ops/sec
 - **Complex transformations**: ~13M ops/sec
 - **Nested objects**: ~2.4M ops/sec
 - **Array mapping (100 items)**: ~1M ops/sec
 
 ### vs class-transformer
+
 - **Average**: 4.77x faster
 - **Best**: 43.6x faster (complex nested)
 - **Consistent**: Faster across all scenarios
 
 ### vs class-validator
+
 - **Average**: 20,000-60,000% faster
 - **Simple validation**: 39,950% faster
 - **Array validation**: 35,756% faster
@@ -321,4 +341,3 @@ Some benchmarks use experimental decorators (class-validator) while others use T
 ---
 
 **Note:** These benchmarks demonstrate om-data-mapper's exceptional performance across all use cases. The library is designed for high-throughput applications where performance is critical.
-

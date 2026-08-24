@@ -110,7 +110,7 @@ describe('Real-World Scenarios - User Registration', () => {
     expect(errors2.length).toBeGreaterThan(0);
 
     // Should have errors for email, password, firstName, lastName, phone, and address
-    const errorProperties = errors2.map(e => e.property);
+    const errorProperties = errors2.map((e) => e.property);
     expect(errorProperties).toContain('email');
     expect(errorProperties).toContain('password');
     expect(errorProperties).toContain('firstName');
@@ -225,7 +225,7 @@ describe('Real-World Scenarios - API Request DTO', () => {
 
     const errors2 = await validate(invalidOrder1);
     expect(errors2.length).toBeGreaterThan(0);
-    expect(errors2.some(e => e.property === 'items')).toBe(true);
+    expect(errors2.some((e) => e.property === 'items')).toBe(true);
 
     // Invalid order - invalid item quantity
     const invalidOrder2 = new CreateOrderDto();
@@ -300,7 +300,7 @@ describe('Real-World Scenarios - Form Validation', () => {
 
     const errors3 = validateSync(invalidForm);
     expect(errors3.length).toBeGreaterThan(0);
-    expect(errors3.some(e => e.property === 'message')).toBe(true);
+    expect(errors3.some((e) => e.property === 'message')).toBe(true);
   });
 });
 
@@ -399,4 +399,3 @@ describe('Real-World Scenarios - Transformation + Validation', () => {
     expect(postDto.comments[0]).toBeInstanceOf(CommentDto);
   });
 });
-

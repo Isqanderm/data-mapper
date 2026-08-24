@@ -24,22 +24,19 @@ describe('Mapper - 100% Coverage Tests', () => {
       const source: Source = {
         users: [
           {
-            posts: [
-              { id: 1 },
-              { id: 2 },
-            ],
+            posts: [{ id: 1 }, { id: 2 }],
           },
           {
-            posts: [
-              { id: 3 },
-              { id: 4 },
-            ],
+            posts: [{ id: 3 }, { id: 4 }],
           },
         ],
       };
 
       const result = mapper.execute(source);
-      expect(result.result.postIds).toEqual([[1, 2], [3, 4]]);
+      expect(result.result.postIds).toEqual([
+        [1, 2],
+        [3, 4],
+      ]);
       expect(result.errors).toEqual([]);
     });
 
@@ -68,10 +65,7 @@ describe('Mapper - 100% Coverage Tests', () => {
           {
             teams: [
               {
-                members: [
-                  { id: 1 },
-                  { id: 2 },
-                ],
+                members: [{ id: 1 }, { id: 2 }],
               },
             ],
           },
@@ -140,8 +134,6 @@ describe('Mapper - 100% Coverage Tests', () => {
       expect(() => mapper.execute({ data: null })).toThrow();
     });
   });
-
-
 
   describe('useUnsafe mode - simple string mapping', () => {
     it('should handle simple string mapping in unsafe mode', () => {
@@ -284,4 +276,3 @@ describe('Mapper - 100% Coverage Tests', () => {
     });
   });
 });
-
