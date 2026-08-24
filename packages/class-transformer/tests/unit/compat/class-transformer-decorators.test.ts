@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { Expose, Exclude, Type, Transform } from '../../../src/compat/class-transformer/decorators';
-import { plainToClass, classToPlain } from '../../../src/compat/class-transformer/functions';
+import { Expose, Exclude, Type, Transform } from '../../../src/decorators';
+import { plainToClass, classToPlain } from '../../../src/functions';
 
 describe('class-transformer decorators - Advanced scenarios', () => {
   describe('@Expose class decorator', () => {

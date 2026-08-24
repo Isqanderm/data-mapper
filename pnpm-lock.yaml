@@ -51,6 +51,8 @@ importers:
         specifier: ^3.2.4
         version: 3.2.7(@types/node@26.2.0)(yaml@2.9.0)
 
+  packages/class-transformer: {}
+
   packages/core: {}
 
 packages:

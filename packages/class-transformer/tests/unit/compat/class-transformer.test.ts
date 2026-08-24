@@ -13,7 +13,7 @@ import {
   Transform,
   serialize,
   deserialize,
-} from '../../../src/compat/class-transformer';
+} from '../../../src';
 
 describe('class-transformer Compatibility (TC39 Stage 3 Decorators)', () => {
   describe('@Expose decorator', () => {
