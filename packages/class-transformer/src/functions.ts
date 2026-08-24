@@ -326,6 +326,13 @@ function transformValue(
   if (propertyMeta?.typeFunction && transformationType === 'plainToClass') {
     const TypeClass = propertyMeta.typeFunction();
 
+    if (options.enableImplicitConversion && value !== null && value !== undefined) {
+      if (TypeClass === Number) return typeof value === 'number' ? value : Number(value);
+      if (TypeClass === String) return typeof value === 'string' ? value : String(value);
+      if (TypeClass === Boolean) return typeof value === 'boolean' ? value : Boolean(value);
+      if (TypeClass === Date) return value instanceof Date ? value : new Date(value as any);
+    }
+
     if (Array.isArray(value)) {
       return value.map((item) => {
         if (typeof item === 'object' && item !== null) {

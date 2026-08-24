@@ -49,29 +49,11 @@ export interface ClassTransformOptions {
   ignoreDecorators?: boolean;
 
   /**
-   * If set to true, class-transformer will attempt to convert types based on TS reflected type.
+   * If true, values of properties decorated with @Type(() => Number/String/Boolean/Date) are
+   * coerced from primitive inputs. Requires @Type — implicit conversion from reflected types
+   * is impossible with TC39 decorators.
    */
   enableImplicitConversion?: boolean;
-
-  /**
-   * If set to true, class-transformer will use the default value for properties that are undefined.
-   */
-  enableCircularCheck?: boolean;
-
-  /**
-   * If set to true, class-transformer will exclude all properties that are undefined.
-   */
-  exposeUnsetFields?: boolean;
-
-  /**
-   * Target maps allow to set a value for a specific key in a map.
-   */
-  targetMaps?: any[];
-
-  /**
-   * If set to true, class-transformer will not use class-validator to validate transformed object.
-   */
-  enableValidation?: boolean;
 }
 
 /**
