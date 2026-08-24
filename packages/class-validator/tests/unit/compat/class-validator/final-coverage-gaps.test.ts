@@ -9,7 +9,7 @@ import {
   IsIP,
   validateSync,
 } from '../../../../src';
-import { Type } from '../../../../../class-transformer/src';
+import { Type } from '@om-data-mapper/class-transformer';
 import { ValidateNested } from '../../../../src/decorators/nested';
 
 describe('Final Coverage Gaps', () => {

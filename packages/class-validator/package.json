@@ -27,6 +27,9 @@
     "build": "rm -rf build && tsc -p tsconfig.json && tsc -p tsconfig.esm.json && node ../../scripts/fix-esm-imports.js && echo '{\"type\":\"module\"}' > build/esm/package.json",
     "test": "vitest run"
   },
+  "devDependencies": {
+    "@om-data-mapper/class-transformer": "workspace:^"
+  },
   "engines": { "node": ">=18.0.0" },
   "publishConfig": { "access": "public" }
 }

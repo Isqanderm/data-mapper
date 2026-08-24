@@ -53,7 +53,11 @@ importers:
 
   packages/class-transformer: {}
 
-  packages/class-validator: {}
+  packages/class-validator:
+    devDependencies:
+      '@om-data-mapper/class-transformer':
+        specifier: workspace:^
+        version: link:../class-transformer
 
   packages/core: {}
 

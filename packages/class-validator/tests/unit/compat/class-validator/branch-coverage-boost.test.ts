@@ -24,7 +24,7 @@ import {
   IsTimeZone,
   IsRFC3339,
 } from '../../../../src/decorators';
-import { Type } from '../../../../../class-transformer/src';
+import { Type } from '@om-data-mapper/class-transformer';
 
 describe('Branch Coverage Boost - Validation Groups', () => {
   it('should validate with groups on @IsOptional', async () => {
