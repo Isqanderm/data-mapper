@@ -1,6 +1,11 @@
 {
   "$schema": "https://typedoc.org/schema.json",
-  "entryPoints": ["./src/index.ts"],
+  "entryPoints": [
+    "packages/core/src/index.ts",
+    "packages/class-transformer/src/index.ts",
+    "packages/class-validator/src/index.ts"
+  ],
+  "tsconfig": "tsconfig.typedoc.json",
   "out": "docs/api",
   "plugin": [],
   "name": "om-data-mapper",
