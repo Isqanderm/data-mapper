@@ -1,12 +1,24 @@
 name: Benchmarks
 
-# The v4 benchmark pipeline referenced non-existent paths and masked failures.
-# It is being rebuilt honestly in Phase 3 (see docs/superpowers/specs/2026-08-24-monorepo-v5-design.md).
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'benchmarks/**'
+      - 'packages/**'
+      - '.github/workflows/benchmark.yml'
 
 jobs:
-  placeholder:
+  bench:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
-      - run: echo "Benchmark pipeline is being rebuilt in Phase 3."
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm bench
