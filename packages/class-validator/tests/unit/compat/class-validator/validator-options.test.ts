@@ -10,6 +10,31 @@ import {
   Allow,
 } from '../../../../src';
 
+describe('forbidUnknownValues', () => {
+  it('default: unknown object → no errors (back-compat)', () => {
+    expect(validateSync({ anything: 1 })).toHaveLength(0);
+  });
+
+  it('true: unknown object → unknownValue error (sync + async)', async () => {
+    const target = { anything: 1 };
+    const errors = validateSync(target, { forbidUnknownValues: true });
+    expect(errors).toHaveLength(1);
+    expect(errors[0].constraints).toEqual({
+      unknownValue: 'an unknown value was passed to the validate function',
+    });
+    expect(errors[0].target).toBe(target);
+    expect(await validate({ x: 1 }, { forbidUnknownValues: true })).toHaveLength(1);
+  });
+
+  it('true: decorated class still validates normally', () => {
+    class Dto {
+      @IsString()
+      name: any = 'ok';
+    }
+    expect(validateSync(new Dto(), { forbidUnknownValues: true })).toHaveLength(0);
+  });
+});
+
 describe('skip* options', () => {
   class Dto {
     @IsString()

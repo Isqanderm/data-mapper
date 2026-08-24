@@ -7,6 +7,19 @@ import { getClassValidationMetadata } from './metadata';
 import { compileValidator, compileAsyncValidator } from './compiler';
 
 /**
+ * Create an error for unknown values
+ */
+function unknownValueError(object: any): ValidationError {
+  return {
+    property: '',
+    value: undefined,
+    target: object,
+    children: [],
+    constraints: { unknownValue: 'an unknown value was passed to the validate function' },
+  };
+}
+
+/**
  * Validate an object asynchronously
  * Compatible with class-validator validate() function
  */
@@ -15,11 +28,11 @@ export async function validate(
   options?: ValidatorOptions,
 ): Promise<ValidationError[]> {
   // Get validation metadata
-  const metadata = getClassValidationMetadata(object);
+  const metadata =
+    object && typeof object === 'object' ? getClassValidationMetadata(object) : undefined;
 
-  if (!metadata) {
-    // No validation metadata, return empty errors
-    return [];
+  if (!metadata || metadata.properties.size === 0) {
+    return options?.forbidUnknownValues ? [unknownValueError(object)] : [];
   }
 
   // Compile async validator (or get from cache)
@@ -37,11 +50,11 @@ export async function validate(
  */
 export function validateSync(object: any, options?: ValidatorOptions): ValidationError[] {
   // Get validation metadata
-  const metadata = getClassValidationMetadata(object);
+  const metadata =
+    object && typeof object === 'object' ? getClassValidationMetadata(object) : undefined;
 
-  if (!metadata) {
-    // No validation metadata, return empty errors
-    return [];
+  if (!metadata || metadata.properties.size === 0) {
+    return options?.forbidUnknownValues ? [unknownValueError(object)] : [];
   }
 
   // Compile validator (or get from cache)
