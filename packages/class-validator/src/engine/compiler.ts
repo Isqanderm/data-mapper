@@ -205,6 +205,10 @@ function generatePropertyValidation(
   lines.push(`  const value = object[${safePropName}];`);
   lines.push(`  const propertyErrors = {};`);
   lines.push(`  let nestedErrors = [];`);
+  lines.push(`  const skipProp =`);
+  lines.push(`    (opts.skipUndefinedProperties && value === undefined) ||`);
+  lines.push(`    (opts.skipNullProperties && value === null) ||`);
+  lines.push(`    (opts.skipMissingProperties && (value === undefined || value === null));`);
 
   // Handle conditional validation (ValidateIf)
   if (metadata.isConditional && metadata.condition) {
@@ -237,6 +241,7 @@ function generatePropertyValidation(
   // Generate validation checks for each constraint
   for (let i = 0; i < metadata.constraints.length; i++) {
     const constraint = metadata.constraints[i];
+    const skipGuard = constraint.type !== 'isDefined';
     // Check if constraint should be validated based on groups
     if (constraint.groups && constraint.groups.length > 0) {
       // Constraint has groups - only validate if options.groups matches
@@ -245,20 +250,39 @@ function generatePropertyValidation(
       lines.push(
         `  if (opts.groups && opts.groups.length > 0 && opts.groups.some(g => ${groupsJson}.includes(g))) {`,
       );
-      lines.push(
-        generateConstraintCheck(constraint, i, propertyName, 'value', 'propertyErrors', '    '),
+      const check = generateConstraintCheck(
+        constraint,
+        i,
+        propertyName,
+        'value',
+        'propertyErrors',
+        '    ',
       );
+      if (skipGuard) {
+        lines.push(`    if (!skipProp) {`);
+        lines.push(check);
+        lines.push(`    }`);
+      } else {
+        lines.push(check);
+      }
       lines.push(`  }`);
     } else {
       // No groups specified on constraint - always validate
-      lines.push(generateConstraintCheck(constraint, i, propertyName, 'value', 'propertyErrors'));
+      const check = generateConstraintCheck(constraint, i, propertyName, 'value', 'propertyErrors');
+      if (skipGuard) {
+        lines.push(`  if (!skipProp) {`);
+        lines.push(check);
+        lines.push(`  }`);
+      } else {
+        lines.push(check);
+      }
     }
   }
 
   // Handle nested validation
   if (metadata.isNested) {
     lines.push(`  // Nested validation`);
-    lines.push(`  if (value !== null && value !== undefined) {`);
+    lines.push(`  if (!skipProp && value !== null && value !== undefined) {`);
 
     // Check if it's an array of nested objects
     lines.push(`    if (Array.isArray(value)) {`);
@@ -332,6 +356,10 @@ function generateAsyncPropertyValidation(
   lines.push(`    const propertyErrors = {};`);
   lines.push(`    let nestedErrors = [];`);
   lines.push(`    const propertyAsyncTasks = [];`);
+  lines.push(`    const skipProp =`);
+  lines.push(`      (opts.skipUndefinedProperties && value === undefined) ||`);
+  lines.push(`      (opts.skipNullProperties && value === null) ||`);
+  lines.push(`      (opts.skipMissingProperties && (value === undefined || value === null));`);
 
   // Handle conditional validation (ValidateIf)
   if (metadata.isConditional && metadata.condition) {
@@ -364,6 +392,7 @@ function generateAsyncPropertyValidation(
   // Generate validation checks for each constraint
   for (let i = 0; i < metadata.constraints.length; i++) {
     const constraint = metadata.constraints[i];
+    const skipGuard = constraint.type !== 'isDefined';
     // Check if constraint should be validated based on groups
     if (constraint.groups && constraint.groups.length > 0) {
       // Constraint has groups - only validate if options.groups matches
@@ -372,38 +401,48 @@ function generateAsyncPropertyValidation(
       lines.push(
         `    if (opts.groups && opts.groups.length > 0 && opts.groups.some(g => ${groupsJson}.includes(g))) {`,
       );
-      lines.push(
-        generateAsyncConstraintCheck(
-          constraint,
-          i,
-          propertyName,
-          'value',
-          'propertyErrors',
-          'propertyAsyncTasks',
-          '      ',
-        ),
+      const check = generateAsyncConstraintCheck(
+        constraint,
+        i,
+        propertyName,
+        'value',
+        'propertyErrors',
+        'propertyAsyncTasks',
+        '      ',
       );
+      if (skipGuard) {
+        lines.push(`      if (!skipProp) {`);
+        lines.push(check);
+        lines.push(`      }`);
+      } else {
+        lines.push(check);
+      }
       lines.push(`    }`);
     } else {
       // No groups specified on constraint - always validate
-      lines.push(
-        generateAsyncConstraintCheck(
-          constraint,
-          i,
-          propertyName,
-          'value',
-          'propertyErrors',
-          'propertyAsyncTasks',
-          '    ',
-        ),
+      const check = generateAsyncConstraintCheck(
+        constraint,
+        i,
+        propertyName,
+        'value',
+        'propertyErrors',
+        'propertyAsyncTasks',
+        '    ',
       );
+      if (skipGuard) {
+        lines.push(`    if (!skipProp) {`);
+        lines.push(check);
+        lines.push(`    }`);
+      } else {
+        lines.push(check);
+      }
     }
   }
 
   // Handle nested validation
   if (metadata.isNested) {
     lines.push(`  // Nested async validation`);
-    lines.push(`  if (value !== null && value !== undefined) {`);
+    lines.push(`  if (!skipProp && value !== null && value !== undefined) {`);
 
     // Check if it's an array of nested objects
     lines.push(`    if (Array.isArray(value)) {`);
