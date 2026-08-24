@@ -4,7 +4,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { validate, validateSync } from '../../src/compat/class-validator';
+import { validate, validateSync } from '@om-data-mapper/class-validator';
 import {
   IsString,
   IsEmail,
@@ -26,8 +26,8 @@ import {
   IsURL,
   IsMobilePhone,
   IsPostalCode,
-} from '../../src/compat/class-validator/decorators';
-import { Type, plainToInstance } from '../../src/compat/class-transformer';
+} from '@om-data-mapper/class-validator/decorators';
+import { Type, plainToInstance } from '@om-data-mapper/class-transformer';
 
 describe('Real-World Scenarios - User Registration', () => {
   it('should validate complex user registration DTO', async () => {

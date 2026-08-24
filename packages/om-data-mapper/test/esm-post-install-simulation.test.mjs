@@ -2,15 +2,37 @@
 /**
  * Post-Installation Simulation Test
  *
- * This test simulates how a user would import and use the package after
- * installing it via npm. It validates the complete user experience.
+ * This test simulates how a user would import and use the `om-data-mapper`
+ * meta-package after installing it via npm. It validates the package's own
+ * build output (`build/esm`), which in this monorepo layout only contains
+ * the meta-package's own entry points (index.js, class-transformer-compat.js,
+ * class-validator-compat.js) — it re-exports @om-data-mapper/core,
+ * @om-data-mapper/class-transformer and @om-data-mapper/class-validator
+ * rather than bundling their internals.
  *
  * Scenarios tested:
  * 1. Named imports from main package
- * 2. Deep imports from submodules
- * 3. Real-world usage patterns
- * 4. Error handling
- * 5. TypeScript compatibility (via JSDoc)
+ * 2. Real-world usage patterns
+ * 3. Error handling
+ * 4. Legacy `Mapper.create()` API (backward compatibility)
+ * 5. Re-export validation (root + compat subpaths)
+ *
+ * Note on scenarios 1-7 (legacy `Mapper.create()` API): `@om-data-mapper/core`'s
+ * top-level index does `export * from './core/Mapper'` (the legacy class,
+ * with a static `.create()`) AND `export { Mapper } from './decorators'` (the
+ * `@Mapper()` class decorator, recommended API). Per ES module semantics an
+ * explicit named/indirect export always wins over an `export *` of the same
+ * name, so `Mapper` at the public root of both @om-data-mapper/core and this
+ * meta-package resolves to the *decorator*, not the legacy class — this is
+ * pre-existing behavior of the core package (unrelated to this task) and was
+ * true of the pre-monorepo package too. The original test avoided this by
+ * importing the legacy class straight from its build file
+ * (`build/esm/core/Mapper.js`), bypassing package export resolution entirely
+ * (a direct filesystem-path `import()` is not subject to a package.json
+ * `exports` map — only bare-specifier resolution is). We preserve that same
+ * approach here, pointed at @om-data-mapper/core's own build output (reached
+ * through the pnpm workspace symlink in this package's node_modules), so the
+ * legacy API keeps getting exercised exactly as before.
  */
 
 import { fileURLToPath } from 'url';
@@ -20,6 +42,22 @@ import { strict as assert } from 'assert';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const packageRoot = join(__dirname, '..', 'build', 'esm');
+// Direct filesystem path into the sibling @om-data-mapper/core package's
+// build output, resolved through the pnpm workspace symlink. This is a raw
+// file-path import (bypasses `exports` map enforcement) so it can reach the
+// legacy `Mapper` class directly, sidestepping the `Mapper` naming collision
+// described above.
+const legacyMapperPath = join(
+  __dirname,
+  '..',
+  'node_modules',
+  '@om-data-mapper',
+  'core',
+  'build',
+  'esm',
+  'core',
+  'Mapper.js'
+);
 
 console.log('📦 Post-Installation Simulation Test\n');
 console.log('Simulating: npm install om-data-mapper\n');
@@ -42,15 +80,15 @@ async function asyncTest(name, fn) {
 
 // Scenario 1: Basic mapper usage (most common use case)
 console.log('Scenario 1: Basic Mapper Usage');
-await asyncTest('Import Mapper from core', async () => {
-  const { Mapper } = await import(`${packageRoot}/core/Mapper.js`);
+await asyncTest('Import legacy Mapper class', async () => {
+  const { Mapper } = await import(legacyMapperPath);
 
   assert.ok(Mapper, 'Mapper should exist');
   assert.strictEqual(typeof Mapper.create, 'function');
 });
 
 await asyncTest('Create and use a simple mapper', async () => {
-  const { Mapper } = await import(`${packageRoot}/core/Mapper.js`);
+  const { Mapper } = await import(legacyMapperPath);
 
   const mapper = Mapper.create({
     fullName: 'name',
@@ -67,7 +105,7 @@ await asyncTest('Create and use a simple mapper', async () => {
 // Scenario 2: Simple field mapping
 console.log('\nScenario 2: Simple Field Mapping');
 await asyncTest('Map multiple fields', async () => {
-  const { Mapper } = await import(`${packageRoot}/core/Mapper.js`);
+  const { Mapper } = await import(legacyMapperPath);
 
   const mapper = Mapper.create({
     productName: 'name',
@@ -84,7 +122,7 @@ await asyncTest('Map multiple fields', async () => {
 });
 
 await asyncTest('Map with default values', async () => {
-  const { Mapper } = await import(`${packageRoot}/core/Mapper.js`);
+  const { Mapper } = await import(legacyMapperPath);
 
   const mapper = Mapper.create(
     {
@@ -107,7 +145,7 @@ await asyncTest('Map with default values', async () => {
 // Scenario 3: Array transformations
 console.log('\nScenario 3: Array Transformations');
 await asyncTest('Transform array of objects', async () => {
-  const { Mapper } = await import(`${packageRoot}/core/Mapper.js`);
+  const { Mapper } = await import(legacyMapperPath);
 
   const mapper = Mapper.create({
     itemId: 'id',
@@ -130,7 +168,7 @@ await asyncTest('Transform array of objects', async () => {
 // Scenario 4: Legacy API (backward compatibility)
 console.log('\nScenario 4: Legacy API (Backward Compatibility)');
 await asyncTest('Use legacy Mapper.create API', async () => {
-  const { Mapper } = await import(`${packageRoot}/core/Mapper.js`);
+  const { Mapper } = await import(legacyMapperPath);
 
   const mapper = Mapper.create({
     targetName: 'sourceName',
@@ -147,7 +185,7 @@ await asyncTest('Use legacy Mapper.create API', async () => {
 // Scenario 5: Error handling
 console.log('\nScenario 5: Error Handling');
 await asyncTest('Handle invalid input gracefully', async () => {
-  const { Mapper } = await import(`${packageRoot}/core/Mapper.js`);
+  const { Mapper } = await import(legacyMapperPath);
 
   const mapper = Mapper.create({
     requiredField: 'required',
@@ -167,7 +205,7 @@ await asyncTest('Handle invalid input gracefully', async () => {
 // Scenario 6: Nested field access
 console.log('\nScenario 6: Nested Field Access');
 await asyncTest('Map nested fields using dot notation', async () => {
-  const { Mapper } = await import(`${packageRoot}/core/Mapper.js`);
+  const { Mapper } = await import(legacyMapperPath);
 
   const mapper = Mapper.create({
     fullName: 'name',
@@ -193,7 +231,7 @@ await asyncTest('Map nested fields using dot notation', async () => {
 // Scenario 7: Multiple mappers
 console.log('\nScenario 7: Multiple Mappers');
 await asyncTest('Use multiple mappers in same file', async () => {
-  const { Mapper } = await import(`${packageRoot}/core/Mapper.js`);
+  const { Mapper } = await import(legacyMapperPath);
 
   const userMapper = Mapper.create({ userName: 'name' });
   const productMapper = Mapper.create({ productName: 'name' });
@@ -218,6 +256,24 @@ await asyncTest('All decorators are re-exported from main', async () => {
 
   for (const exportName of requiredExports) {
     assert.ok(exportName in mainExports, `Missing export: ${exportName}`);
+  }
+});
+
+// Scenario 9: Compat subpath exports (class-transformer-compat / class-validator-compat)
+console.log('\nScenario 9: Compat Subpath Exports');
+await asyncTest('class-transformer-compat re-exports the class-transformer adapter', async () => {
+  const compat = await import(`${packageRoot}/class-transformer-compat.js`);
+
+  for (const exportName of ['plainToInstance', 'plainToClass', 'Expose', 'Exclude', 'Type', 'Transform']) {
+    assert.ok(exportName in compat, `Missing export: ${exportName}`);
+  }
+});
+
+await asyncTest('class-validator-compat re-exports the class-validator adapter', async () => {
+  const compat = await import(`${packageRoot}/class-validator-compat.js`);
+
+  for (const exportName of ['validate', 'validateSync', 'IsString', 'IsEmail', 'IsNumber']) {
+    assert.ok(exportName in compat, `Missing export: ${exportName}`);
   }
 });
 

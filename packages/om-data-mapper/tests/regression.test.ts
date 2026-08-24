@@ -4,8 +4,8 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { validate, validateSync } from '../../src/compat/class-validator';
-import { plainToInstance } from '../../src/compat/class-transformer';
+import { validate, validateSync } from '@om-data-mapper/class-validator';
+import { plainToInstance } from '@om-data-mapper/class-transformer';
 import {
   IsString,
   IsEmail,
@@ -17,8 +17,8 @@ import {
   ValidateNested,
   IsArray,
   IsNotEmpty,
-} from '../../src/compat/class-validator/decorators';
-import { Type } from '../../src/compat/class-transformer';
+} from '@om-data-mapper/class-validator/decorators';
+import { Type } from '@om-data-mapper/class-transformer';
 
 // Baseline performance values (in milliseconds)
 // These should be updated when intentional performance improvements are made

@@ -4,8 +4,8 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { validateSync } from '../../src/compat/class-validator';
-import { plainToInstance } from '../../src/compat/class-transformer';
+import { validateSync } from '@om-data-mapper/class-validator';
+import { plainToInstance } from '@om-data-mapper/class-transformer';
 import {
   IsString,
   IsEmail,
@@ -17,8 +17,8 @@ import {
   ValidateNested,
   IsArray,
   IsNotEmpty,
-} from '../../src/compat/class-validator/decorators';
-import { Type } from '../../src/compat/class-transformer';
+} from '@om-data-mapper/class-validator/decorators';
+import { Type } from '@om-data-mapper/class-transformer';
 
 /**
  * Helper function to get memory usage in MB

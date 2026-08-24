@@ -18,7 +18,7 @@ import {
   Exclude,
   Type,
   Transform,
-} from '../../../src/compat/class-transformer';
+} from '@om-data-mapper/class-transformer';
 
 // Import class-validator functions and decorators
 import {
@@ -36,7 +36,7 @@ import {
   IsOptional,
   IsDefined,
   ValidateNested,
-} from '../../../src/compat/class-validator';
+} from '@om-data-mapper/class-validator';
 
 describe('Integration: Validation and Mapping', () => {
   describe('Scenario 1: Validate then Transform', () => {

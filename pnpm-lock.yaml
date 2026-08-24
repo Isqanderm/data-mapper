@@ -61,6 +61,18 @@ importers:
 
   packages/core: {}
 
+  packages/om-data-mapper:
+    dependencies:
+      '@om-data-mapper/class-transformer':
+        specifier: workspace:^
+        version: link:../class-transformer
+      '@om-data-mapper/class-validator':
+        specifier: workspace:^
+        version: link:../class-validator
+      '@om-data-mapper/core':
+        specifier: workspace:^
+        version: link:../core
+
 packages:
 
   '@ampproject/remapping@2.3.0':
