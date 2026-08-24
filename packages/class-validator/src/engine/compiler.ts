@@ -258,23 +258,33 @@ function generatePropertyValidation(
         'propertyErrors',
         '    ',
       );
+      const guardedCheck = [
+        `    if (!(opts.stopAtFirstError && Object.keys(propertyErrors).length > 0)) {`,
+        check,
+        `    }`,
+      ].join('\n');
       if (skipGuard) {
         lines.push(`    if (!skipProp) {`);
-        lines.push(check);
+        lines.push(guardedCheck);
         lines.push(`    }`);
       } else {
-        lines.push(check);
+        lines.push(guardedCheck);
       }
       lines.push(`  }`);
     } else {
       // No groups specified on constraint - always validate
       const check = generateConstraintCheck(constraint, i, propertyName, 'value', 'propertyErrors');
+      const guardedCheck = [
+        `  if (!(opts.stopAtFirstError && Object.keys(propertyErrors).length > 0)) {`,
+        check,
+        `  }`,
+      ].join('\n');
       if (skipGuard) {
         lines.push(`  if (!skipProp) {`);
-        lines.push(check);
+        lines.push(guardedCheck);
         lines.push(`  }`);
       } else {
-        lines.push(check);
+        lines.push(guardedCheck);
       }
     }
   }
@@ -410,12 +420,17 @@ function generateAsyncPropertyValidation(
         'propertyAsyncTasks',
         '      ',
       );
+      const guardedCheck = [
+        `      if (!(opts.stopAtFirstError && Object.keys(propertyErrors).length > 0)) {`,
+        check,
+        `      }`,
+      ].join('\n');
       if (skipGuard) {
         lines.push(`      if (!skipProp) {`);
-        lines.push(check);
+        lines.push(guardedCheck);
         lines.push(`      }`);
       } else {
-        lines.push(check);
+        lines.push(guardedCheck);
       }
       lines.push(`    }`);
     } else {
@@ -429,12 +444,17 @@ function generateAsyncPropertyValidation(
         'propertyAsyncTasks',
         '    ',
       );
+      const guardedCheck = [
+        `    if (!(opts.stopAtFirstError && Object.keys(propertyErrors).length > 0)) {`,
+        check,
+        `    }`,
+      ].join('\n');
       if (skipGuard) {
         lines.push(`    if (!skipProp) {`);
-        lines.push(check);
+        lines.push(guardedCheck);
         lines.push(`    }`);
       } else {
-        lines.push(check);
+        lines.push(guardedCheck);
       }
     }
   }

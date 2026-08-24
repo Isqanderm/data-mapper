@@ -1,5 +1,12 @@
 import { describe, it, expect } from 'vitest';
-import { IsString, IsDefined, validate, validateSync } from '../../../../src';
+import {
+  IsString,
+  IsDefined,
+  MinLength,
+  IsUppercase,
+  validate,
+  validateSync,
+} from '../../../../src';
 
 describe('skip* options', () => {
   class Dto {
@@ -38,5 +45,26 @@ describe('skip* options', () => {
     const errors = validateSync(new Strict(), { skipMissingProperties: true });
     expect(errors).toHaveLength(1);
     expect(errors[0].constraints).toHaveProperty('isDefined');
+  });
+});
+
+describe('stopAtFirstError', () => {
+  class Dto {
+    @IsUppercase()
+    @MinLength(5)
+    name: any = 'ab';
+  }
+
+  it('default: all failing constraints reported', () => {
+    const errors = validateSync(new Dto());
+    expect(Object.keys(errors[0].constraints!)).toHaveLength(2);
+  });
+
+  it('stopAtFirstError: only the first failure reported', async () => {
+    const errors = validateSync(new Dto(), { stopAtFirstError: true });
+    expect(errors).toHaveLength(1);
+    expect(Object.keys(errors[0].constraints!)).toHaveLength(1);
+    const asyncErrors = await validate(new Dto(), { stopAtFirstError: true });
+    expect(Object.keys(asyncErrors[0].constraints!)).toHaveLength(1);
   });
 });
