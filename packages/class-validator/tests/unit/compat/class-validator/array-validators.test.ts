@@ -12,7 +12,7 @@ import {
   ArrayNotContains,
   ArrayUnique,
   validateSync,
-} from '../../../../src/compat/class-validator';
+} from '../../../../src';
 
 describe('Array Validators', () => {
   describe('@IsArray', () => {

@@ -15,7 +15,7 @@ import {
   IsRFC3339,
   validate,
   validateSync,
-} from '../../../../src/compat/class-validator';
+} from '../../../../src';
 
 describe('class-validator-compat - Medium Priority Validators (Network & Formats)', () => {
   // ============================================================================

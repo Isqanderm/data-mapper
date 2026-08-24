@@ -17,7 +17,7 @@ import {
   IsEnum,
   validate,
   validateSync,
-} from '../../../../src/compat/class-validator';
+} from '../../../../src';
 
 describe('Advanced Validators', () => {
   describe('@IsInstance', () => {

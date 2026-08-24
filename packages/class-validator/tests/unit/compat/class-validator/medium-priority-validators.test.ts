@@ -16,7 +16,7 @@ import {
   IsISIN,
   validate,
   validateSync,
-} from '../../../../src/compat/class-validator';
+} from '../../../../src';
 
 describe('class-validator-compat - Medium Priority Validators (Banking & Crypto)', () => {
   // ============================================================================

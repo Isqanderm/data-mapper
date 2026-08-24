@@ -18,7 +18,7 @@ import {
   IsLongitude,
   // Validation
   validateSync,
-} from '../../../../src/compat/class-validator';
+} from '../../../../src';
 
 describe('Common Validators', () => {
   describe('Comparison Validators', () => {

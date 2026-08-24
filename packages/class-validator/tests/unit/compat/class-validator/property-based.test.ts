@@ -5,7 +5,7 @@
 
 import { describe, it } from 'vitest';
 import * as fc from 'fast-check';
-import { validateSync } from '../../../../src/compat/class-validator';
+import { validateSync } from '../../../../src';
 import {
   IsEmail,
   IsURL,
@@ -24,7 +24,7 @@ import {
   IsAlphanumeric,
   IsHexColor,
   IsPort,
-} from '../../../../src/compat/class-validator/decorators';
+} from '../../../../src/decorators';
 
 describe('Property-Based Testing - Email Validation', () => {
   it('should validate valid email addresses', () => {

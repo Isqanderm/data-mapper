@@ -28,7 +28,7 @@ import {
   MaxDate,
   // Validation
   validateSync,
-} from '../../../../src/compat/class-validator';
+} from '../../../../src';
 
 describe('Phase 2 Validators', () => {
   describe('Email & Web Validators', () => {

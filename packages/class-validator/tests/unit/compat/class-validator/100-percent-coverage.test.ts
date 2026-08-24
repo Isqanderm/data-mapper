@@ -17,8 +17,8 @@ import {
   ValidatorConstraint,
   ValidatorConstraintInterface,
   ValidationArguments,
-} from '../../../../src/compat/class-validator';
-import { clearValidatorCache, getValidatorCacheSize } from '../../../../src/compat/class-validator/engine/compiler';
+} from '../../../../src';
+import { clearValidatorCache, getValidatorCacheSize } from '../../../../src/engine/compiler';
 
 describe('100% Coverage Tests', () => {
   describe('@IsISBN', () => {

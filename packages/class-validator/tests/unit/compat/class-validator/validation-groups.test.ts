@@ -10,7 +10,7 @@ import {
   IsNumber,
   Min,
   validateSync,
-} from '../../../../src/compat/class-validator';
+} from '../../../../src';
 
 describe('Validation Groups', () => {
   it('should validate only constraints in specified groups', () => {

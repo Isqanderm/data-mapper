@@ -10,14 +10,14 @@ import {
   validate,
   validateSync,
   clearValidatorCache,
-} from '../../../../src/compat/class-validator';
+} from '../../../../src';
 import {
   ValidatorConstraint,
   Validate,
   ValidateBy,
   type ValidatorConstraintInterface,
   type ValidationArguments,
-} from '../../../../src/compat/class-validator/decorators/custom';
+} from '../../../../src/decorators/custom';
 
 // Custom validator: IsLongerThan
 @ValidatorConstraint({ name: 'isLongerThan', async: false })

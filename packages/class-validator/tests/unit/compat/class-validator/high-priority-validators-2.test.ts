@@ -11,7 +11,7 @@ import {
   IsBase64,
   validate,
   validateSync,
-} from '../../../../src/compat/class-validator';
+} from '../../../../src';
 
 describe('class-validator-compat - High Priority Validators (Part 2)', () => {
   describe('@IsJWT', () => {

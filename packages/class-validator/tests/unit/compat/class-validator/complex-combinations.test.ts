@@ -4,7 +4,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { validate } from '../../../../src/compat/class-validator';
+import { validate } from '../../../../src';
 import {
   IsOptional,
   IsString,
@@ -18,8 +18,8 @@ import {
   MinLength,
   MaxLength,
   Min,
-} from '../../../../src/compat/class-validator/decorators';
-import { Type } from '../../../../src/compat/class-transformer';
+} from '../../../../src/decorators';
+import { Type } from '../../../../../class-transformer/src';
 
 describe('Complex Combinations - Optional + Groups', () => {
   it('should handle optional with groups and constraint with different groups', async () => {

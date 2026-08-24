@@ -11,7 +11,7 @@ import {
   IsPostalCode,
   IsMongoId,
   validate,
-} from '../../../../src/compat/class-validator';
+} from '../../../../src';
 
 describe('class-validator-compat - High Priority Validators', () => {
   describe('@IsFQDN', () => {

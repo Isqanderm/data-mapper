@@ -8,9 +8,9 @@ import {
   IsUUID,
   IsIP,
   validateSync,
-} from '../../../../src/compat/class-validator';
-import { Type } from '../../../../src/compat/class-transformer';
-import { ValidateNested } from '../../../../src/compat/class-validator/decorators/nested';
+} from '../../../../src';
+import { Type } from '../../../../../class-transformer/src';
+import { ValidateNested } from '../../../../src/decorators/nested';
 
 describe('Final Coverage Gaps', () => {
   describe('@IsUUID - All Versions', () => {

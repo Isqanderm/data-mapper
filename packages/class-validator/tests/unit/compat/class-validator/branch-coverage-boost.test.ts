@@ -4,7 +4,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { validate, validateSync } from '../../../../src/compat/class-validator';
+import { validate, validateSync } from '../../../../src';
 import {
   IsOptional,
   IsString,
@@ -23,8 +23,8 @@ import {
   IsISO31661Alpha2,
   IsTimeZone,
   IsRFC3339,
-} from '../../../../src/compat/class-validator/decorators';
-import { Type } from '../../../../src/compat/class-transformer';
+} from '../../../../src/decorators';
+import { Type } from '../../../../../class-transformer/src';
 
 describe('Branch Coverage Boost - Validation Groups', () => {
   it('should validate with groups on @IsOptional', async () => {

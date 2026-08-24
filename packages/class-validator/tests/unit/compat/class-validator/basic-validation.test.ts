@@ -13,7 +13,7 @@ import {
   IsOptional,
   validate,
   validateSync,
-} from '../../../../src/compat/class-validator';
+} from '../../../../src';
 
 describe('class-validator-compat - Basic Validation', () => {
   describe('@IsString', () => {

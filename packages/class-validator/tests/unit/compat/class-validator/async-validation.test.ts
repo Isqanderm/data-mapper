@@ -12,8 +12,8 @@ import {
   ValidateNested,
   IsArray,
   validate,
-} from '../../../../src/compat/class-validator';
-import { addValidationConstraint } from '../../../../src/compat/class-validator/engine/metadata';
+} from '../../../../src';
+import { addValidationConstraint } from '../../../../src/engine/metadata';
 
 // Helper to create async validator decorator
 function IsUniqueEmail(options?: { message?: string; groups?: string[] }) {

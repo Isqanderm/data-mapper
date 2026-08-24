@@ -1,0 +1,32 @@
+{
+  "name": "@om-data-mapper/class-validator",
+  "version": "1.0.0",
+  "description": "class-validator compatibility adapter for om-data-mapper: JIT-compiled validation engine and decorators.",
+  "license": "MIT",
+  "author": "Isqanderm <aleksandr.melnik.personal@gmail.com> (https://www.linkedin.com/in/isqander-melnik)",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Isqanderm/data-mapper.git",
+    "directory": "packages/class-validator"
+  },
+  "main": "build/cjs/index.js",
+  "module": "build/esm/index.js",
+  "types": "build/cjs/index.d.ts",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./build/cjs/index.d.ts",
+      "import": "./build/esm/index.js",
+      "require": "./build/cjs/index.js",
+      "default": "./build/cjs/index.js"
+    }
+  },
+  "files": ["build", "README.md", "LICENSE"],
+  "scripts": {
+    "clean": "rm -rf build",
+    "build": "rm -rf build && tsc -p tsconfig.json && tsc -p tsconfig.esm.json && node ../../scripts/fix-esm-imports.js && echo '{\"type\":\"module\"}' > build/esm/package.json",
+    "test": "vitest run"
+  },
+  "engines": { "node": ">=18.0.0" },
+  "publishConfig": { "access": "public" }
+}

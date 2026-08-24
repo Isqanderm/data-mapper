@@ -13,7 +13,7 @@ import {
   ValidateNested,
   IsArray,
   validateSync,
-} from '../../../../src/compat/class-validator';
+} from '../../../../src';
 
 describe('Nested Validation', () => {
   describe('Single Nested Object', () => {

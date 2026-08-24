@@ -7,7 +7,7 @@ import {
   IsPositive,
   IsNegative,
   validateSync,
-} from '../../../../src/compat/class-validator';
+} from '../../../../src';
 
 describe('Number Validators - Complete Coverage', () => {
   describe('@IsPositive', () => {

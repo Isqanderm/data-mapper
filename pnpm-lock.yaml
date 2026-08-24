@@ -53,6 +53,8 @@ importers:
 
   packages/class-transformer: {}
 
+  packages/class-validator: {}
+
   packages/core: {}
 
 packages:
