@@ -1,5 +1,5 @@
 import { bench, describe } from 'vitest';
-import { Mapper } from '../../../src/core/Mapper';
+import { Mapper, Map as MapProp, createMapper } from '@om-data-mapper/core';
 
 interface Source {
   id: number;
@@ -26,12 +26,22 @@ const sourceData: Source = {
   },
 };
 
-const mapper = Mapper.create<Source, Target>({
-  userId: 'id',
-  fullName: 'name',
-  age: 'details.age',
-  location: 'details.address',
-});
+@Mapper<Source, Target>()
+class SimpleMapper {
+  @MapProp('id')
+  userId!: number;
+
+  @MapProp('name')
+  fullName!: string;
+
+  @MapProp('details.age')
+  age!: number;
+
+  @MapProp('details.address')
+  location!: string;
+}
+
+const mapper = createMapper<Source, Target>(SimpleMapper);
 
 function vanillaMapper(source: Source): Target {
   return {
@@ -42,9 +52,19 @@ function vanillaMapper(source: Source): Target {
   };
 }
 
+// Honesty guard: prove the JIT-compiled mapper actually produces the
+// vanilla-equivalent output before trusting the throughput numbers below.
+const omResult = mapper.transform(sourceData);
+const vanillaResult = vanillaMapper(sourceData);
+if (JSON.stringify(omResult) !== JSON.stringify(vanillaResult)) {
+  throw new Error(
+    `honesty guard: om mapping output differs from vanilla baseline: ${JSON.stringify(omResult)} vs ${JSON.stringify(vanillaResult)}`,
+  );
+}
+
 describe('Simple Mapping Benchmark', () => {
   bench('OmDataMapper - Simple mapping', () => {
-    mapper.execute(sourceData);
+    mapper.transform(sourceData);
   });
 
   bench('Vanilla - Simple mapping', () => {

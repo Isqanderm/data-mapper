@@ -69,25 +69,25 @@ Shared mapper definitions used across benchmarks.
 
 ```bash
 # From project root
-npm run bench:core
+pnpm bench:core
 
-# Or from benchmarks directory
-npx vitest bench core/
+# Or from the benchmarks/ workspace package
+pnpm --filter benchmarks run bench:core
 ```
 
 ### Run Specific Benchmark
 
 ```bash
-npx vitest bench core/simple.bench.ts
-npx vitest bench core/complex.bench.ts
-npx vitest bench core/nested.bench.ts
-npx vitest bench core/array.bench.ts
+pnpm --filter benchmarks exec vitest bench core/simple.bench.ts
+pnpm --filter benchmarks exec vitest bench core/complex.bench.ts
+pnpm --filter benchmarks exec vitest bench core/nested.bench.ts
+pnpm --filter benchmarks exec vitest bench core/array.bench.ts
 ```
 
 ### Watch Mode
 
 ```bash
-npx vitest bench core/ --watch
+pnpm --filter benchmarks exec vitest bench core/ --watch
 ```
 
 ## 📈 Understanding Results

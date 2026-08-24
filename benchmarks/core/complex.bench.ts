@@ -1,5 +1,5 @@
 import { bench, describe } from 'vitest';
-import { Mapper } from '../../../src/core/Mapper';
+import { Mapper, Map as MapProp, MapFrom, createMapper } from '@om-data-mapper/core';
 
 interface ComplexSource {
   id: number;
@@ -68,17 +68,37 @@ const complexSourceData: ComplexSource = {
   },
 };
 
-const complexMapper = Mapper.create<ComplexSource, ComplexTarget>({
-  userId: 'id',
-  fullName: (src) => `${src.user.firstName} ${src.user.lastName}`,
-  age: 'user.profile.age',
-  email: 'user.profile.email',
-  orderIds: (src) => src.orders.map((o) => o.orderId),
-  totalAmount: (src) => src.orders.reduce((sum, o) => sum + o.amount, 0),
-  productCount: (src) => src.orders.reduce((sum, o) => sum + o.items.length, 0),
-  created: 'metadata.createdAt',
-  updated: 'metadata.updatedAt',
-});
+@Mapper<ComplexSource, ComplexTarget>()
+class ComplexMapper {
+  @MapProp('id')
+  userId!: number;
+
+  @MapFrom((src: ComplexSource) => `${src.user.firstName} ${src.user.lastName}`)
+  fullName!: string;
+
+  @MapProp('user.profile.age')
+  age!: number;
+
+  @MapProp('user.profile.email')
+  email!: string;
+
+  @MapFrom((src: ComplexSource) => src.orders.map((o) => o.orderId))
+  orderIds!: number[];
+
+  @MapFrom((src: ComplexSource) => src.orders.reduce((sum, o) => sum + o.amount, 0))
+  totalAmount!: number;
+
+  @MapFrom((src: ComplexSource) => src.orders.reduce((sum, o) => sum + o.items.length, 0))
+  productCount!: number;
+
+  @MapProp('metadata.createdAt')
+  created!: string;
+
+  @MapProp('metadata.updatedAt')
+  updated!: string;
+}
+
+const complexMapper = createMapper<ComplexSource, ComplexTarget>(ComplexMapper);
 
 function vanillaComplexMapper(source: ComplexSource): ComplexTarget {
   return {
@@ -94,9 +114,19 @@ function vanillaComplexMapper(source: ComplexSource): ComplexTarget {
   };
 }
 
+// Honesty guard: prove the JIT-compiled mapper actually produces the
+// vanilla-equivalent output before trusting the throughput numbers below.
+const omResult = complexMapper.transform(complexSourceData);
+const vanillaResult = vanillaComplexMapper(complexSourceData);
+if (JSON.stringify(omResult) !== JSON.stringify(vanillaResult)) {
+  throw new Error(
+    `honesty guard: om mapping output differs from vanilla baseline: ${JSON.stringify(omResult)} vs ${JSON.stringify(vanillaResult)}`,
+  );
+}
+
 describe('Complex Mapping Benchmark', () => {
   bench('OmDataMapper - Complex mapping with transformers', () => {
-    complexMapper.execute(complexSourceData);
+    complexMapper.transform(complexSourceData);
   });
 
   bench('Vanilla - Complex mapping with transformers', () => {

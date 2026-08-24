@@ -1,0 +1,20 @@
+{
+  "name": "benchmarks",
+  "private": true,
+  "version": "0.0.0",
+  "description": "om-data-mapper benchmark suite (not published)",
+  "scripts": {
+    "bench": "vitest bench --run",
+    "bench:core": "vitest bench --run core",
+    "bench:compat": "vitest bench --run compat"
+  },
+  "devDependencies": {
+    "@om-data-mapper/core": "workspace:*",
+    "@om-data-mapper/class-transformer": "workspace:*",
+    "@om-data-mapper/class-validator": "workspace:*",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.14.2",
+    "reflect-metadata": "^0.2.2",
+    "vitest": "^3.2.4"
+  }
+}
