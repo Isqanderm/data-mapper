@@ -495,7 +495,7 @@ function generateConstraintCheck(
     case 'isString':
       lines.push(`${indent}  if (typeof ${valueName} !== 'string') {`);
       lines.push(
-        `${indent}    ${errorsName}.isString = ${JSON.stringify(getErrorMessage(constraint, 'must be a string'))};`,
+        `${indent}    ${errorsName}.isString = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be a string')};`,
       );
       lines.push(`${indent}  }`);
       break;
@@ -505,7 +505,7 @@ function generateConstraintCheck(
         `${indent}  if (typeof ${valueName} === 'string' && ${valueName}.length < ${constraint.value}) {`,
       );
       lines.push(
-        `${indent}    ${errorsName}.minLength = ${JSON.stringify(getErrorMessage(constraint, `must be at least ${constraint.value} characters`))};`,
+        `${indent}    ${errorsName}.minLength = ${emitMessage(constraint, constraintIndex, propertyName, valueName, `must be at least ${constraint.value} characters`)};`,
       );
       lines.push(`${indent}  }`);
       break;
@@ -515,7 +515,7 @@ function generateConstraintCheck(
         `${indent}  if (typeof ${valueName} === 'string' && ${valueName}.length > ${constraint.value}) {`,
       );
       lines.push(
-        `${indent}    ${errorsName}.maxLength = ${JSON.stringify(getErrorMessage(constraint, `must be at most ${constraint.value} characters`))};`,
+        `${indent}    ${errorsName}.maxLength = ${emitMessage(constraint, constraintIndex, propertyName, valueName, `must be at most ${constraint.value} characters`)};`,
       );
       lines.push(`${indent}  }`);
       break;
@@ -523,7 +523,7 @@ function generateConstraintCheck(
     case 'isNumber':
       lines.push(`${indent}  if (typeof ${valueName} !== 'number' || isNaN(${valueName})) {`);
       lines.push(
-        `${indent}    ${errorsName}.isNumber = ${JSON.stringify(getErrorMessage(constraint, 'must be a number'))};`,
+        `${indent}    ${errorsName}.isNumber = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be a number')};`,
       );
       lines.push(`    }`);
       break;
@@ -533,7 +533,7 @@ function generateConstraintCheck(
         `${indent}  if (typeof ${valueName} === 'number' && ${valueName} < ${constraint.value}) {`,
       );
       lines.push(
-        `${indent}    ${errorsName}.min = ${JSON.stringify(getErrorMessage(constraint, `must not be less than ${constraint.value}`))};`,
+        `${indent}    ${errorsName}.min = ${emitMessage(constraint, constraintIndex, propertyName, valueName, `must not be less than ${constraint.value}`)};`,
       );
       lines.push(`    }`);
       break;
@@ -543,7 +543,7 @@ function generateConstraintCheck(
         `${indent}  if (typeof ${valueName} === 'number' && ${valueName} > ${constraint.value}) {`,
       );
       lines.push(
-        `${indent}    ${errorsName}.max = ${JSON.stringify(getErrorMessage(constraint, `must not be greater than ${constraint.value}`))};`,
+        `${indent}    ${errorsName}.max = ${emitMessage(constraint, constraintIndex, propertyName, valueName, `must not be greater than ${constraint.value}`)};`,
       );
       lines.push(`    }`);
       break;
@@ -553,7 +553,7 @@ function generateConstraintCheck(
         `${indent}  if (typeof ${valueName} !== 'number' || !Number.isInteger(${valueName})) {`,
       );
       lines.push(
-        `${indent}    ${errorsName}.isInt = ${JSON.stringify(getErrorMessage(constraint, 'must be an integer'))};`,
+        `${indent}    ${errorsName}.isInt = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be an integer')};`,
       );
       lines.push(`    }`);
       break;
@@ -561,7 +561,7 @@ function generateConstraintCheck(
     case 'isBoolean':
       lines.push(`${indent}  if (typeof ${valueName} !== 'boolean') {`);
       lines.push(
-        `${indent}    ${errorsName}.isBoolean = ${JSON.stringify(getErrorMessage(constraint, 'must be a boolean'))};`,
+        `${indent}    ${errorsName}.isBoolean = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be a boolean')};`,
       );
       lines.push(`    }`);
       break;
@@ -571,7 +571,7 @@ function generateConstraintCheck(
         `${indent}  if (${valueName} === null || ${valueName} === undefined || ${valueName} === '' || (Array.isArray(${valueName}) && ${valueName}.length === 0)) {`,
       );
       lines.push(
-        `${indent}    ${errorsName}.isNotEmpty = ${JSON.stringify(getErrorMessage(constraint, 'should not be empty'))};`,
+        `${indent}    ${errorsName}.isNotEmpty = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'should not be empty')};`,
       );
       lines.push(`    }`);
       break;
@@ -579,7 +579,7 @@ function generateConstraintCheck(
     case 'isDefined':
       lines.push(`${indent}  if (${valueName} === undefined || ${valueName} === null) {`);
       lines.push(
-        `${indent}    ${errorsName}.isDefined = ${JSON.stringify(getErrorMessage(constraint, 'should not be null or undefined'))};`,
+        `${indent}    ${errorsName}.isDefined = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'should not be null or undefined')};`,
       );
       lines.push(`    }`);
       break;
@@ -588,7 +588,7 @@ function generateConstraintCheck(
     case 'isArray':
       lines.push(`${indent}  if (!Array.isArray(${valueName})) {`);
       lines.push(
-        `${indent}    ${errorsName}.isArray = ${JSON.stringify(getErrorMessage(constraint, 'must be an array'))};`,
+        `${indent}    ${errorsName}.isArray = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be an array')};`,
       );
       lines.push(`    }`);
       break;
@@ -596,7 +596,7 @@ function generateConstraintCheck(
     case 'arrayNotEmpty':
       lines.push(`${indent}  if (!Array.isArray(${valueName}) || ${valueName}.length === 0) {`);
       lines.push(
-        `${indent}    ${errorsName}.arrayNotEmpty = ${JSON.stringify(getErrorMessage(constraint, 'should not be empty'))};`,
+        `${indent}    ${errorsName}.arrayNotEmpty = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'should not be empty')};`,
       );
       lines.push(`    }`);
       break;
@@ -606,7 +606,7 @@ function generateConstraintCheck(
         `${indent}  if (Array.isArray(${valueName}) && ${valueName}.length < ${constraint.value}) {`,
       );
       lines.push(
-        `${indent}    ${errorsName}.arrayMinSize = ${JSON.stringify(getErrorMessage(constraint, `must contain at least ${constraint.value} elements`))};`,
+        `${indent}    ${errorsName}.arrayMinSize = ${emitMessage(constraint, constraintIndex, propertyName, valueName, `must contain at least ${constraint.value} elements`)};`,
       );
       lines.push(`    }`);
       break;
@@ -616,7 +616,7 @@ function generateConstraintCheck(
         `${indent}  if (Array.isArray(${valueName}) && ${valueName}.length > ${constraint.value}) {`,
       );
       lines.push(
-        `${indent}    ${errorsName}.arrayMaxSize = ${JSON.stringify(getErrorMessage(constraint, `must contain no more than ${constraint.value} elements`))};`,
+        `${indent}    ${errorsName}.arrayMaxSize = ${emitMessage(constraint, constraintIndex, propertyName, valueName, `must contain no more than ${constraint.value} elements`)};`,
       );
       lines.push(`    }`);
       break;
@@ -629,7 +629,7 @@ function generateConstraintCheck(
       );
       lines.push(`${indent}    if (!hasAll) {`);
       lines.push(
-        `${indent}      ${errorsName}.arrayContains = ${JSON.stringify(getErrorMessage(constraint, 'must contain required values'))};`,
+        `${indent}      ${errorsName}.arrayContains = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must contain required values')};`,
       );
       lines.push(`${indent}    }`);
       lines.push(`    }`);
@@ -643,7 +643,7 @@ function generateConstraintCheck(
       );
       lines.push(`${indent}    if (hasAny) {`);
       lines.push(
-        `${indent}      ${errorsName}.arrayNotContains = ${JSON.stringify(getErrorMessage(constraint, 'must not contain forbidden values'))};`,
+        `${indent}      ${errorsName}.arrayNotContains = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must not contain forbidden values')};`,
       );
       lines.push(`${indent}    }`);
       lines.push(`    }`);
@@ -654,7 +654,7 @@ function generateConstraintCheck(
       lines.push(`${indent}    const uniqueSet = new Set(${valueName});`);
       lines.push(`${indent}    if (uniqueSet.size !== ${valueName}.length) {`);
       lines.push(
-        `${indent}      ${errorsName}.arrayUnique = ${JSON.stringify(getErrorMessage(constraint, 'all elements must be unique'))};`,
+        `${indent}      ${errorsName}.arrayUnique = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'all elements must be unique')};`,
       );
       lines.push(`${indent}    }`);
       lines.push(`    }`);
@@ -666,7 +666,7 @@ function generateConstraintCheck(
         `${indent}  if (!(${valueName} instanceof Date) || isNaN(${valueName}.getTime())) {`,
       );
       lines.push(
-        `${indent}    ${errorsName}.isDate = ${JSON.stringify(getErrorMessage(constraint, 'must be a Date instance'))};`,
+        `${indent}    ${errorsName}.isDate = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be a Date instance')};`,
       );
       lines.push(`    }`);
       break;
@@ -676,7 +676,7 @@ function generateConstraintCheck(
         `${indent}  if (typeof ${valueName} !== 'object' || ${valueName} === null || Array.isArray(${valueName})) {`,
       );
       lines.push(
-        `${indent}    ${errorsName}.isObject = ${JSON.stringify(getErrorMessage(constraint, 'must be an object'))};`,
+        `${indent}    ${errorsName}.isObject = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be an object')};`,
       );
       lines.push(`    }`);
       break;
@@ -685,7 +685,7 @@ function generateConstraintCheck(
       lines.push(`    const enumValues = Object.values(${JSON.stringify(constraint.value)});`);
       lines.push(`${indent}  if (!enumValues.includes(${valueName})) {`);
       lines.push(
-        `${indent}    ${errorsName}.isEnum = ${JSON.stringify(getErrorMessage(constraint, 'must be a valid enum value'))};`,
+        `${indent}    ${errorsName}.isEnum = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be a valid enum value')};`,
       );
       lines.push(`    }`);
       break;
@@ -696,7 +696,7 @@ function generateConstraintCheck(
       lines.push(`${indent}    const emailRegex = /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/;`);
       lines.push(`${indent}    if (!emailRegex.test(${valueName})) {`);
       lines.push(
-        `${indent}      ${errorsName}.isEmail = ${JSON.stringify(getErrorMessage(constraint, 'must be an email'))};`,
+        `${indent}      ${errorsName}.isEmail = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be an email')};`,
       );
       lines.push(`${indent}    }`);
       lines.push(`    }`);
@@ -708,7 +708,7 @@ function generateConstraintCheck(
       lines.push(`${indent}      new URL(${valueName});`);
       lines.push(`${indent}    } catch {`);
       lines.push(
-        `${indent}      ${errorsName}.isURL = ${JSON.stringify(getErrorMessage(constraint, 'must be a URL address'))};`,
+        `${indent}      ${errorsName}.isURL = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be a URL address')};`,
       );
       lines.push(`${indent}    }`);
       lines.push(`    }`);
@@ -735,7 +735,7 @@ function generateConstraintCheck(
       }
       lines.push(`${indent}    if (!uuidRegex.test(${valueName})) {`);
       lines.push(
-        `${indent}      ${errorsName}.isUUID = ${JSON.stringify(getErrorMessage(constraint, 'must be a UUID'))};`,
+        `${indent}      ${errorsName}.isUUID = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be a UUID')};`,
       );
       lines.push(`${indent}    }`);
       lines.push(`    }`);
@@ -747,7 +747,7 @@ function generateConstraintCheck(
       lines.push(`${indent}      JSON.parse(${valueName});`);
       lines.push(`${indent}    } catch {`);
       lines.push(
-        `${indent}      ${errorsName}.isJSON = ${JSON.stringify(getErrorMessage(constraint, 'must be a json string'))};`,
+        `${indent}      ${errorsName}.isJSON = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be a json string')};`,
       );
       lines.push(`${indent}    }`);
       lines.push(`    }`);
@@ -759,7 +759,7 @@ function generateConstraintCheck(
       lines.push(`${indent}    const alphaRegex = /^[a-zA-Z]+$/;`);
       lines.push(`${indent}    if (!alphaRegex.test(${valueName})) {`);
       lines.push(
-        `${indent}      ${errorsName}.isAlpha = ${JSON.stringify(getErrorMessage(constraint, 'must contain only letters (a-zA-Z)'))};`,
+        `${indent}      ${errorsName}.isAlpha = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must contain only letters (a-zA-Z)')};`,
       );
       lines.push(`${indent}    }`);
       lines.push(`    }`);
@@ -770,7 +770,7 @@ function generateConstraintCheck(
       lines.push(`${indent}    const alphanumericRegex = /^[a-zA-Z0-9]+$/;`);
       lines.push(`${indent}    if (!alphanumericRegex.test(${valueName})) {`);
       lines.push(
-        `${indent}      ${errorsName}.isAlphanumeric = ${JSON.stringify(getErrorMessage(constraint, 'must contain only letters and numbers'))};`,
+        `${indent}      ${errorsName}.isAlphanumeric = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must contain only letters and numbers')};`,
       );
       lines.push(`${indent}    }`);
       lines.push(`    }`);
@@ -781,7 +781,7 @@ function generateConstraintCheck(
       lines.push(`${indent}    const hexColorRegex = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i;`);
       lines.push(`${indent}    if (!hexColorRegex.test(${valueName})) {`);
       lines.push(
-        `${indent}      ${errorsName}.isHexColor = ${JSON.stringify(getErrorMessage(constraint, 'must be a hexadecimal color'))};`,
+        `${indent}      ${errorsName}.isHexColor = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be a hexadecimal color')};`,
       );
       lines.push(`${indent}    }`);
       lines.push(`    }`);
@@ -810,7 +810,7 @@ function generateConstraintCheck(
       }
       lines.push(`${indent}    if (!ipRegex.test(${valueName})) {`);
       lines.push(
-        `${indent}      ${errorsName}.isIP = ${JSON.stringify(getErrorMessage(constraint, 'must be an ip address'))};`,
+        `${indent}      ${errorsName}.isIP = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be an ip address')};`,
       );
       lines.push(`${indent}    }`);
       lines.push(`    }`);
@@ -822,7 +822,7 @@ function generateConstraintCheck(
       lines.push(`${indent}    const sanitized = ${valueName}.replace(/[- ]/g, '');`);
       lines.push(`${indent}    if (!/^[0-9]{13,19}$/.test(sanitized)) {`);
       lines.push(
-        `${indent}      ${errorsName}.isCreditCard = ${JSON.stringify(getErrorMessage(constraint, 'must be a credit card'))};`,
+        `${indent}      ${errorsName}.isCreditCard = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be a credit card')};`,
       );
       lines.push(`${indent}    } else {`);
       // Luhn algorithm
@@ -839,7 +839,7 @@ function generateConstraintCheck(
       lines.push(`${indent}      }`);
       lines.push(`${indent}      if (sum % 10 !== 0) {`);
       lines.push(
-        `${indent}        ${errorsName}.isCreditCard = ${JSON.stringify(getErrorMessage(constraint, 'must be a credit card'))};`,
+        `${indent}        ${errorsName}.isCreditCard = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be a credit card')};`,
       );
       lines.push(`${indent}      }`);
       lines.push(`${indent}    }`);
@@ -852,13 +852,13 @@ function generateConstraintCheck(
       if (constraint.value === '10') {
         lines.push(`${indent}    if (!/^[0-9]{9}[0-9X]$/i.test(sanitized)) {`);
         lines.push(
-          `${indent}      ${errorsName}.isISBN = ${JSON.stringify(getErrorMessage(constraint, 'must be an ISBN'))};`,
+          `${indent}      ${errorsName}.isISBN = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be an ISBN')};`,
         );
         lines.push(`${indent}    }`);
       } else if (constraint.value === '13') {
         lines.push(`${indent}    if (!/^[0-9]{13}$/.test(sanitized)) {`);
         lines.push(
-          `${indent}      ${errorsName}.isISBN = ${JSON.stringify(getErrorMessage(constraint, 'must be an ISBN'))};`,
+          `${indent}      ${errorsName}.isISBN = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be an ISBN')};`,
         );
         lines.push(`${indent}    }`);
       } else {
@@ -866,7 +866,7 @@ function generateConstraintCheck(
         lines.push(`${indent}    const isbn13 = /^[0-9]{13}$/.test(sanitized);`);
         lines.push(`${indent}    if (!isbn10 && !isbn13) {`);
         lines.push(
-          `${indent}      ${errorsName}.isISBN = ${JSON.stringify(getErrorMessage(constraint, 'must be an ISBN'))};`,
+          `${indent}      ${errorsName}.isISBN = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be an ISBN')};`,
         );
         lines.push(`${indent}    }`);
       }
@@ -880,7 +880,7 @@ function generateConstraintCheck(
       );
       lines.push(`${indent}    if (!phoneRegex.test(${valueName})) {`);
       lines.push(
-        `${indent}      ${errorsName}.isPhoneNumber = ${JSON.stringify(getErrorMessage(constraint, 'must be a valid phone number'))};`,
+        `${indent}      ${errorsName}.isPhoneNumber = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be a valid phone number')};`,
       );
       lines.push(`${indent}    }`);
       lines.push(`    }`);
@@ -892,7 +892,7 @@ function generateConstraintCheck(
         `${indent}  if (typeof ${valueName} === 'string' && !${valueName}.includes(${JSON.stringify(constraint.value)})) {`,
       );
       lines.push(
-        `${indent}    ${errorsName}.contains = ${JSON.stringify(getErrorMessage(constraint, `must contain a ${constraint.value} string`))};`,
+        `${indent}    ${errorsName}.contains = ${emitMessage(constraint, constraintIndex, propertyName, valueName, `must contain a ${constraint.value} string`)};`,
       );
       lines.push(`    }`);
       break;
@@ -902,7 +902,7 @@ function generateConstraintCheck(
         `${indent}  if (typeof ${valueName} === 'string' && ${valueName}.includes(${JSON.stringify(constraint.value)})) {`,
       );
       lines.push(
-        `${indent}    ${errorsName}.notContains = ${JSON.stringify(getErrorMessage(constraint, `should not contain a ${constraint.value} string`))};`,
+        `${indent}    ${errorsName}.notContains = ${emitMessage(constraint, constraintIndex, propertyName, valueName, `should not contain a ${constraint.value} string`)};`,
       );
       lines.push(`    }`);
       break;
@@ -912,7 +912,7 @@ function generateConstraintCheck(
         `${indent}  if (typeof ${valueName} === 'string' && ${valueName} !== ${valueName}.toLowerCase()) {`,
       );
       lines.push(
-        `${indent}    ${errorsName}.isLowercase = ${JSON.stringify(getErrorMessage(constraint, 'must be a lowercase string'))};`,
+        `${indent}    ${errorsName}.isLowercase = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be a lowercase string')};`,
       );
       lines.push(`    }`);
       break;
@@ -922,7 +922,7 @@ function generateConstraintCheck(
         `${indent}  if (typeof ${valueName} === 'string' && ${valueName} !== ${valueName}.toUpperCase()) {`,
       );
       lines.push(
-        `${indent}    ${errorsName}.isUppercase = ${JSON.stringify(getErrorMessage(constraint, 'must be an uppercase string'))};`,
+        `${indent}    ${errorsName}.isUppercase = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be an uppercase string')};`,
       );
       lines.push(`    }`);
       break;
@@ -937,7 +937,7 @@ function generateConstraintCheck(
         );
         lines.push(`${indent}    if (!regex.test(${valueName})) {`);
         lines.push(
-          `${indent}      ${errorsName}.matches = ${JSON.stringify(getErrorMessage(constraint, `must match ${pattern} regular expression`))};`,
+          `${indent}      ${errorsName}.matches = ${emitMessage(constraint, constraintIndex, propertyName, valueName, `must match ${pattern} regular expression`)};`,
         );
         lines.push(`${indent}    }`);
         lines.push(`    }`);
@@ -952,7 +952,7 @@ function generateConstraintCheck(
       );
       lines.push(`${indent}    if (!fqdnRegex.test(${valueName})) {`);
       lines.push(
-        `${indent}      ${errorsName}.isFQDN = ${JSON.stringify(getErrorMessage(constraint, 'must be a valid domain name'))};`,
+        `${indent}      ${errorsName}.isFQDN = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be a valid domain name')};`,
       );
       lines.push(`${indent}    }`);
       lines.push(`    }`);
@@ -965,7 +965,7 @@ function generateConstraintCheck(
       );
       lines.push(`${indent}    if (!iso8601Regex.test(${valueName})) {`);
       lines.push(
-        `${indent}      ${errorsName}.isISO8601 = ${JSON.stringify(getErrorMessage(constraint, 'must be a valid ISO 8601 date string'))};`,
+        `${indent}      ${errorsName}.isISO8601 = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be a valid ISO 8601 date string')};`,
       );
       lines.push(`${indent}    }`);
       lines.push(`    }`);
@@ -978,7 +978,7 @@ function generateConstraintCheck(
       );
       lines.push(`${indent}    if (!phoneRegex.test(${valueName})) {`);
       lines.push(
-        `${indent}      ${errorsName}.isMobilePhone = ${JSON.stringify(getErrorMessage(constraint, 'must be a valid phone number'))};`,
+        `${indent}      ${errorsName}.isMobilePhone = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be a valid phone number')};`,
       );
       lines.push(`${indent}    }`);
       lines.push(`    }`);
@@ -999,7 +999,7 @@ function generateConstraintCheck(
       }
       lines.push(`${indent}    if (!postalRegex.test(${valueName})) {`);
       lines.push(
-        `${indent}      ${errorsName}.isPostalCode = ${JSON.stringify(getErrorMessage(constraint, 'must be a valid postal code'))};`,
+        `${indent}      ${errorsName}.isPostalCode = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be a valid postal code')};`,
       );
       lines.push(`${indent}    }`);
       lines.push(`    }`);
@@ -1010,7 +1010,7 @@ function generateConstraintCheck(
       lines.push(`${indent}    const mongoIdRegex = /^[0-9a-fA-F]{24}$/;`);
       lines.push(`${indent}    if (!mongoIdRegex.test(${valueName})) {`);
       lines.push(
-        `${indent}      ${errorsName}.isMongoId = ${JSON.stringify(getErrorMessage(constraint, 'must be a mongodb id'))};`,
+        `${indent}      ${errorsName}.isMongoId = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be a mongodb id')};`,
       );
       lines.push(`${indent}    }`);
       lines.push(`    }`);
@@ -1021,7 +1021,7 @@ function generateConstraintCheck(
       lines.push(`${indent}    const parts = ${valueName}.split('.');`);
       lines.push(`${indent}    if (parts.length !== 3 || !parts[0] || !parts[1]) {`);
       lines.push(
-        `${indent}      ${errorsName}.isJWT = ${JSON.stringify(getErrorMessage(constraint, 'must be a jwt string'))};`,
+        `${indent}      ${errorsName}.isJWT = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be a jwt string')};`,
       );
       lines.push(`${indent}    } else {`);
       lines.push(`${indent}      const jwtRegex = /^[A-Za-z0-9-_]+$/;`);
@@ -1029,7 +1029,7 @@ function generateConstraintCheck(
         `${indent}      if (!jwtRegex.test(parts[0]) || !jwtRegex.test(parts[1]) || (parts[2] && !jwtRegex.test(parts[2]))) {`,
       );
       lines.push(
-        `${indent}        ${errorsName}.isJWT = ${JSON.stringify(getErrorMessage(constraint, 'must be a jwt string'))};`,
+        `${indent}        ${errorsName}.isJWT = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be a jwt string')};`,
       );
       lines.push(`${indent}      }`);
       lines.push(`${indent}    }`);
@@ -1047,7 +1047,7 @@ function generateConstraintCheck(
         `${indent}    if (!hasLower || !hasUpper || !hasNumber || !hasSpecial || !isLongEnough) {`,
       );
       lines.push(
-        `${indent}      ${errorsName}.isStrongPassword = ${JSON.stringify(getErrorMessage(constraint, 'must be a strong password (min 8 chars, uppercase, lowercase, number, special char)'))};`,
+        `${indent}      ${errorsName}.isStrongPassword = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be a strong password (min 8 chars, uppercase, lowercase, number, special char)')};`,
       );
       lines.push(`${indent}    }`);
       lines.push(`    }`);
@@ -1058,7 +1058,7 @@ function generateConstraintCheck(
       lines.push(`${indent}    const port = parseInt(${valueName}, 10);`);
       lines.push(`${indent}    if (isNaN(port) || port < 0 || port > 65535) {`);
       lines.push(
-        `${indent}      ${errorsName}.isPort = ${JSON.stringify(getErrorMessage(constraint, 'must be a valid port number'))};`,
+        `${indent}      ${errorsName}.isPort = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be a valid port number')};`,
       );
       lines.push(`${indent}    }`);
       lines.push(`    }`);
@@ -1069,7 +1069,7 @@ function generateConstraintCheck(
       lines.push(`${indent}    const macRegex = /^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$/;`);
       lines.push(`${indent}    if (!macRegex.test(${valueName})) {`);
       lines.push(
-        `${indent}      ${errorsName}.isMACAddress = ${JSON.stringify(getErrorMessage(constraint, 'must be a MAC Address'))};`,
+        `${indent}      ${errorsName}.isMACAddress = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be a MAC Address')};`,
       );
       lines.push(`${indent}    }`);
       lines.push(`    }`);
@@ -1082,7 +1082,7 @@ function generateConstraintCheck(
       );
       lines.push(`${indent}    if (!base64Regex.test(${valueName})) {`);
       lines.push(
-        `${indent}      ${errorsName}.isBase64 = ${JSON.stringify(getErrorMessage(constraint, 'must be base64 encoded'))};`,
+        `${indent}      ${errorsName}.isBase64 = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be base64 encoded')};`,
       );
       lines.push(`${indent}    }`);
       lines.push(`    }`);
@@ -1094,7 +1094,7 @@ function generateConstraintCheck(
       lines.push(`${indent}    const ibanRegex = /^[A-Z]{2}[0-9]{2}[A-Z0-9]{1,30}$/;`);
       lines.push(`${indent}    if (!ibanRegex.test(${valueName})) {`);
       lines.push(
-        `${indent}      ${errorsName}.isIBAN = ${JSON.stringify(getErrorMessage(constraint, 'must be a valid IBAN'))};`,
+        `${indent}      ${errorsName}.isIBAN = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be a valid IBAN')};`,
       );
       lines.push(`${indent}    }`);
       lines.push(`    }`);
@@ -1105,7 +1105,7 @@ function generateConstraintCheck(
       lines.push(`${indent}    const bicRegex = /^[A-Z]{6}[A-Z0-9]{2}([A-Z0-9]{3})?$/;`);
       lines.push(`${indent}    if (!bicRegex.test(${valueName})) {`);
       lines.push(
-        `${indent}      ${errorsName}.isBIC = ${JSON.stringify(getErrorMessage(constraint, 'must be a valid BIC or SWIFT code'))};`,
+        `${indent}      ${errorsName}.isBIC = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be a valid BIC or SWIFT code')};`,
       );
       lines.push(`${indent}    }`);
       lines.push(`    }`);
@@ -1118,7 +1118,7 @@ function generateConstraintCheck(
       );
       lines.push(`${indent}    if (!currencyRegex.test(${valueName})) {`);
       lines.push(
-        `${indent}      ${errorsName}.isCurrency = ${JSON.stringify(getErrorMessage(constraint, 'must be a valid currency amount'))};`,
+        `${indent}      ${errorsName}.isCurrency = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be a valid currency amount')};`,
       );
       lines.push(`${indent}    }`);
       lines.push(`    }`);
@@ -1129,7 +1129,7 @@ function generateConstraintCheck(
       lines.push(`${indent}    const currencyCodeRegex = /^[A-Z]{3}$/;`);
       lines.push(`${indent}    if (!currencyCodeRegex.test(${valueName})) {`);
       lines.push(
-        `${indent}      ${errorsName}.isISO4217CurrencyCode = ${JSON.stringify(getErrorMessage(constraint, 'must be a valid ISO 4217 currency code'))};`,
+        `${indent}      ${errorsName}.isISO4217CurrencyCode = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be a valid ISO 4217 currency code')};`,
       );
       lines.push(`${indent}    }`);
       lines.push(`    }`);
@@ -1141,7 +1141,7 @@ function generateConstraintCheck(
       lines.push(`${indent}    const ethRegex = /^0x[a-fA-F0-9]{39,40}$/;`);
       lines.push(`${indent}    if (!ethRegex.test(${valueName})) {`);
       lines.push(
-        `${indent}      ${errorsName}.isEthereumAddress = ${JSON.stringify(getErrorMessage(constraint, 'must be a valid Ethereum address'))};`,
+        `${indent}      ${errorsName}.isEthereumAddress = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be a valid Ethereum address')};`,
       );
       lines.push(`${indent}    }`);
       lines.push(`    }`);
@@ -1152,7 +1152,7 @@ function generateConstraintCheck(
       lines.push(`${indent}    const btcRegex = /^(bc1|[13])[a-zA-HJ-NP-Z0-9]{25,62}$/;`);
       lines.push(`${indent}    if (!btcRegex.test(${valueName})) {`);
       lines.push(
-        `${indent}      ${errorsName}.isBtcAddress = ${JSON.stringify(getErrorMessage(constraint, 'must be a valid Bitcoin address'))};`,
+        `${indent}      ${errorsName}.isBtcAddress = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be a valid Bitcoin address')};`,
       );
       lines.push(`${indent}    }`);
       lines.push(`    }`);
@@ -1168,7 +1168,7 @@ function generateConstraintCheck(
       }
       lines.push(`${indent}    if (!passportRegex.test(${valueName})) {`);
       lines.push(
-        `${indent}      ${errorsName}.isPassportNumber = ${JSON.stringify(getErrorMessage(constraint, 'must be a valid passport number'))};`,
+        `${indent}      ${errorsName}.isPassportNumber = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be a valid passport number')};`,
       );
       lines.push(`${indent}    }`);
       lines.push(`    }`);
@@ -1179,7 +1179,7 @@ function generateConstraintCheck(
       lines.push(`${indent}    const idRegex = /^[A-Z0-9]{5,20}$/;`);
       lines.push(`${indent}    if (!idRegex.test(${valueName})) {`);
       lines.push(
-        `${indent}      ${errorsName}.isIdentityCard = ${JSON.stringify(getErrorMessage(constraint, 'must be a valid identity card'))};`,
+        `${indent}      ${errorsName}.isIdentityCard = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be a valid identity card')};`,
       );
       lines.push(`${indent}    }`);
       lines.push(`    }`);
@@ -1190,7 +1190,7 @@ function generateConstraintCheck(
       lines.push(`${indent}    const eanRegex = /^[0-9]{8}$|^[0-9]{13}$/;`);
       lines.push(`${indent}    if (!eanRegex.test(${valueName})) {`);
       lines.push(
-        `${indent}      ${errorsName}.isEAN = ${JSON.stringify(getErrorMessage(constraint, 'must be a valid EAN'))};`,
+        `${indent}      ${errorsName}.isEAN = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be a valid EAN')};`,
       );
       lines.push(`${indent}    }`);
       lines.push(`    }`);
@@ -1201,7 +1201,7 @@ function generateConstraintCheck(
       lines.push(`${indent}    const isinRegex = /^[A-Z]{2}[A-Z0-9]{9}[0-9]$/;`);
       lines.push(`${indent}    if (!isinRegex.test(${valueName})) {`);
       lines.push(
-        `${indent}      ${errorsName}.isISIN = ${JSON.stringify(getErrorMessage(constraint, 'must be a valid ISIN'))};`,
+        `${indent}      ${errorsName}.isISIN = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be a valid ISIN')};`,
       );
       lines.push(`${indent}    }`);
       lines.push(`    }`);
@@ -1215,7 +1215,7 @@ function generateConstraintCheck(
       );
       lines.push(`${indent}    if (!magnetRegex.test(${valueName})) {`);
       lines.push(
-        `${indent}      ${errorsName}.isMagnetURI = ${JSON.stringify(getErrorMessage(constraint, 'must be a valid Magnet URI'))};`,
+        `${indent}      ${errorsName}.isMagnetURI = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be a valid Magnet URI')};`,
       );
       lines.push(`${indent}    }`);
       lines.push(`    }`);
@@ -1226,7 +1226,7 @@ function generateConstraintCheck(
       lines.push(`${indent}    const dataUriRegex = /^data:([a-z]+\\/[a-z0-9-+.]+)?;base64,/i;`);
       lines.push(`${indent}    if (!dataUriRegex.test(${valueName})) {`);
       lines.push(
-        `${indent}      ${errorsName}.isDataURI = ${JSON.stringify(getErrorMessage(constraint, 'must be a valid Data URI'))};`,
+        `${indent}      ${errorsName}.isDataURI = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be a valid Data URI')};`,
       );
       lines.push(`${indent}    }`);
       lines.push(`    }`);
@@ -1238,7 +1238,7 @@ function generateConstraintCheck(
       lines.push(`${indent}    const alpha2Regex = /^[A-Z]{2}$/;`);
       lines.push(`${indent}    if (!alpha2Regex.test(${valueName})) {`);
       lines.push(
-        `${indent}      ${errorsName}.isISO31661Alpha2 = ${JSON.stringify(getErrorMessage(constraint, 'must be a valid ISO 3166-1 alpha-2 country code'))};`,
+        `${indent}      ${errorsName}.isISO31661Alpha2 = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be a valid ISO 3166-1 alpha-2 country code')};`,
       );
       lines.push(`${indent}    }`);
       lines.push(`    }`);
@@ -1249,7 +1249,7 @@ function generateConstraintCheck(
       lines.push(`${indent}    const alpha3Regex = /^[A-Z]{3}$/;`);
       lines.push(`${indent}    if (!alpha3Regex.test(${valueName})) {`);
       lines.push(
-        `${indent}      ${errorsName}.isISO31661Alpha3 = ${JSON.stringify(getErrorMessage(constraint, 'must be a valid ISO 3166-1 alpha-3 country code'))};`,
+        `${indent}      ${errorsName}.isISO31661Alpha3 = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be a valid ISO 3166-1 alpha-3 country code')};`,
       );
       lines.push(`${indent}    }`);
       lines.push(`    }`);
@@ -1260,7 +1260,7 @@ function generateConstraintCheck(
       lines.push(`${indent}    const localeRegex = /^[a-z]{2}(-[A-Z]{2})?$/;`);
       lines.push(`${indent}    if (!localeRegex.test(${valueName})) {`);
       lines.push(
-        `${indent}      ${errorsName}.isLocale = ${JSON.stringify(getErrorMessage(constraint, 'must be a valid locale'))};`,
+        `${indent}      ${errorsName}.isLocale = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be a valid locale')};`,
       );
       lines.push(`${indent}    }`);
       lines.push(`    }`);
@@ -1274,7 +1274,7 @@ function generateConstraintCheck(
       );
       lines.push(`${indent}    if (!semverRegex.test(${valueName})) {`);
       lines.push(
-        `${indent}      ${errorsName}.isSemVer = ${JSON.stringify(getErrorMessage(constraint, 'must be a valid semantic version'))};`,
+        `${indent}      ${errorsName}.isSemVer = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be a valid semantic version')};`,
       );
       lines.push(`${indent}    }`);
       lines.push(`    }`);
@@ -1285,7 +1285,7 @@ function generateConstraintCheck(
       lines.push(`${indent}    const mimeRegex = /^[a-z]+\\/[a-z0-9\\-+.]+$/i;`);
       lines.push(`${indent}    if (!mimeRegex.test(${valueName})) {`);
       lines.push(
-        `${indent}      ${errorsName}.isMimeType = ${JSON.stringify(getErrorMessage(constraint, 'must be a valid MIME type'))};`,
+        `${indent}      ${errorsName}.isMimeType = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be a valid MIME type')};`,
       );
       lines.push(`${indent}    }`);
       lines.push(`    }`);
@@ -1296,7 +1296,7 @@ function generateConstraintCheck(
       lines.push(`${indent}    const timezoneRegex = /^[A-Z][a-zA-Z]+\\/[A-Z][a-zA-Z_]+$/;`);
       lines.push(`${indent}    if (!timezoneRegex.test(${valueName}) && ${valueName} !== 'UTC') {`);
       lines.push(
-        `${indent}      ${errorsName}.isTimeZone = ${JSON.stringify(getErrorMessage(constraint, 'must be a valid timezone'))};`,
+        `${indent}      ${errorsName}.isTimeZone = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be a valid timezone')};`,
       );
       lines.push(`${indent}    }`);
       lines.push(`    }`);
@@ -1309,7 +1309,7 @@ function generateConstraintCheck(
       );
       lines.push(`${indent}    if (!rfc3339Regex.test(${valueName})) {`);
       lines.push(
-        `${indent}      ${errorsName}.isRFC3339 = ${JSON.stringify(getErrorMessage(constraint, 'must be a valid RFC 3339 date'))};`,
+        `${indent}      ${errorsName}.isRFC3339 = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be a valid RFC 3339 date')};`,
       );
       lines.push(`${indent}    }`);
       lines.push(`    }`);
@@ -1321,7 +1321,7 @@ function generateConstraintCheck(
         `${indent}  if (typeof ${valueName} === 'number' && ${valueName} % ${constraint.value} !== 0) {`,
       );
       lines.push(
-        `${indent}    ${errorsName}.isDivisibleBy = ${JSON.stringify(getErrorMessage(constraint, `must be divisible by ${constraint.value}`))};`,
+        `${indent}    ${errorsName}.isDivisibleBy = ${emitMessage(constraint, constraintIndex, propertyName, valueName, `must be divisible by ${constraint.value}`)};`,
       );
       lines.push(`    }`);
       break;
@@ -1330,7 +1330,7 @@ function generateConstraintCheck(
       lines.push(`${indent}  if (typeof ${valueName} === 'number') {`);
       lines.push(`${indent}    if (Number.isInteger(${valueName})) {`);
       lines.push(
-        `${indent}      ${errorsName}.isDecimal = ${JSON.stringify(getErrorMessage(constraint, 'must be a decimal number'))};`,
+        `${indent}      ${errorsName}.isDecimal = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be a decimal number')};`,
       );
       lines.push(`${indent}    }`);
       lines.push(`    }`);
@@ -1343,7 +1343,7 @@ function generateConstraintCheck(
         lines.push(`${indent}  if (${valueName} instanceof Date) {`);
         lines.push(`${indent}    if (${valueName}.getTime() < ${minTime}) {`);
         lines.push(
-          `${indent}      ${errorsName}.minDate = ${JSON.stringify(getErrorMessage(constraint, `minimal allowed date is ${constraint.value.toISOString()}`))};`,
+          `${indent}      ${errorsName}.minDate = ${emitMessage(constraint, constraintIndex, propertyName, valueName, `minimal allowed date is ${constraint.value.toISOString()}`)};`,
         );
         lines.push(`${indent}    }`);
         lines.push(`    }`);
@@ -1356,7 +1356,7 @@ function generateConstraintCheck(
         lines.push(`${indent}  if (${valueName} instanceof Date) {`);
         lines.push(`${indent}    if (${valueName}.getTime() > ${maxTime}) {`);
         lines.push(
-          `${indent}      ${errorsName}.maxDate = ${JSON.stringify(getErrorMessage(constraint, `maximal allowed date is ${constraint.value.toISOString()}`))};`,
+          `${indent}      ${errorsName}.maxDate = ${emitMessage(constraint, constraintIndex, propertyName, valueName, `maximal allowed date is ${constraint.value.toISOString()}`)};`,
         );
         lines.push(`${indent}    }`);
         lines.push(`    }`);
@@ -1367,7 +1367,7 @@ function generateConstraintCheck(
     case 'equals':
       lines.push(`${indent}  if (${valueName} !== ${JSON.stringify(constraint.value)}) {`);
       lines.push(
-        `${indent}    ${errorsName}.equals = ${JSON.stringify(getErrorMessage(constraint, `must be equal to ${constraint.value}`))};`,
+        `${indent}    ${errorsName}.equals = ${emitMessage(constraint, constraintIndex, propertyName, valueName, `must be equal to ${constraint.value}`)};`,
       );
       lines.push(`    }`);
       break;
@@ -1375,7 +1375,7 @@ function generateConstraintCheck(
     case 'notEquals':
       lines.push(`${indent}  if (${valueName} === ${JSON.stringify(constraint.value)}) {`);
       lines.push(
-        `${indent}    ${errorsName}.notEquals = ${JSON.stringify(getErrorMessage(constraint, `should not be equal to ${constraint.value}`))};`,
+        `${indent}    ${errorsName}.notEquals = ${emitMessage(constraint, constraintIndex, propertyName, valueName, `should not be equal to ${constraint.value}`)};`,
       );
       lines.push(`    }`);
       break;
@@ -1385,7 +1385,7 @@ function generateConstraintCheck(
         lines.push(`    const allowedValues = ${JSON.stringify(constraint.value)};`);
         lines.push(`${indent}  if (!allowedValues.includes(${valueName})) {`);
         lines.push(
-          `${indent}    ${errorsName}.isIn = ${JSON.stringify(getErrorMessage(constraint, `must be one of the following values: ${constraint.value.join(', ')}`))};`,
+          `${indent}    ${errorsName}.isIn = ${emitMessage(constraint, constraintIndex, propertyName, valueName, `must be one of the following values: ${constraint.value.join(', ')}`)};`,
         );
         lines.push(`    }`);
       }
@@ -1396,7 +1396,7 @@ function generateConstraintCheck(
         lines.push(`    const disallowedValues = ${JSON.stringify(constraint.value)};`);
         lines.push(`${indent}  if (disallowedValues.includes(${valueName})) {`);
         lines.push(
-          `${indent}    ${errorsName}.isNotIn = ${JSON.stringify(getErrorMessage(constraint, `should not be one of the following values: ${constraint.value.join(', ')}`))};`,
+          `${indent}    ${errorsName}.isNotIn = ${emitMessage(constraint, constraintIndex, propertyName, valueName, `should not be one of the following values: ${constraint.value.join(', ')}`)};`,
         );
         lines.push(`    }`);
       }
@@ -1406,19 +1406,19 @@ function generateConstraintCheck(
       lines.push(`${indent}  if (${valueName} !== null && ${valueName} !== undefined) {`);
       lines.push(`${indent}    if (typeof ${valueName} === 'string' && ${valueName}.length > 0) {`);
       lines.push(
-        `${indent}      ${errorsName}.isEmpty = ${JSON.stringify(getErrorMessage(constraint, 'must be empty'))};`,
+        `${indent}      ${errorsName}.isEmpty = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be empty')};`,
       );
       lines.push(
         `${indent}    } else if (Array.isArray(${valueName}) && ${valueName}.length > 0) {`,
       );
       lines.push(
-        `${indent}      ${errorsName}.isEmpty = ${JSON.stringify(getErrorMessage(constraint, 'must be empty'))};`,
+        `${indent}      ${errorsName}.isEmpty = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be empty')};`,
       );
       lines.push(
         `${indent}    } else if (typeof ${valueName} === 'object' && Object.keys(${valueName}).length > 0) {`,
       );
       lines.push(
-        `${indent}      ${errorsName}.isEmpty = ${JSON.stringify(getErrorMessage(constraint, 'must be empty'))};`,
+        `${indent}      ${errorsName}.isEmpty = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be empty')};`,
       );
       lines.push(`${indent}    }`);
       lines.push(`    }`);
@@ -1431,7 +1431,7 @@ function generateConstraintCheck(
       );
       lines.push(`${indent}    if (Object.keys(${valueName}).length === 0) {`);
       lines.push(
-        `${indent}      ${errorsName}.isNotEmptyObject = ${JSON.stringify(getErrorMessage(constraint, 'must be a non-empty object'))};`,
+        `${indent}      ${errorsName}.isNotEmptyObject = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be a non-empty object')};`,
       );
       lines.push(`${indent}    }`);
       lines.push(`    }`);
@@ -1445,7 +1445,7 @@ function generateConstraintCheck(
       );
       lines.push(`${indent}    if (!latLongRegex.test(${valueName})) {`);
       lines.push(
-        `${indent}      ${errorsName}.isLatLong = ${JSON.stringify(getErrorMessage(constraint, 'must be a latitude,longitude string'))};`,
+        `${indent}      ${errorsName}.isLatLong = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be a latitude,longitude string')};`,
       );
       lines.push(`${indent}    }`);
       lines.push(`    }`);
@@ -1455,14 +1455,14 @@ function generateConstraintCheck(
       lines.push(`${indent}  if (typeof ${valueName} === 'number') {`);
       lines.push(`${indent}    if (${valueName} < -90 || ${valueName} > 90) {`);
       lines.push(
-        `${indent}      ${errorsName}.isLatitude = ${JSON.stringify(getErrorMessage(constraint, 'latitude must be a number between -90 and 90'))};`,
+        `${indent}      ${errorsName}.isLatitude = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'latitude must be a number between -90 and 90')};`,
       );
       lines.push(`${indent}    }`);
       lines.push(`    } else if (typeof ${valueName} === 'string') {`);
       lines.push(`${indent}    const lat = parseFloat(${valueName});`);
       lines.push(`${indent}    if (isNaN(lat) || lat < -90 || lat > 90) {`);
       lines.push(
-        `${indent}      ${errorsName}.isLatitude = ${JSON.stringify(getErrorMessage(constraint, 'latitude must be a number between -90 and 90'))};`,
+        `${indent}      ${errorsName}.isLatitude = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'latitude must be a number between -90 and 90')};`,
       );
       lines.push(`${indent}    }`);
       lines.push(`    }`);
@@ -1472,14 +1472,14 @@ function generateConstraintCheck(
       lines.push(`${indent}  if (typeof ${valueName} === 'number') {`);
       lines.push(`${indent}    if (${valueName} < -180 || ${valueName} > 180) {`);
       lines.push(
-        `${indent}      ${errorsName}.isLongitude = ${JSON.stringify(getErrorMessage(constraint, 'longitude must be a number between -180 and 180'))};`,
+        `${indent}      ${errorsName}.isLongitude = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'longitude must be a number between -180 and 180')};`,
       );
       lines.push(`${indent}    }`);
       lines.push(`    } else if (typeof ${valueName} === 'string') {`);
       lines.push(`${indent}    const lon = parseFloat(${valueName});`);
       lines.push(`${indent}    if (isNaN(lon) || lon < -180 || lon > 180) {`);
       lines.push(
-        `${indent}      ${errorsName}.isLongitude = ${JSON.stringify(getErrorMessage(constraint, 'longitude must be a number between -180 and 180'))};`,
+        `${indent}      ${errorsName}.isLongitude = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'longitude must be a number between -180 and 180')};`,
       );
       lines.push(`${indent}    }`);
       lines.push(`    }`);
@@ -1489,7 +1489,14 @@ function generateConstraintCheck(
       // Handle @Validate decorator with validator class
       // Note: validator class is accessed from metadata at runtime
       if (constraint.value && constraint.value.constraintClass) {
-        const errorMsg = JSON.stringify(getErrorMessage(constraint, 'validation failed'));
+        const errorMsg = emitMessage(
+          constraint,
+          constraintIndex,
+          propertyName,
+          valueName,
+          'validation failed',
+        );
+        const hasExplicitMessage = constraint.message != null;
         lines.push(`${indent}// Custom validator class`);
         lines.push(`${indent}{`);
         lines.push(
@@ -1508,11 +1515,17 @@ function generateConstraintCheck(
         lines.push(`${indent}  };`);
         lines.push(`${indent}  const result = validatorInstance.validate(${valueName}, args);`);
         lines.push(`${indent}  if (!result) {`);
-        lines.push(`${indent}    if (validatorInstance.defaultMessage) {`);
-        lines.push(`${indent}      ${errorsName}.custom = validatorInstance.defaultMessage(args);`);
-        lines.push(`${indent}    } else {`);
-        lines.push(`${indent}      ${errorsName}.custom = ${errorMsg};`);
-        lines.push(`${indent}    }`);
+        if (hasExplicitMessage) {
+          lines.push(`${indent}    ${errorsName}.custom = ${errorMsg};`);
+        } else {
+          lines.push(`${indent}    if (validatorInstance.defaultMessage) {`);
+          lines.push(
+            `${indent}      ${errorsName}.custom = validatorInstance.defaultMessage(args);`,
+          );
+          lines.push(`${indent}    } else {`);
+          lines.push(`${indent}      ${errorsName}.custom = ${errorMsg};`);
+          lines.push(`${indent}    }`);
+        }
         lines.push(`${indent}  }`);
         lines.push(`${indent}}`);
       }
@@ -1522,7 +1535,14 @@ function generateConstraintCheck(
       // Handle ValidateBy decorator
       if (constraint.value && constraint.value.validator) {
         const validatorName = constraint.value.name || 'custom';
-        const defaultMsg = JSON.stringify(getErrorMessage(constraint, 'validation failed'));
+        const defaultMsg = emitMessage(
+          constraint,
+          constraintIndex,
+          propertyName,
+          valueName,
+          'validation failed',
+        );
+        const hasExplicitMessage = constraint.message != null;
         lines.push(`${indent}// ValidateBy: ${validatorName}`);
         lines.push(`${indent}{`);
         lines.push(
@@ -1538,13 +1558,17 @@ function generateConstraintCheck(
         lines.push(`${indent}  };`);
         lines.push(`${indent}  const result = constraintValue.validator(${valueName}, args);`);
         lines.push(`${indent}  if (!result) {`);
-        lines.push(`${indent}    if (constraintValue.defaultMessage) {`);
-        lines.push(
-          `${indent}      ${errorsName}.${validatorName} = constraintValue.defaultMessage(args);`,
-        );
-        lines.push(`${indent}    } else {`);
-        lines.push(`${indent}      ${errorsName}.${validatorName} = ${defaultMsg};`);
-        lines.push(`${indent}    }`);
+        if (hasExplicitMessage) {
+          lines.push(`${indent}    ${errorsName}.${validatorName} = ${defaultMsg};`);
+        } else {
+          lines.push(`${indent}    if (constraintValue.defaultMessage) {`);
+          lines.push(
+            `${indent}      ${errorsName}.${validatorName} = constraintValue.defaultMessage(args);`,
+          );
+          lines.push(`${indent}    } else {`);
+          lines.push(`${indent}      ${errorsName}.${validatorName} = ${defaultMsg};`);
+          lines.push(`${indent}    }`);
+        }
         lines.push(`${indent}  }`);
         lines.push(`${indent}}`);
       }
@@ -1561,7 +1585,7 @@ function generateConstraintCheck(
         lines.push(`${indent}  const targetType = constraint.value;`);
         lines.push(`${indent}  if (!(${valueName} instanceof targetType)) {`);
         lines.push(
-          `${indent}    ${errorsName}.isInstance = ${JSON.stringify(getErrorMessage(constraint, 'must be an instance of the specified class'))};`,
+          `${indent}    ${errorsName}.isInstance = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be an instance of the specified class')};`,
         );
         lines.push(`${indent}  }`);
         lines.push(`${indent}}`);
@@ -1614,7 +1638,13 @@ function generateAsyncConstraintCheck(
   // For custom validators with async support (inline validator function)
   if (constraint.type === 'custom' && constraint.validator) {
     const taskVarName = `customTask_${asyncTaskCounter++}`;
-    const errorMsg = JSON.stringify(getErrorMessage(constraint, 'validation failed'));
+    const errorMsg = emitMessage(
+      constraint,
+      constraintIndex,
+      propertyName,
+      valueName,
+      'validation failed',
+    );
     lines.push(`${indent}// Custom async validator (inline)`);
     lines.push(`${indent}const ${taskVarName} = (async () => {`);
     lines.push(
@@ -1631,7 +1661,14 @@ function generateAsyncConstraintCheck(
   } else if (constraint.type === 'custom' && constraint.value && constraint.value.constraintClass) {
     // For custom validator classes (may be async)
     const taskVarName = `customTask_${asyncTaskCounter++}`;
-    const errorMsg = JSON.stringify(getErrorMessage(constraint, 'validation failed'));
+    const errorMsg = emitMessage(
+      constraint,
+      constraintIndex,
+      propertyName,
+      valueName,
+      'validation failed',
+    );
+    const hasExplicitMessage = constraint.message != null;
     lines.push(`${indent}// Custom validator class (potentially async)`);
     lines.push(`${indent}const ${taskVarName} = (async () => {`);
     lines.push(
@@ -1650,11 +1687,15 @@ function generateAsyncConstraintCheck(
     lines.push(`${indent}  };`);
     lines.push(`${indent}  const result = await validatorInstance.validate(${valueName}, args);`);
     lines.push(`${indent}  if (!result) {`);
-    lines.push(`${indent}    if (validatorInstance.defaultMessage) {`);
-    lines.push(`${indent}      ${errorsName}.custom = validatorInstance.defaultMessage(args);`);
-    lines.push(`${indent}    } else {`);
-    lines.push(`${indent}      ${errorsName}.custom = ${errorMsg};`);
-    lines.push(`${indent}    }`);
+    if (hasExplicitMessage) {
+      lines.push(`${indent}    ${errorsName}.custom = ${errorMsg};`);
+    } else {
+      lines.push(`${indent}    if (validatorInstance.defaultMessage) {`);
+      lines.push(`${indent}      ${errorsName}.custom = validatorInstance.defaultMessage(args);`);
+      lines.push(`${indent}    } else {`);
+      lines.push(`${indent}      ${errorsName}.custom = ${errorMsg};`);
+      lines.push(`${indent}    }`);
+    }
     lines.push(`${indent}  }`);
     lines.push(`${indent}})();`);
     lines.push(`${indent}${asyncTasksName}.push(${taskVarName});`);
@@ -1662,7 +1703,14 @@ function generateAsyncConstraintCheck(
     // For ValidateBy decorators (may be async)
     const taskVarName = `customTask_${asyncTaskCounter++}`;
     const validatorName = constraint.value.name || 'custom';
-    const defaultMsg = JSON.stringify(getErrorMessage(constraint, 'validation failed'));
+    const defaultMsg = emitMessage(
+      constraint,
+      constraintIndex,
+      propertyName,
+      valueName,
+      'validation failed',
+    );
+    const hasExplicitMessage = constraint.message != null;
     lines.push(`${indent}// ValidateBy: ${validatorName} (potentially async)`);
     lines.push(`${indent}const ${taskVarName} = (async () => {`);
     lines.push(
@@ -1678,13 +1726,17 @@ function generateAsyncConstraintCheck(
     lines.push(`${indent}  };`);
     lines.push(`${indent}  const result = await constraintValue.validator(${valueName}, args);`);
     lines.push(`${indent}  if (!result) {`);
-    lines.push(`${indent}    if (constraintValue.defaultMessage) {`);
-    lines.push(
-      `${indent}      ${errorsName}.${validatorName} = constraintValue.defaultMessage(args);`,
-    );
-    lines.push(`${indent}    } else {`);
-    lines.push(`${indent}      ${errorsName}.${validatorName} = ${defaultMsg};`);
-    lines.push(`${indent}    }`);
+    if (hasExplicitMessage) {
+      lines.push(`${indent}    ${errorsName}.${validatorName} = ${defaultMsg};`);
+    } else {
+      lines.push(`${indent}    if (constraintValue.defaultMessage) {`);
+      lines.push(
+        `${indent}      ${errorsName}.${validatorName} = constraintValue.defaultMessage(args);`,
+      );
+      lines.push(`${indent}    } else {`);
+      lines.push(`${indent}      ${errorsName}.${validatorName} = ${defaultMsg};`);
+      lines.push(`${indent}    }`);
+    }
     lines.push(`${indent}  }`);
     lines.push(`${indent}})();`);
     lines.push(`${indent}${asyncTasksName}.push(${taskVarName});`);
@@ -1713,6 +1765,32 @@ function getErrorMessage(constraint: ValidationConstraint, defaultMessage: strin
     return constraint.message;
   }
   return defaultMessage;
+}
+
+/**
+ * Emit a JS expression (as a string) for a constraint's error message.
+ * String messages are inlined as literals; function messages are called
+ * at runtime with ValidationArguments looked up from `metadata`.
+ */
+function emitMessage(
+  constraint: ValidationConstraint,
+  constraintIndex: number,
+  propertyName: string,
+  valueName: string,
+  defaultMessage: string,
+): string {
+  if (typeof constraint.message === 'function') {
+    const safeProp = JSON.stringify(propertyName);
+    return (
+      `(metadata.properties.get(${safeProp}).constraints[${constraintIndex}].message({ ` +
+      `value: ${valueName}, ` +
+      `constraints: [metadata.properties.get(${safeProp}).constraints[${constraintIndex}].value], ` +
+      `targetName: object && object.constructor ? object.constructor.name : '', ` +
+      `object: object, ` +
+      `property: ${safeProp} }))`
+    );
+  }
+  return JSON.stringify(getErrorMessage(constraint, defaultMessage));
 }
 
 /**
