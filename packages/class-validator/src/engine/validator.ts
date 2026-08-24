@@ -53,7 +53,9 @@ export async function validate(
     object && typeof object === 'object' ? getClassValidationMetadata(object) : undefined;
 
   if (!metadata || metadata.properties.size === 0) {
-    return options?.forbidUnknownValues ? [unknownValueError(object)] : [];
+    return options?.forbidUnknownValues
+      ? stripErrorFields([unknownValueError(object)], options)
+      : [];
   }
 
   // Compile async validator (or get from cache)
@@ -75,7 +77,9 @@ export function validateSync(object: any, options?: ValidatorOptions): Validatio
     object && typeof object === 'object' ? getClassValidationMetadata(object) : undefined;
 
   if (!metadata || metadata.properties.size === 0) {
-    return options?.forbidUnknownValues ? [unknownValueError(object)] : [];
+    return options?.forbidUnknownValues
+      ? stripErrorFields([unknownValueError(object)], options)
+      : [];
   }
 
   // Compile validator (or get from cache)

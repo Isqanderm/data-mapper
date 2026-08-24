@@ -190,4 +190,30 @@ describe('validationError option', () => {
     expect(asyncErrors[0]).not.toHaveProperty('target');
     expect(asyncErrors[0]).toHaveProperty('value');
   });
+
+  it('forbidUnknownValues + validationError stripping combined (sync + async)', async () => {
+    const errors = validateSync(
+      { x: 1 },
+      {
+        forbidUnknownValues: true,
+        validationError: { target: false, value: false },
+      },
+    );
+    expect(errors).toHaveLength(1);
+    expect(errors[0]).not.toHaveProperty('target');
+    expect(errors[0]).not.toHaveProperty('value');
+    expect(errors[0].constraints).toEqual({
+      unknownValue: 'an unknown value was passed to the validate function',
+    });
+    const asyncErrors = await validate(
+      { x: 1 },
+      {
+        forbidUnknownValues: true,
+        validationError: { target: false, value: false },
+      },
+    );
+    expect(asyncErrors).toHaveLength(1);
+    expect(asyncErrors[0]).not.toHaveProperty('target');
+    expect(asyncErrors[0]).not.toHaveProperty('value');
+  });
 });
