@@ -49,3 +49,7 @@ export type {
 
 // Export utility functions
 export { clearValidatorCache, getValidatorCacheSize } from './engine/compiler';
+
+// Export registerDecorator / getMetadataStorage compat APIs
+export { registerDecorator, type RegisterDecoratorOptions } from './register-decorator';
+export { getMetadataStorage, type ValidationMetadataEntry } from './metadata-storage';

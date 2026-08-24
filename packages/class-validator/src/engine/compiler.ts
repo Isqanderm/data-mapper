@@ -1662,7 +1662,10 @@ function generateConstraintCheck(
     case 'validateBy':
       // Handle ValidateBy decorator
       if (constraint.value && constraint.value.validator) {
-        const validatorName = constraint.value.name || 'custom';
+        const rawValidatorName = constraint.value.name || 'custom';
+        const validatorName = /^[A-Za-z_$][A-Za-z0-9_$]*$/.test(rawValidatorName)
+          ? rawValidatorName
+          : 'custom';
         const defaultMsg = emitMessage(
           constraint,
           constraintIndex,
@@ -1830,7 +1833,10 @@ function generateAsyncConstraintCheck(
   } else if (constraint.type === 'validateBy' && constraint.value && constraint.value.validator) {
     // For ValidateBy decorators (may be async)
     const taskVarName = `customTask_${asyncTaskCounter++}`;
-    const validatorName = constraint.value.name || 'custom';
+    const rawValidatorName = constraint.value.name || 'custom';
+    const validatorName = /^[A-Za-z_$][A-Za-z0-9_$]*$/.test(rawValidatorName)
+      ? rawValidatorName
+      : 'custom';
     const defaultMsg = emitMessage(
       constraint,
       constraintIndex,
