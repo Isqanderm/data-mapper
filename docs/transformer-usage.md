@@ -741,8 +741,6 @@ interface ClassTransformOptions {
   excludePrefixes?: string[];
   ignoreDecorators?: boolean;
   enableImplicitConversion?: boolean;
-  enableCircularCheck?: boolean;
-  exposeUnsetFields?: boolean;
 }
 ```
 
