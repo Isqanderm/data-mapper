@@ -18,8 +18,6 @@ this package — run the suite to see current results.
   transform functions, multiple mapping strategies.
 - `nested.bench.ts` — deep, multi-level property traversal and extraction.
 - `array.bench.ts` — bulk array transformation (mapping a batch of items).
-- `shared-mappers.ts` — decorator-based mapper classes and fixtures shared
-  across the files above.
 
 Each file's honesty guard compares om's mapped output against its
 hand-written vanilla equivalent for exact equality before any `bench()`

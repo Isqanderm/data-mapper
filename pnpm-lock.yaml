@@ -38,9 +38,6 @@ importers:
       reflect-metadata:
         specifier: ^0.2.2
         version: 0.2.2
-      tinybench:
-        specifier: ^5.0.1
-        version: 5.1.0
       typedoc:
         specifier: ^0.28.14
         version: 0.28.20(typescript@5.9.3)
@@ -1243,10 +1240,6 @@ packages:
 
   tinybench@2.9.0:
     resolution: {integrity: sha512-0+DUvqWMValLmha6lr4kD8iAMK1HzV0/aKnCtWb9v9641TnP/MFb7Pc2bxoxQjTXAErryXVgUOfv2YqNllqGeg==}
-
-  tinybench@5.1.0:
-    resolution: {integrity: sha512-LXKNtFualiKOm6gADe1UXPtf8+Nfn1CtPMEHAT33Fd2YjQatrujkDcK0+4wRC1X6t7fxUDXUs6BsvuIgfkDgDg==}
-    engines: {node: '>=20.0.0'}
 
   tinyexec@0.3.2:
     resolution: {integrity: sha512-KQQR9yN7R5+OSwaK0XQoj22pwHoTlgYqmUscPYoknOoWCWfj/5/ABTMRi69FrKU5ffPVh5QcFikpWJI/P1ocHA==}
@@ -2507,8 +2500,6 @@ snapshots:
       minimatch: 10.2.6
 
   tinybench@2.9.0: {}
-
-  tinybench@5.1.0: {}
 
   tinyexec@0.3.2: {}
 
