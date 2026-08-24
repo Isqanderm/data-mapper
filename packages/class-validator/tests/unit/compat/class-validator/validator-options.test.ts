@@ -7,6 +7,7 @@ import {
   ValidateBy,
   validate,
   validateSync,
+  Allow,
 } from '../../../../src';
 
 describe('skip* options', () => {
@@ -96,5 +97,47 @@ describe('stopAtFirstError with async constraints', () => {
     const errors = await validate(new AsyncDto(), { stopAtFirstError: true });
     expect(errors).toHaveLength(1);
     expect(Object.keys(errors[0].constraints!)).toHaveLength(1);
+  });
+});
+
+describe('whitelist / forbidNonWhitelisted', () => {
+  class Dto {
+    @IsString()
+    name: any = 'ok';
+    @Allow()
+    extraAllowed: any = 1;
+  }
+
+  it('whitelist strips undecorated properties', () => {
+    const dto: any = new Dto();
+    dto.rogue = 'x';
+    const errors = validateSync(dto, { whitelist: true });
+    expect(errors).toHaveLength(0);
+    expect('rogue' in dto).toBe(false);
+    expect(dto.extraAllowed).toBe(1); // @Allow keeps it
+  });
+
+  it('forbidNonWhitelisted errors instead of stripping', async () => {
+    const dto: any = new Dto();
+    dto.rogue = 'x';
+    const errors = validateSync(dto, { whitelist: true, forbidNonWhitelisted: true });
+    expect(errors).toHaveLength(1);
+    expect(errors[0].property).toBe('rogue');
+    expect(errors[0].constraints).toEqual({
+      whitelistValidation: 'property rogue should not exist',
+    });
+    expect((dto as any).rogue).toBe('x'); // not stripped
+
+    const dto2: any = new Dto();
+    dto2.rogue = 'x';
+    const asyncErrors = await validate(dto2, { whitelist: true, forbidNonWhitelisted: true });
+    expect(asyncErrors).toHaveLength(1);
+  });
+
+  it('without whitelist nothing happens to unknown props', () => {
+    const dto: any = new Dto();
+    dto.rogue = 'x';
+    expect(validateSync(dto)).toHaveLength(0);
+    expect(dto.rogue).toBe('x');
   });
 });

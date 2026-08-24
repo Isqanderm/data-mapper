@@ -142,6 +142,30 @@ function generateValidationCode(metadata: ClassValidationMetadata): string {
     lines.push('');
   }
 
+  // whitelist / forbidNonWhitelisted
+  const knownKeys = JSON.stringify([...metadata.properties.keys()].map(String));
+  lines.push('// whitelist / forbidNonWhitelisted');
+  lines.push('if (opts.whitelist) {');
+  lines.push(`  const knownProps = new Set(${knownKeys});`);
+  lines.push('  for (const key of Object.keys(object)) {');
+  lines.push('    if (!knownProps.has(key)) {');
+  lines.push('      if (opts.forbidNonWhitelisted) {');
+  lines.push('        errors.push({');
+  lines.push('          property: key,');
+  lines.push('          value: object[key],');
+  lines.push('          target: object,');
+  lines.push(
+    "          constraints: { whitelistValidation: 'property ' + key + ' should not exist' },",
+  );
+  lines.push('        });');
+  lines.push('      } else {');
+  lines.push('        delete object[key];');
+  lines.push('      }');
+  lines.push('    }');
+  lines.push('  }');
+  lines.push('}');
+  lines.push('');
+
   lines.push('return errors;');
 
   return lines.join('\n');
@@ -185,6 +209,31 @@ function generateAsyncValidationCode(metadata: ClassValidationMetadata): string 
   lines.push('    await Promise.all(asyncTasks);');
   lines.push('  }');
   lines.push('');
+
+  // whitelist / forbidNonWhitelisted
+  const knownKeysAsync = JSON.stringify([...metadata.properties.keys()].map(String));
+  lines.push('  // whitelist / forbidNonWhitelisted');
+  lines.push('  if (opts.whitelist) {');
+  lines.push(`    const knownProps = new Set(${knownKeysAsync});`);
+  lines.push('    for (const key of Object.keys(object)) {');
+  lines.push('      if (!knownProps.has(key)) {');
+  lines.push('        if (opts.forbidNonWhitelisted) {');
+  lines.push('          errors.push({');
+  lines.push('            property: key,');
+  lines.push('            value: object[key],');
+  lines.push('            target: object,');
+  lines.push(
+    "            constraints: { whitelistValidation: 'property ' + key + ' should not exist' },",
+  );
+  lines.push('          });');
+  lines.push('        } else {');
+  lines.push('          delete object[key];');
+  lines.push('        }');
+  lines.push('      }');
+  lines.push('    }');
+  lines.push('  }');
+  lines.push('');
+
   lines.push('  return errors;');
   lines.push('})();');
 
