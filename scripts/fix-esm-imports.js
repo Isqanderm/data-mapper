@@ -70,7 +70,7 @@ function addJsExtensions(dir, rootDir) {
   }
 }
 
-const esmDir = path.join(__dirname, '..', 'build', 'esm');
+const esmDir = path.join(process.cwd(), 'build', 'esm');
 
 if (fs.existsSync(esmDir)) {
   console.log('Adding .js extensions to ESM imports...');
