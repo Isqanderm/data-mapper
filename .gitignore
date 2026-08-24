@@ -12,3 +12,7 @@ docs/api
 # (TypeScript source files only, compiled output goes to dist/)
 src/**/*.js
 src/**/*.js.map
+
+.idea/
+.augment/
+benchmarks/**/build-*/
