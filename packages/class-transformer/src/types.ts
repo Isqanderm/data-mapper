@@ -51,7 +51,8 @@ export interface ClassTransformOptions {
   /**
    * If true, values of properties decorated with @Type(() => Number/String/Boolean/Date) are
    * coerced from primitive inputs. Requires @Type — implicit conversion from reflected types
-   * is impossible with TC39 decorators.
+   * is impossible with TC39 decorators. For array-valued properties, each element is coerced
+   * individually (e.g. `string[]` -> `number[]`), not the array as a whole.
    */
   enableImplicitConversion?: boolean;
 }

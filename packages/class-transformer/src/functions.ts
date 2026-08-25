@@ -326,21 +326,42 @@ function transformValue(
   if (propertyMeta?.typeFunction && transformationType === 'plainToClass') {
     const TypeClass = propertyMeta.typeFunction();
 
-    if (options.enableImplicitConversion && value !== null && value !== undefined) {
-      if (TypeClass === Number) return typeof value === 'number' ? value : Number(value);
-      if (TypeClass === String) return typeof value === 'string' ? value : String(value);
-      if (TypeClass === Boolean) return typeof value === 'boolean' ? value : Boolean(value);
-      if (TypeClass === Date) return value instanceof Date ? value : new Date(value as any);
-    }
+    const isPrimitiveTarget =
+      TypeClass === Number || TypeClass === String || TypeClass === Boolean || TypeClass === Date;
+    const coercePrimitive = (input: any): any => {
+      if (TypeClass === Number) return typeof input === 'number' ? input : Number(input);
+      if (TypeClass === String) return typeof input === 'string' ? input : String(input);
+      if (TypeClass === Boolean) return typeof input === 'boolean' ? input : Boolean(input);
+      return input instanceof Date ? input : new Date(input as any);
+    };
 
     if (Array.isArray(value)) {
       return value.map((item) => {
+        if (
+          options.enableImplicitConversion &&
+          isPrimitiveTarget &&
+          item !== null &&
+          item !== undefined
+        ) {
+          return coercePrimitive(item);
+        }
         if (typeof item === 'object' && item !== null) {
           return transformPlainToClass(TypeClass as any, item, transformationType, options);
         }
         return item;
       });
-    } else if (typeof value === 'object' && value !== null) {
+    }
+
+    if (
+      options.enableImplicitConversion &&
+      isPrimitiveTarget &&
+      value !== null &&
+      value !== undefined
+    ) {
+      return coercePrimitive(value);
+    }
+
+    if (typeof value === 'object' && value !== null) {
       return transformPlainToClass(TypeClass as any, value, transformationType, options);
     }
   }
