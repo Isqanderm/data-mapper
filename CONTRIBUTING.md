@@ -283,23 +283,33 @@ Coverage thresholds are enforced via the `coverage.thresholds` config in
 
 ```typescript
 import { describe, it, expect } from 'vitest';
-import { Mapper } from '../src';
+import { Mapper, Map, plainToInstance } from '../src';
+
+@Mapper()
+class ExampleMapper {
+  @Map('sourceField')
+  targetField!: string;
+}
 
 describe('Feature Name', () => {
   it('should do something specific', () => {
     // Arrange
     const input = {
-      /* ... */
+      sourceField: 'value',
     };
 
     // Act
-    const result = Mapper.create(/* ... */).execute(input);
+    const result = plainToInstance(ExampleMapper, input);
 
     // Assert
-    expect(result).toEqual(/* ... */);
+    expect(result).toEqual({ targetField: 'value' });
   });
 });
 ```
+
+`Mapper` here is the class decorator (the only mapping API this package publishes) — not the
+retired `Mapper.create()` class API, which is no longer re-exported from `../src` at all. See
+[docs/transformer-usage.md](./docs/transformer-usage.md) for the full Decorator API guide.
 
 ### Running Tests
 
