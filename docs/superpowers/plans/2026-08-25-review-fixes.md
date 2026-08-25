@@ -23,33 +23,35 @@
 
 ## Findings → Task map
 
-| # | Finding (file:line) | Task |
-|---|---------------------|------|
-| 1 | stopAtFirstError async trim uses `in`, walks Object.prototype (compiler.ts:601) | Task 1 |
-| 2 | Null-prototype objects throw instead of unknownValue (validator.ts:53, metadata.ts:146) | Task 2 |
-| 3 | Constraints array grows unbounded per instantiation (metadata.ts:65, string.ts:630, custom.ts:96/144) | Task 3 |
-| 4 | registerDecorator drops second unnamed inline validator / same class with new constraints (register-decorator.ts:41) | Task 4 |
-| 5 | Class-based custom validators report key `custom` instead of registered name (register-decorator.ts:49, compiler.ts:1665/1838) | Task 4 |
-| 6 | Validation metadata keyed by module-local Symbol — duplicate installs validate nothing (metadata.ts:15) | Task 5 |
-| 7 | enableImplicitConversion coerces arrays as a whole (functions.ts:329) | Task 6 |
-| 8 | `require('./functions')` survives into ESM build of 3 method decorators (decorators.ts:221/240/259) | Task 7 |
-| 9 | @Map path / target key interpolated raw into `new Function` source — SyntaxError + code injection (core.ts:261 et al.) | Task 8 |
-| 10 | Fabricated perf figures still live in core JSDoc (index.ts:5/10/85, core.ts:38) | Task 9 |
-| 11 | All 4 tarballs publish without a LICENSE file (packages/*/package.json `files`) | Task 10 |
-| 12 | Tests import `@om-data-mapper/class-validator/decorators` — not in the exports map | Task 11 |
-| 13 | ESM post-install simulation bypasses the exports map; legacy `Mapper.create` unreachable from public surface | Task 12 |
-| 14 | benchmarks/tsconfig.json fails `tsc --noEmit` (4× TS2339); examples & benchmarks typecheck absent from CI | Task 13 |
-| 15 | whitelist/stopAtFirstError codegen duplicated sync/async; ci.yml matrix redundancy; release re-arm | §Deferred |
+| #   | Finding (file:line)                                                                                                            | Task      |
+| --- | ------------------------------------------------------------------------------------------------------------------------------ | --------- |
+| 1   | stopAtFirstError async trim uses `in`, walks Object.prototype (compiler.ts:601)                                                | Task 1    |
+| 2   | Null-prototype objects throw instead of unknownValue (validator.ts:53, metadata.ts:146)                                        | Task 2    |
+| 3   | Constraints array grows unbounded per instantiation (metadata.ts:65, string.ts:630, custom.ts:96/144)                          | Task 3    |
+| 4   | registerDecorator drops second unnamed inline validator / same class with new constraints (register-decorator.ts:41)           | Task 4    |
+| 5   | Class-based custom validators report key `custom` instead of registered name (register-decorator.ts:49, compiler.ts:1665/1838) | Task 4    |
+| 6   | Validation metadata keyed by module-local Symbol — duplicate installs validate nothing (metadata.ts:15)                        | Task 5    |
+| 7   | enableImplicitConversion coerces arrays as a whole (functions.ts:329)                                                          | Task 6    |
+| 8   | `require('./functions')` survives into ESM build of 3 method decorators (decorators.ts:221/240/259)                            | Task 7    |
+| 9   | @Map path / target key interpolated raw into `new Function` source — SyntaxError + code injection (core.ts:261 et al.)         | Task 8    |
+| 10  | Fabricated perf figures still live in core JSDoc (index.ts:5/10/85, core.ts:38)                                                | Task 9    |
+| 11  | All 4 tarballs publish without a LICENSE file (packages/\*/package.json `files`)                                               | Task 10   |
+| 12  | Tests import `@om-data-mapper/class-validator/decorators` — not in the exports map                                             | Task 11   |
+| 13  | ESM post-install simulation bypasses the exports map; legacy `Mapper.create` unreachable from public surface                   | Task 12   |
+| 14  | benchmarks/tsconfig.json fails `tsc --noEmit` (4× TS2339); examples & benchmarks typecheck absent from CI                      | Task 13   |
+| 15  | whitelist/stopAtFirstError codegen duplicated sync/async; ci.yml matrix redundancy; release re-arm                             | §Deferred |
 
 ---
 
 ### Task 1: stopAtFirstError must check own keys only
 
 **Files:**
+
 - Modify: `packages/class-validator/src/engine/compiler.ts:601`
 - Test: `packages/class-validator/tests/unit/compat/class-validator/stop-at-first-error-prototype.test.ts` (create)
 
 **Interfaces:**
+
 - Consumes: `validate`, `ValidateBy`, `MinLength` from `packages/class-validator/src/index.ts` (already exported).
 - Produces: no API change — generated async validators use `Object.hasOwn` for the first-error lookup.
 
@@ -93,15 +95,15 @@ Expected: FAIL — `errors` has length 0 (the trim resolved `firstKey` to the in
 In `packages/class-validator/src/engine/compiler.ts` line 601, replace:
 
 ```typescript
-  lines.push(`        const firstKey = order.find(k => k in propertyErrors) || keys[0];`);
+lines.push(`        const firstKey = order.find(k => k in propertyErrors) || keys[0];`);
 ```
 
 with:
 
 ```typescript
-  lines.push(
-    `        const firstKey = order.find(k => Object.hasOwn(propertyErrors, k)) || keys[0];`,
-  );
+lines.push(
+  `        const firstKey = order.find(k => Object.hasOwn(propertyErrors, k)) || keys[0];`,
+);
 ```
 
 Then check there are no other `in propertyErrors` / `in errors` membership tests in generated code: `grep -n "in propertyErrors\|in errors" packages/class-validator/src/engine/compiler.ts` — fix any other hit the same way (as of writing, line 601 is the only one).
@@ -128,10 +130,12 @@ git commit -m "fix(class-validator): stopAtFirstError trim must check own keys, 
 ### Task 2: null-prototype inputs must not throw
 
 **Files:**
+
 - Modify: `packages/class-validator/src/engine/metadata.ts:145-148` (`getClassValidationMetadata`)
 - Test: `packages/class-validator/tests/unit/compat/class-validator/null-prototype-input.test.ts` (create)
 
 **Interfaces:**
+
 - Consumes: `validate`, `validateSync` from `../../../../src`.
 - Produces: `getClassValidationMetadata(instance)` returns `undefined` for constructor-less instances (signature unchanged).
 
@@ -200,12 +204,14 @@ git commit -m "fix(class-validator): return no-metadata for null-prototype objec
 ### Task 3: constraint metadata must not grow per instantiation
 
 **Files:**
+
 - Modify: `packages/class-validator/src/engine/metadata.ts` (`addValidationConstraint`)
 - Modify: `packages/class-validator/src/decorators/string.ts:619-640` (`Matches`)
 - Modify: `packages/class-validator/src/decorators/custom.ts:86-107` (`Validate`), `:127-156` (`ValidateBy`)
 - Test: `packages/class-validator/tests/unit/compat/class-validator/constraint-dedup.test.ts` (create)
 
 **Interfaces:**
+
 - Consumes: `getValidationMetadata` from `../../../../src/engine/metadata` (already exported from that module).
 - Produces: decorators build **one** `ValidationConstraint` object per decorator application (hoisted out of `addInitializer`), so the identity check in `addValidationConstraint` deduplicates repeated initializer runs. `addValidationConstraint` gains a fast identity path: `constraints.includes(constraint)`.
 
@@ -282,74 +288,74 @@ Expected: FAIL — constraints arrays have length 50.
 `packages/class-validator/src/decorators/string.ts` — add to the type import at the top of the file: `ValidationConstraint` (from `'../types'`). Rewrite the body of `Matches`'s inner function:
 
 ```typescript
-  return function (target: undefined, context: ClassFieldDecoratorContext): any {
-    const propertyKey = context.name;
+return function (target: undefined, context: ClassFieldDecoratorContext): any {
+  const propertyKey = context.name;
 
-    // One constraint object per decorator application: addInitializer runs on
-    // every construction, and addValidationConstraint dedups by identity.
-    const constraint: ValidationConstraint = {
-      type: 'matches',
-      value: {
-        pattern: pattern instanceof RegExp ? pattern.source : pattern,
-        modifiers: pattern instanceof RegExp ? pattern.flags : modifiers,
-      },
-      message: options?.message,
-      groups: options?.groups,
-      always: options?.always,
-    };
-
-    context.addInitializer(function (this: any) {
-      addValidationConstraint(this.constructor, propertyKey, constraint);
-    });
+  // One constraint object per decorator application: addInitializer runs on
+  // every construction, and addValidationConstraint dedups by identity.
+  const constraint: ValidationConstraint = {
+    type: 'matches',
+    value: {
+      pattern: pattern instanceof RegExp ? pattern.source : pattern,
+      modifiers: pattern instanceof RegExp ? pattern.flags : modifiers,
+    },
+    message: options?.message,
+    groups: options?.groups,
+    always: options?.always,
   };
+
+  context.addInitializer(function (this: any) {
+    addValidationConstraint(this.constructor, propertyKey, constraint);
+  });
+};
 ```
 
 `packages/class-validator/src/decorators/custom.ts` — same hoist for `Validate`:
 
 ```typescript
-  return function (target: undefined, context: ClassFieldDecoratorContext): any {
-    const propertyKey = context.name;
+return function (target: undefined, context: ClassFieldDecoratorContext): any {
+  const propertyKey = context.name;
 
-    const constraint: ValidationConstraint = {
-      type: 'custom',
-      value: {
-        constraintClass,
-        constraints: constraints || [],
-      },
-      message: options?.message,
-      groups: options?.groups,
-      always: options?.always,
-    };
-
-    context.addInitializer(function (this: any) {
-      addValidationConstraint(this.constructor, propertyKey, constraint);
-    });
+  const constraint: ValidationConstraint = {
+    type: 'custom',
+    value: {
+      constraintClass,
+      constraints: constraints || [],
+    },
+    message: options?.message,
+    groups: options?.groups,
+    always: options?.always,
   };
+
+  context.addInitializer(function (this: any) {
+    addValidationConstraint(this.constructor, propertyKey, constraint);
+  });
+};
 ```
 
 and for `ValidateBy`:
 
 ```typescript
-  return function (target: undefined, context: ClassFieldDecoratorContext): any {
-    const propertyKey = context.name;
+return function (target: undefined, context: ClassFieldDecoratorContext): any {
+  const propertyKey = context.name;
 
-    const constraint: ValidationConstraint = {
-      type: 'validateBy',
-      value: {
-        name: options.name,
-        validator: options.validator.validate,
-        defaultMessage: options.validator.defaultMessage,
-        constraints: options.constraints || [],
-      },
-      message: validationOptions?.message,
-      groups: validationOptions?.groups,
-      always: validationOptions?.always,
-    };
-
-    context.addInitializer(function (this: any) {
-      addValidationConstraint(this.constructor, propertyKey, constraint);
-    });
+  const constraint: ValidationConstraint = {
+    type: 'validateBy',
+    value: {
+      name: options.name,
+      validator: options.validator.validate,
+      defaultMessage: options.validator.defaultMessage,
+      constraints: options.constraints || [],
+    },
+    message: validationOptions?.message,
+    groups: validationOptions?.groups,
+    always: validationOptions?.always,
   };
+
+  context.addInitializer(function (this: any) {
+    addValidationConstraint(this.constructor, propertyKey, constraint);
+  });
+};
 ```
 
 Add `import type { ValidationConstraint } from '../types';` to custom.ts (string.ts already imports from `'../types'` — extend that import).
@@ -357,11 +363,11 @@ Add `import type { ValidationConstraint } from '../types';` to custom.ts (string
 `packages/class-validator/src/engine/metadata.ts` — add the identity fast path at the top of `addValidationConstraint`, right after `getPropertyMetadata`:
 
 ```typescript
-  const propertyMetadata = getPropertyMetadata(target, propertyKey);
+const propertyMetadata = getPropertyMetadata(target, propertyKey);
 
-  // Fast path: the same constraint object re-registered by a repeated
-  // addInitializer run (decorators hoist one object per application).
-  if (propertyMetadata.constraints.includes(constraint)) return;
+// Fast path: the same constraint object re-registered by a repeated
+// addInitializer run (decorators hoist one object per application).
+if (propertyMetadata.constraints.includes(constraint)) return;
 ```
 
 Keep the existing structural comparison below it (it still covers value-less decorators like `@IsFQDN` that build a fresh constraint per run — their `value` is `undefined`, so the structural compare works for them).
@@ -388,6 +394,7 @@ git commit -m "fix(class-validator): stop unbounded constraint growth - one cons
 ### Task 4: registerDecorator fidelity — named keys, no silent drops
 
 **Files:**
+
 - Modify: `packages/class-validator/src/register-decorator.ts` (full rewrite below)
 - Modify: `packages/class-validator/src/decorators/custom.ts` (`Validate` — add `name` to value)
 - Modify: `packages/class-validator/src/engine/compiler.ts` (sync custom branch ~1646-1676, async custom branch ~1820-1846, stopAtFirstError order map line 592-594)
@@ -395,6 +402,7 @@ git commit -m "fix(class-validator): stop unbounded constraint growth - one cons
 - Test: `packages/class-validator/tests/unit/compat/class-validator/register-decorator-fidelity.test.ts` (create)
 
 **Interfaces:**
+
 - Consumes: hoisted-constraint pattern from Task 3 (this task edits the same `Validate` block Task 3 produced).
 - Produces: `custom`-type constraint `value` gains a `name: string` field; `validateBy`-type value gains `validatorSource: string` (used only for dedup). The compiler emits the error key `sanitizeValidatorName(constraint.value.name || 'custom')` for custom-class validators, sync and async.
 
@@ -562,9 +570,7 @@ export function registerDecorator(args: RegisterDecoratorOptions): void {
       value: {
         constraintClass: validator,
         name:
-          args.name ||
-          (validator as any).__validatorMetadata?.name ||
-          lowerFirst(validator.name),
+          args.name || (validator as any).__validatorMetadata?.name || lowerFirst(validator.name),
         constraints,
       },
       message: args.options?.message,
@@ -612,9 +618,7 @@ In `packages/class-validator/src/engine/compiler.ts`:
 (a) Sync custom branch (~line 1646): before the `lines.push` block, compute the key and use it in all four `.custom =` emissions:
 
 ```typescript
-        const customKey = sanitizeValidatorName(
-          (constraint.value && constraint.value.name) || 'custom',
-        );
+const customKey = sanitizeValidatorName((constraint.value && constraint.value.name) || 'custom');
 ```
 
 then replace every `${errorsName}.custom =` in this branch with `${errorsName}.${customKey} =` (3 occurrences sync).
@@ -624,13 +628,13 @@ then replace every `${errorsName}.custom =` in this branch with `${errorsName}.$
 (c) stopAtFirstError order map (line 592-594): replace
 
 ```typescript
-      if (c.type === 'custom') return 'custom';
+if (c.type === 'custom') return 'custom';
 ```
 
 with
 
 ```typescript
-      if (c.type === 'custom') return sanitizeValidatorName((c.value && c.value.name) || 'custom');
+if (c.type === 'custom') return sanitizeValidatorName((c.value && c.value.name) || 'custom');
 ```
 
 - [ ] **Step 6: Run new test, then the whole package suite; update stale `custom`-key expectations**
@@ -654,24 +658,26 @@ git commit -m "fix(class-validator): registerDecorator - enforce all registratio
 ### Task 5: shared metadata key + changeset for validator fixes
 
 **Files:**
+
 - Modify: `packages/class-validator/src/engine/metadata.ts:15`
 - Test: extend `packages/class-validator/tests/unit/compat/class-validator/constraint-dedup.test.ts`
 - Create: `.changeset/review-fixes-class-validator.md`
 
 **Interfaces:**
+
 - Produces: `VALIDATION_METADATA` becomes `Symbol.for('om-data-mapper:validation-metadata')` — two installed copies of the package see each other's metadata instead of silently validating nothing.
 
 - [ ] **Step 1: Write the failing test** (append to constraint-dedup.test.ts)
 
 ```typescript
-  it('stores metadata under the global symbol registry key (survives duplicate installs)', () => {
-    class Dto {
-      @Matches(/^a$/)
-      s!: string;
-    }
-    new Dto();
-    expect((Dto as any)[Symbol.for('om-data-mapper:validation-metadata')]).toBeDefined();
-  });
+it('stores metadata under the global symbol registry key (survives duplicate installs)', () => {
+  class Dto {
+    @Matches(/^a$/)
+    s!: string;
+  }
+  new Dto();
+  expect((Dto as any)[Symbol.for('om-data-mapper:validation-metadata')]).toBeDefined();
+});
 ```
 
 - [ ] **Step 2: Run to verify it fails**
@@ -709,49 +715,51 @@ git commit -m "fix(class-validator): key metadata via Symbol.for; add changeset 
 ### Task 6: enableImplicitConversion must coerce array elements
 
 **Files:**
+
 - Modify: `packages/class-transformer/src/functions.ts:325-346` (`transformValue`)
 - Test: extend `packages/class-transformer/tests/unit/compat/implicit-conversion.test.ts`
 - Create: `.changeset/review-fixes-class-transformer.md`
 
 **Interfaces:**
+
 - Consumes: `plainToInstance`, `Type` from `../../../src` (existing test file's imports).
 - Produces: no API change; array-valued `@Type(() => Number|String|Boolean|Date)` properties coerce per element under `enableImplicitConversion`.
 
 - [ ] **Step 1: Write the failing tests** (append to implicit-conversion.test.ts)
 
 ```typescript
-  describe('array-valued properties', () => {
-    class ArrayDto {
-      @Type(() => Number)
-      scores!: number[];
-      @Type(() => Date)
-      dates!: Date[];
-    }
+describe('array-valued properties', () => {
+  class ArrayDto {
+    @Type(() => Number)
+    scores!: number[];
+    @Type(() => Date)
+    dates!: Date[];
+  }
 
-    it('coerces number arrays per element', () => {
-      const dto = plainToInstance(
-        ArrayDto,
-        { scores: ['1', '2'], dates: [] },
-        { enableImplicitConversion: true },
-      );
-      expect(dto.scores).toEqual([1, 2]);
-    });
-
-    it('coerces date arrays per element', () => {
-      const dto = plainToInstance(
-        ArrayDto,
-        { scores: [], dates: ['2026-01-01'] },
-        { enableImplicitConversion: true },
-      );
-      expect(dto.dates).toHaveLength(1);
-      expect(dto.dates[0]).toBeInstanceOf(Date);
-    });
-
-    it('leaves arrays untouched without the flag', () => {
-      const dto = plainToInstance(ArrayDto, { scores: ['1'], dates: [] });
-      expect(dto.scores).toEqual(['1']);
-    });
+  it('coerces number arrays per element', () => {
+    const dto = plainToInstance(
+      ArrayDto,
+      { scores: ['1', '2'], dates: [] },
+      { enableImplicitConversion: true },
+    );
+    expect(dto.scores).toEqual([1, 2]);
   });
+
+  it('coerces date arrays per element', () => {
+    const dto = plainToInstance(
+      ArrayDto,
+      { scores: [], dates: ['2026-01-01'] },
+      { enableImplicitConversion: true },
+    );
+    expect(dto.dates).toHaveLength(1);
+    expect(dto.dates[0]).toBeInstanceOf(Date);
+  });
+
+  it('leaves arrays untouched without the flag', () => {
+    const dto = plainToInstance(ArrayDto, { scores: ['1'], dates: [] });
+    expect(dto.scores).toEqual(['1']);
+  });
+});
 ```
 
 - [ ] **Step 2: Run to verify failure**
@@ -764,49 +772,49 @@ Expected: FAIL — `scores` is `NaN` (whole-array `Number(['1','2'])`).
 Replace the `if (propertyMeta?.typeFunction && transformationType === 'plainToClass')` block in `packages/class-transformer/src/functions.ts` with:
 
 ```typescript
-  // Apply type transformation if exists
-  if (propertyMeta?.typeFunction && transformationType === 'plainToClass') {
-    const TypeClass = propertyMeta.typeFunction();
+// Apply type transformation if exists
+if (propertyMeta?.typeFunction && transformationType === 'plainToClass') {
+  const TypeClass = propertyMeta.typeFunction();
 
-    const isPrimitiveTarget =
-      TypeClass === Number || TypeClass === String || TypeClass === Boolean || TypeClass === Date;
-    const coercePrimitive = (input: any): any => {
-      if (TypeClass === Number) return typeof input === 'number' ? input : Number(input);
-      if (TypeClass === String) return typeof input === 'string' ? input : String(input);
-      if (TypeClass === Boolean) return typeof input === 'boolean' ? input : Boolean(input);
-      return input instanceof Date ? input : new Date(input as any);
-    };
+  const isPrimitiveTarget =
+    TypeClass === Number || TypeClass === String || TypeClass === Boolean || TypeClass === Date;
+  const coercePrimitive = (input: any): any => {
+    if (TypeClass === Number) return typeof input === 'number' ? input : Number(input);
+    if (TypeClass === String) return typeof input === 'string' ? input : String(input);
+    if (TypeClass === Boolean) return typeof input === 'boolean' ? input : Boolean(input);
+    return input instanceof Date ? input : new Date(input as any);
+  };
 
-    if (Array.isArray(value)) {
-      return value.map((item) => {
-        if (
-          options.enableImplicitConversion &&
-          isPrimitiveTarget &&
-          item !== null &&
-          item !== undefined
-        ) {
-          return coercePrimitive(item);
-        }
-        if (typeof item === 'object' && item !== null) {
-          return transformPlainToClass(TypeClass as any, item, transformationType, options);
-        }
-        return item;
-      });
-    }
-
-    if (
-      options.enableImplicitConversion &&
-      isPrimitiveTarget &&
-      value !== null &&
-      value !== undefined
-    ) {
-      return coercePrimitive(value);
-    }
-
-    if (typeof value === 'object' && value !== null) {
-      return transformPlainToClass(TypeClass as any, value, transformationType, options);
-    }
+  if (Array.isArray(value)) {
+    return value.map((item) => {
+      if (
+        options.enableImplicitConversion &&
+        isPrimitiveTarget &&
+        item !== null &&
+        item !== undefined
+      ) {
+        return coercePrimitive(item);
+      }
+      if (typeof item === 'object' && item !== null) {
+        return transformPlainToClass(TypeClass as any, item, transformationType, options);
+      }
+      return item;
+    });
   }
+
+  if (
+    options.enableImplicitConversion &&
+    isPrimitiveTarget &&
+    value !== null &&
+    value !== undefined
+  ) {
+    return coercePrimitive(value);
+  }
+
+  if (typeof value === 'object' && value !== null) {
+    return transformPlainToClass(TypeClass as any, value, transformationType, options);
+  }
+}
 ```
 
 - [ ] **Step 4: Run tests** — new tests and the whole `pnpm exec vitest run packages/class-transformer` suite must pass.
@@ -837,10 +845,12 @@ git commit -m "fix(class-transformer): enableImplicitConversion coerces array el
 ### Task 7: ESM-safe method decorators
 
 **Files:**
+
 - Modify: `packages/class-transformer/src/decorators.ts` (lines ~218-263: three `require('./functions')` sites + top-of-file import)
 - Test: `packages/class-transformer/tests/unit/compat/transform-method-decorators.test.ts` (create)
 
 **Interfaces:**
+
 - Consumes: `classToPlain`, `classToClass`, `plainToClass` from `./functions` — verified acyclic: `functions.ts` imports only `./metadata` and `./types`, never `./decorators`, so a static import cannot create a cycle (the `// avoid circular dependency` comments are wrong).
 - Produces: `build/esm/decorators.js` free of `require(`.
 
@@ -930,10 +940,10 @@ import { classToPlain, classToClass, plainToClass } from './functions';
 Then in the three method decorators, delete the `// Import ... dynamically to avoid circular dependency` comment and the `const { ... } = require('./functions');` line, calling the imported functions directly, e.g.:
 
 ```typescript
-    return function (this: any, ...args: any[]) {
-      const result = target.call(this, ...args);
-      return classToPlain(result, options);
-    };
+return function (this: any, ...args: any[]) {
+  const result = target.call(this, ...args);
+  return classToPlain(result, options);
+};
 ```
 
 (same shape for `classToClass(result, options)` and `plainToClass(classType, result, options)`).
@@ -961,10 +971,12 @@ git commit -m "fix(class-transformer): static imports in method decorators - req
 ### Task 8: core codegen — escape every interpolated key and path
 
 **Files:**
+
 - Modify: `packages/core/src/decorators/core.ts` (`generateSafePropertyAccess` + every codegen emission site)
 - Test: `packages/core/tests/unit/decorators/codegen-escaping.test.ts` (create)
 
 **Interfaces:**
+
 - Consumes: `Mapper`, `Map` from `../../../src/decorators` (same import as `decorators.test.ts`); mappers are exercised via `new TestMapper().transform(source)`.
 - Produces: `generateSafePropertyAccess(path)` now returns a bracket-access chain **including the leading accessor**, e.g. `'a.b-c'` → `?.["a"]?.["b-c"]`, so call sites emit `source${safeSourcePath}`. All target/cache key emissions use `JSON.stringify`.
 
@@ -1066,7 +1078,7 @@ Audit the whole file: `grep -n 'target\.\$\|source?\.\$\|\[.\${key}\|cache\[.__d
 - `cache['${key}__valueTransform']` → `cache${cacheKey(key, '__valueTransform')}` (same for `__transformer`, `__condition`, `__nestedMapper` and any other suffix found)
 - `cache['__defValues']['${key}']` → `cache['__defValues']${prop(key)}`
 
-Do NOT touch the runtime assignments (`cache[\`${key}__transformer\`] = transformer;` etc.) — those execute in TypeScript at compile time and are already safe; `JSON.stringify` of the same plain key guarantees the generated lookups still match the runtime-populated slots. Apply the same treatment in `_generatePathMappingCode`, `_generateTransformCode`, `_generateNestedMapperCode`, and any other `_generate*` method the grep surfaces. After the rewrite the audit grep must return zero raw-interpolation hits (`target\.\$` and `source?\.\$` in particular).
+Do NOT touch the runtime assignments (`cache[\`${key}\_\_transformer\`] = transformer;`etc.) — those execute in TypeScript at compile time and are already safe;`JSON.stringify`of the same plain key guarantees the generated lookups still match the runtime-populated slots. Apply the same treatment in`\_generatePathMappingCode`, `\_generateTransformCode`, `\_generateNestedMapperCode`, and any other `\_generate\*` method the grep surfaces. After the rewrite the audit grep must return zero raw-interpolation hits (`target\.\$`and`source?\.\$` in particular).
 
 - [ ] **Step 5: Run tests**
 
@@ -1085,6 +1097,7 @@ git commit -m "fix(core): JSON-escape all keys and paths in generated mapper cod
 ### Task 9: purge fabricated performance figures from core JSDoc
 
 **Files:**
+
 - Modify: `packages/core/src/index.ts` (lines 5, 10, 85), `packages/core/src/decorators/core.ts` (line 38)
 
 - [ ] **Step 1: Locate every remaining figure**
@@ -1113,6 +1126,7 @@ git commit -m "docs(core): purge fabricated performance figures from JSDoc"
 ### Task 10: ship LICENSE in all four tarballs
 
 **Files:**
+
 - Create: `packages/core/LICENSE`, `packages/class-validator/LICENSE`, `packages/class-transformer/LICENSE`, `packages/om-data-mapper/LICENSE` (copies of root `LICENSE`)
 
 - [ ] **Step 1: Copy the root license**
@@ -1144,9 +1158,11 @@ git commit -m "fix(packaging): ship LICENSE in every published tarball - files d
 ### Task 11: tests must import what consumers can import
 
 **Files:**
+
 - Modify: `packages/om-data-mapper/tests/memory-leak.test.ts:20`, `packages/om-data-mapper/tests/regression.test.ts:20`, `packages/om-data-mapper/tests/real-world-scenarios.test.ts` (same pattern)
 
 **Interfaces:**
+
 - Consumes: `packages/class-validator/src/index.ts` does `export * from './decorators'`, so every decorator is importable from the package **root** — the `/decorators` subpath is not in the exports map and only resolves through the vitest alias.
 
 - [ ] **Step 1: Reproduce the honest failure mode**
@@ -1191,6 +1207,7 @@ git commit -m "test(om-data-mapper): import via real exports map, not vitest-ali
 ### Task 12: retire the unreachable legacy Mapper export; honest ESM simulation
 
 **Files:**
+
 - Modify: `packages/core/src/index.ts` (remove `export * from './core/Mapper'`)
 - Modify: `packages/om-data-mapper/test/esm-post-install-simulation.test.mjs` (full rewrite of scenarios 1-7)
 - Modify: `docs/migration-v4-to-v5.md`, `docs-ru/migration-v4-to-v5.md`
@@ -1249,7 +1266,8 @@ await asyncTest('Decorator API resolves through the exports map', async () => {
 });
 ```
 
-  Caveat: raw `.mjs` cannot use decorators — if the existing file is plain JS (it is), express the same scenarios through the compat subpaths and helper functions that need no decorator syntax (`plainToInstance` from `om-data-mapper/class-transformer-compat`, `validateSync` from `om-data-mapper/class-validator-compat`, plus asserting `Mapper`/`createMapper` resolve as functions from the root). Keep scenarios 8-9 (already exports-map-based) as they are.
+Caveat: raw `.mjs` cannot use decorators — if the existing file is plain JS (it is), express the same scenarios through the compat subpaths and helper functions that need no decorator syntax (`plainToInstance` from `om-data-mapper/class-transformer-compat`, `validateSync` from `om-data-mapper/class-validator-compat`, plus asserting `Mapper`/`createMapper` resolve as functions from the root). Keep scenarios 8-9 (already exports-map-based) as they are.
+
 - Update the final success message to claim only what is tested.
 
 - [ ] **Step 4: Run it**
@@ -1284,6 +1302,7 @@ git commit -m "fix(core): drop unreachable legacy Mapper re-export; make ESM sim
 ### Task 13: typecheck benchmarks and examples in CI
 
 **Files:**
+
 - Modify: `benchmarks/compat/transformation.bench.ts:91-92`
 - Modify: `benchmarks/package.json` (add `typecheck` script)
 - Modify: `.github/workflows/ci.yml`
@@ -1319,8 +1338,8 @@ In `benchmarks/package.json` scripts:
 In `.github/workflows/ci.yml`, after the `- run: pnpm run build` step add:
 
 ```yaml
-      - run: pnpm --filter examples run typecheck
-      - run: pnpm --filter benchmarks run typecheck
+- run: pnpm --filter examples run typecheck
+- run: pnpm --filter benchmarks run typecheck
 ```
 
 (after build, because both typecheck against built package `dist`/`build` outputs).
