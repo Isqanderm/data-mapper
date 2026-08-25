@@ -4,7 +4,11 @@
  */
 
 import { addValidationConstraint } from '../engine/metadata';
-import type { ValidationDecoratorOptions, ValidationArguments } from '../types';
+import type {
+  ValidationDecoratorOptions,
+  ValidationArguments,
+  ValidationConstraint,
+} from '../types';
 
 /**
  * Interface for custom validator classes
@@ -91,17 +95,19 @@ export function Validate(
   return function (target: undefined, context: ClassFieldDecoratorContext): any {
     const propertyKey = context.name;
 
+    const constraint: ValidationConstraint = {
+      type: 'custom',
+      value: {
+        constraintClass,
+        constraints: constraints || [],
+      },
+      message: options?.message,
+      groups: options?.groups,
+      always: options?.always,
+    };
+
     context.addInitializer(function (this: any) {
-      addValidationConstraint(this.constructor, propertyKey, {
-        type: 'custom',
-        value: {
-          constraintClass,
-          constraints: constraints || [],
-        },
-        message: options?.message,
-        groups: options?.groups,
-        always: options?.always,
-      });
+      addValidationConstraint(this.constructor, propertyKey, constraint);
     });
   };
 }
@@ -138,19 +144,21 @@ export function ValidateBy(
   return function (target: undefined, context: ClassFieldDecoratorContext): any {
     const propertyKey = context.name;
 
+    const constraint: ValidationConstraint = {
+      type: 'validateBy',
+      value: {
+        name: options.name,
+        validator: options.validator.validate,
+        defaultMessage: options.validator.defaultMessage,
+        constraints: options.constraints || [],
+      },
+      message: validationOptions?.message,
+      groups: validationOptions?.groups,
+      always: validationOptions?.always,
+    };
+
     context.addInitializer(function (this: any) {
-      addValidationConstraint(this.constructor, propertyKey, {
-        type: 'validateBy',
-        value: {
-          name: options.name,
-          validator: options.validator.validate,
-          defaultMessage: options.validator.defaultMessage,
-          constraints: options.constraints || [],
-        },
-        message: validationOptions?.message,
-        groups: validationOptions?.groups,
-        always: validationOptions?.always,
-      });
+      addValidationConstraint(this.constructor, propertyKey, constraint);
     });
   };
 }

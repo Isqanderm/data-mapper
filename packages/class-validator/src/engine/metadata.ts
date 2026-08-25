@@ -57,6 +57,10 @@ export function addValidationConstraint(
 ): void {
   const propertyMetadata = getPropertyMetadata(target, propertyKey);
 
+  // Fast path: the same constraint object re-registered by a repeated
+  // addInitializer run (decorators hoist one object per application).
+  if (propertyMetadata.constraints.includes(constraint)) return;
+
   // Check if this exact constraint already exists to prevent duplicates
   // This can happen because addInitializer runs on every instance creation
   const isDuplicate = propertyMetadata.constraints.some((existing) => {

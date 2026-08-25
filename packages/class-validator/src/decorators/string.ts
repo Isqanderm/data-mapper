@@ -4,7 +4,7 @@
  */
 
 import { addValidationConstraint } from '../engine/metadata';
-import type { ValidationDecoratorOptions } from '../types';
+import type { ValidationDecoratorOptions, ValidationConstraint } from '../types';
 
 /**
  * Checks if value is a string
@@ -624,17 +624,21 @@ export function Matches(
   return function (target: undefined, context: ClassFieldDecoratorContext): any {
     const propertyKey = context.name;
 
+    // One constraint object per decorator application: addInitializer runs on
+    // every construction, and addValidationConstraint dedups by identity.
+    const constraint: ValidationConstraint = {
+      type: 'matches',
+      value: {
+        pattern: pattern instanceof RegExp ? pattern.source : pattern,
+        modifiers: pattern instanceof RegExp ? pattern.flags : modifiers,
+      },
+      message: options?.message,
+      groups: options?.groups,
+      always: options?.always,
+    };
+
     context.addInitializer(function (this: any) {
-      addValidationConstraint(this.constructor, propertyKey, {
-        type: 'matches',
-        value: {
-          pattern: pattern instanceof RegExp ? pattern.source : pattern,
-          modifiers: pattern instanceof RegExp ? pattern.flags : modifiers,
-        },
-        message: options?.message,
-        groups: options?.groups,
-        always: options?.always,
-      });
+      addValidationConstraint(this.constructor, propertyKey, constraint);
     });
   };
 }
