@@ -83,6 +83,6 @@ checked in. Every example file was compiled and run this way while writing this 
 
 ## 🔗 Related Documentation
 
-- [API Documentation](../README.md#api-documentation)
+- [API Documentation](../docs/README.md)
 - [How to run the benchmark suite](../benchmarks/README.md)
 - [Contributing Guide](../CONTRIBUTING.md)
