@@ -11,7 +11,6 @@
  * - **📦 Zero Dependencies**: No reflect-metadata or other runtime dependencies required
  * - **🎨 Modern Decorators**: Uses TC39 Stage 3 decorators (not experimental)
  * - **🔄 Drop-in Replacement**: Compatible with class-transformer and class-validator APIs
- * - **📉 Smaller Bundle**: 70% smaller bundle size compared to class-transformer
  * - **🛡️ Type-Safe**: Full TypeScript support with comprehensive type inference
  * - **⚡ JIT Compilation**: Generates optimized transformation code at runtime
  * - **🎯 Developer-Friendly**: Clean, intuitive API with excellent IDE support
