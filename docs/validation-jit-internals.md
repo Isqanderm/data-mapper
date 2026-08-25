@@ -403,4 +403,4 @@ The JIT compilation approach provides:
 - ✅ **Memory efficient** with per-class caching
 - ✅ **Extensible** with custom validators
 
-This architecture makes `om-data-mapper` one of the fastest validation libraries available for TypeScript/JavaScript.
+For measured throughput against class-validator, see [`../benchmarks/README.md`](../benchmarks/README.md).
