@@ -205,9 +205,13 @@ console.log(`  Failed: ${testsFailed} ✗`);
 console.log('='.repeat(60));
 
 if (testsFailed === 0) {
-  console.log('\n✅ Every entry point above was reached by package name, through the');
-  console.log('   exports map — the same resolution a consumer of the published');
-  console.log('   package gets. Decorator-syntax behavior is covered by `pnpm test`.\n');
+  console.log('\n✅ Every reachable entry point above was reached by package name, through');
+  console.log("   the exports map; Scenario 5's subpaths were correctly rejected, not");
+  console.log('   reached — that is what it tests. Resolution here is Node self-reference,');
+  console.log('   not an installed node_modules lookup, but it is the same exports-map');
+  console.log('   algorithm a consumer of the published package gets. This file never runs');
+  console.log('   `npm pack`, so it does not verify the `files` array actually ships');
+  console.log('   build/. Decorator-syntax behavior is covered by `pnpm test`.\n');
   process.exit(0);
 } else {
   console.log('\n❌ Package has issues that need to be fixed!\n');
