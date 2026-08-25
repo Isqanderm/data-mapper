@@ -177,9 +177,11 @@
  * @packageDocumentation
  */
 
-// Legacy API (deprecated but maintained for backward compatibility)
+// Legacy interfaces (kept for typing compatibility). The legacy `Mapper.create`
+// class API is intentionally NOT re-exported: the decorator API's `Mapper`
+// shadowed it under ES module semantics, so it was never reachable from the
+// published surface — see docs/migration-v4-to-v5.md.
 export * from './core/interfaces';
-export * from './core/Mapper';
 
 // Decorator API (recommended)
 export {

@@ -2,62 +2,34 @@
 /**
  * Post-Installation Simulation Test
  *
- * This test simulates how a user would import and use the `om-data-mapper`
- * meta-package after installing it via npm. It validates the package's own
- * build output (`build/esm`), which in this monorepo layout only contains
- * the meta-package's own entry points (index.js, class-transformer-compat.js,
- * class-validator-compat.js) — it re-exports @om-data-mapper/core,
- * @om-data-mapper/class-transformer and @om-data-mapper/class-validator
- * rather than bundling their internals.
+ * Simulates how a consumer reaches the `om-data-mapper` meta-package after
+ * `npm install om-data-mapper`. Every scenario below imports by *package
+ * name* only — `om-data-mapper` and its declared subpaths — so resolution
+ * goes through the package.json `exports` map exactly as a consumer's
+ * `import` would. (Inside the package's own directory Node resolves those
+ * bare specifiers by self-reference, which is `exports`-map-driven too.)
+ * No scenario imports a file path into `build/` or `node_modules/`: a
+ * filesystem-path `import()` is not subject to an `exports` map, so it can
+ * reach entry points no consumer can, and certifies nothing about what the
+ * published package actually offers.
  *
  * Scenarios tested:
- * 1. Named imports from main package
- * 2. Real-world usage patterns
- * 3. Error handling
- * 4. Legacy `Mapper.create()` API (backward compatibility)
- * 5. Re-export validation (root + compat subpaths)
+ * 1. Root entry point resolves through the exports map and carries the
+ *    documented public API
+ * 2. The root `Mapper` is the class decorator, not the retired legacy class
+ * 3. `om-data-mapper/class-transformer-compat` — exports and runtime behavior
+ * 4. `om-data-mapper/class-validator-compat` — exports and runtime behavior
+ * 5. Undeclared subpaths are blocked by the exports map
  *
- * Note on scenarios 1-7 (legacy `Mapper.create()` API): `@om-data-mapper/core`'s
- * top-level index does `export * from './core/Mapper'` (the legacy class,
- * with a static `.create()`) AND `export { Mapper } from './decorators'` (the
- * `@Mapper()` class decorator, recommended API). Per ES module semantics an
- * explicit named/indirect export always wins over an `export *` of the same
- * name, so `Mapper` at the public root of both @om-data-mapper/core and this
- * meta-package resolves to the *decorator*, not the legacy class — this is
- * pre-existing behavior of the core package (unrelated to this task) and was
- * true of the pre-monorepo package too. The original test avoided this by
- * importing the legacy class straight from its build file
- * (`build/esm/core/Mapper.js`), bypassing package export resolution entirely
- * (a direct filesystem-path `import()` is not subject to a package.json
- * `exports` map — only bare-specifier resolution is). We preserve that same
- * approach here, pointed at @om-data-mapper/core's own build output (reached
- * through the pnpm workspace symlink in this package's node_modules), so the
- * legacy API keeps getting exercised exactly as before.
+ * Not covered here: anything requiring decorator syntax. This file is plain
+ * `.mjs`, so `@Mapper()` / `@Map()` classes cannot be written in it; the
+ * decorator API's behavior is covered by the TypeScript test suites
+ * (`pnpm test`). What this file establishes is the *reachability* of the
+ * published surface, plus the runtime behavior of the compat helpers that
+ * need no decorator syntax.
  */
 
-import { fileURLToPath } from 'url';
-import { dirname, join } from 'path';
 import { strict as assert } from 'assert';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-const packageRoot = join(__dirname, '..', 'build', 'esm');
-// Direct filesystem path into the sibling @om-data-mapper/core package's
-// build output, resolved through the pnpm workspace symlink. This is a raw
-// file-path import (bypasses `exports` map enforcement) so it can reach the
-// legacy `Mapper` class directly, sidestepping the `Mapper` naming collision
-// described above.
-const legacyMapperPath = join(
-  __dirname,
-  '..',
-  'node_modules',
-  '@om-data-mapper',
-  'core',
-  'build',
-  'esm',
-  'core',
-  'Mapper.js',
-);
 
 console.log('📦 Post-Installation Simulation Test\n');
 console.log('Simulating: npm install om-data-mapper\n');
@@ -78,175 +50,16 @@ async function asyncTest(name, fn) {
   }
 }
 
-// Scenario 1: Basic mapper usage (most common use case)
-console.log('Scenario 1: Basic Mapper Usage');
-await asyncTest('Import legacy Mapper class', async () => {
-  const { Mapper } = await import(legacyMapperPath);
+// Scenario 1: Root entry point
+console.log('Scenario 1: Root Entry Point (exports map)');
+await asyncTest('import("om-data-mapper") resolves', async () => {
+  const main = await import('om-data-mapper');
 
-  assert.ok(Mapper, 'Mapper should exist');
-  assert.strictEqual(typeof Mapper.create, 'function');
+  assert.ok(main, 'root entry should resolve');
 });
 
-await asyncTest('Create and use a simple mapper', async () => {
-  const { Mapper } = await import(legacyMapperPath);
-
-  const mapper = Mapper.create({
-    fullName: 'name',
-    emailAddress: 'email',
-  });
-
-  const source = { name: 'Alice', email: 'alice@example.com' };
-  const result = mapper.execute(source).result;
-
-  assert.strictEqual(result.fullName, 'Alice');
-  assert.strictEqual(result.emailAddress, 'alice@example.com');
-});
-
-// Scenario 2: Simple field mapping
-console.log('\nScenario 2: Simple Field Mapping');
-await asyncTest('Map multiple fields', async () => {
-  const { Mapper } = await import(legacyMapperPath);
-
-  const mapper = Mapper.create({
-    productName: 'name',
-    productPrice: 'price',
-    productCategory: 'category',
-  });
-
-  const source = { name: 'Widget', price: 19.99, category: 'Tools' };
-  const result = mapper.execute(source).result;
-
-  assert.strictEqual(result.productName, 'Widget');
-  assert.strictEqual(result.productPrice, 19.99);
-  assert.strictEqual(result.productCategory, 'Tools');
-});
-
-await asyncTest('Map with default values', async () => {
-  const { Mapper } = await import(legacyMapperPath);
-
-  const mapper = Mapper.create(
-    {
-      timeout: 'timeout',
-      retries: 'retries',
-    },
-    {
-      timeout: 5000,
-      retries: 3,
-    },
-  );
-
-  const source = {};
-  const result = mapper.execute(source).result;
-
-  assert.strictEqual(result.timeout, 5000);
-  assert.strictEqual(result.retries, 3);
-});
-
-// Scenario 3: Array transformations
-console.log('\nScenario 3: Array Transformations');
-await asyncTest('Transform array of objects', async () => {
-  const { Mapper } = await import(legacyMapperPath);
-
-  const mapper = Mapper.create({
-    itemId: 'id',
-    itemValue: 'value',
-  });
-
-  const sources = [
-    { id: 1, value: 'A' },
-    { id: 2, value: 'B' },
-    { id: 3, value: 'C' },
-  ];
-
-  const results = sources.map((s) => mapper.execute(s).result);
-
-  assert.strictEqual(results.length, 3);
-  assert.strictEqual(results[0].itemId, 1);
-  assert.strictEqual(results[1].itemValue, 'B');
-});
-
-// Scenario 4: Legacy API (backward compatibility)
-console.log('\nScenario 4: Legacy API (Backward Compatibility)');
-await asyncTest('Use legacy Mapper.create API', async () => {
-  const { Mapper } = await import(legacyMapperPath);
-
-  const mapper = Mapper.create({
-    targetName: 'sourceName',
-    targetValue: 'sourceValue',
-  });
-
-  const source = { sourceName: 'Test', sourceValue: 123 };
-  const result = mapper.execute(source).result;
-
-  assert.strictEqual(result.targetName, 'Test');
-  assert.strictEqual(result.targetValue, 123);
-});
-
-// Scenario 5: Error handling
-console.log('\nScenario 5: Error Handling');
-await asyncTest('Handle invalid input gracefully', async () => {
-  const { Mapper } = await import(legacyMapperPath);
-
-  const mapper = Mapper.create({
-    requiredField: 'required',
-  });
-
-  // Should handle null input gracefully
-  try {
-    const result = mapper.execute(null).result;
-    // If it doesn't throw, result should be null or undefined
-    assert.ok(result === null || result === undefined || typeof result === 'object');
-  } catch (error) {
-    // It's also acceptable to throw an error for null input
-    assert.ok(error instanceof Error);
-  }
-});
-
-// Scenario 6: Nested field access
-console.log('\nScenario 6: Nested Field Access');
-await asyncTest('Map nested fields using dot notation', async () => {
-  const { Mapper } = await import(legacyMapperPath);
-
-  const mapper = Mapper.create({
-    fullName: 'name',
-    streetName: 'address.street',
-    cityName: 'address.city',
-  });
-
-  const source = {
-    name: 'Bob',
-    address: {
-      street: '123 Main St',
-      city: 'Springfield',
-    },
-  };
-
-  const result = mapper.execute(source).result;
-
-  assert.strictEqual(result.fullName, 'Bob');
-  assert.strictEqual(result.streetName, '123 Main St');
-  assert.strictEqual(result.cityName, 'Springfield');
-});
-
-// Scenario 7: Multiple mappers
-console.log('\nScenario 7: Multiple Mappers');
-await asyncTest('Use multiple mappers in same file', async () => {
-  const { Mapper } = await import(legacyMapperPath);
-
-  const userMapper = Mapper.create({ userName: 'name' });
-  const productMapper = Mapper.create({ productName: 'name' });
-
-  const user = userMapper.execute({ name: 'Alice' }).result;
-  const product = productMapper.execute({ name: 'Widget' }).result;
-
-  assert.strictEqual(user.userName, 'Alice');
-  assert.strictEqual(product.productName, 'Widget');
-});
-
-// Scenario 8: Re-export validation
-console.log('\nScenario 8: Re-export Validation');
-await asyncTest('All decorators are re-exported from main', async () => {
-  const mainExports = await import(`${packageRoot}/index.js`);
+await asyncTest('All documented decorators and helpers are exported', async () => {
+  const main = await import('om-data-mapper');
 
   const requiredExports = [
     'Mapper',
@@ -267,18 +80,37 @@ await asyncTest('All decorators are re-exported from main', async () => {
   ];
 
   for (const exportName of requiredExports) {
-    assert.ok(exportName in mainExports, `Missing export: ${exportName}`);
+    assert.ok(exportName in main, `Missing export: ${exportName}`);
+    assert.strictEqual(typeof main[exportName], 'function', `${exportName} should be a function`);
   }
 });
 
-// Scenario 9: Compat subpath exports (class-transformer-compat / class-validator-compat)
-console.log('\nScenario 9: Compat Subpath Exports');
-await asyncTest('class-transformer-compat re-exports the class-transformer adapter', async () => {
-  const compat = await import(`${packageRoot}/class-transformer-compat.js`);
+// Scenario 2: `Mapper` identity
+console.log('\nScenario 2: `Mapper` Is the Class Decorator');
+await asyncTest('Mapper() returns a class decorator', async () => {
+  const { Mapper } = await import('om-data-mapper');
+
+  // The decorator API's `Mapper` is a factory: calling it yields the actual
+  // class decorator. The retired legacy `Mapper` class had a static
+  // `.create()` instead and threw when called without `new`.
+  assert.strictEqual(typeof Mapper(), 'function');
+  assert.strictEqual(
+    Mapper.create,
+    undefined,
+    'the legacy `Mapper.create` class API is not part of the published surface',
+  );
+});
+
+// Scenario 3: class-transformer compat subpath
+console.log('\nScenario 3: class-transformer-compat Subpath');
+await asyncTest('Subpath exports the class-transformer adapter API', async () => {
+  const compat = await import('om-data-mapper/class-transformer-compat');
 
   for (const exportName of [
     'plainToInstance',
     'plainToClass',
+    'classToPlain',
+    'serialize',
     'Expose',
     'Exclude',
     'Type',
@@ -288,11 +120,79 @@ await asyncTest('class-transformer-compat re-exports the class-transformer adapt
   }
 });
 
-await asyncTest('class-validator-compat re-exports the class-validator adapter', async () => {
-  const compat = await import(`${packageRoot}/class-validator-compat.js`);
+await asyncTest('plainToInstance / classToPlain round-trip a plain object', async () => {
+  const { plainToInstance, classToPlain } = await import('om-data-mapper/class-transformer-compat');
 
-  for (const exportName of ['validate', 'validateSync', 'IsString', 'IsEmail', 'IsNumber']) {
+  class User {}
+
+  const instance = plainToInstance(User, { name: 'Alice', email: 'alice@example.com' });
+
+  assert.ok(instance instanceof User);
+  assert.strictEqual(instance.name, 'Alice');
+  assert.strictEqual(instance.email, 'alice@example.com');
+
+  assert.deepStrictEqual(classToPlain(instance), {
+    name: 'Alice',
+    email: 'alice@example.com',
+  });
+});
+
+// Scenario 4: class-validator compat subpath
+console.log('\nScenario 4: class-validator-compat Subpath');
+await asyncTest('Subpath exports the class-validator adapter API', async () => {
+  const compat = await import('om-data-mapper/class-validator-compat');
+
+  for (const exportName of [
+    'validate',
+    'validateSync',
+    'registerDecorator',
+    'IsString',
+    'IsEmail',
+    'IsNumber',
+  ]) {
     assert.ok(exportName in compat, `Missing export: ${exportName}`);
+  }
+});
+
+await asyncTest('registerDecorator + validateSync report constraint violations', async () => {
+  const { registerDecorator, validateSync } = await import('om-data-mapper/class-validator-compat');
+
+  class Account {
+    constructor(name) {
+      this.name = name;
+    }
+  }
+
+  // `registerDecorator` is the programmatic entry point to the same metadata
+  // the `@IsString()`-style decorators write, so a plain `.mjs` file can
+  // exercise real validation without decorator syntax.
+  registerDecorator({
+    name: 'isNonEmpty',
+    target: Account,
+    propertyName: 'name',
+    validator: {
+      validate: (value) => typeof value === 'string' && value.length > 0,
+      defaultMessage: () => 'name must not be empty',
+    },
+  });
+
+  const invalid = validateSync(new Account(''));
+  assert.strictEqual(invalid.length, 1);
+  assert.strictEqual(invalid[0].property, 'name');
+  assert.strictEqual(invalid[0].constraints.isNonEmpty, 'name must not be empty');
+
+  assert.deepStrictEqual(validateSync(new Account('Alice')), []);
+});
+
+// Scenario 5: exports map enforcement
+console.log('\nScenario 5: Exports Map Enforcement');
+await asyncTest('Undeclared subpaths are not importable', async () => {
+  for (const subpath of ['om-data-mapper/build/esm/index.js', 'om-data-mapper/package.json']) {
+    await assert.rejects(
+      () => import(subpath),
+      (error) => error.code === 'ERR_PACKAGE_PATH_NOT_EXPORTED',
+      `${subpath} should not be reachable`,
+    );
   }
 });
 
@@ -305,8 +205,9 @@ console.log(`  Failed: ${testsFailed} ✗`);
 console.log('='.repeat(60));
 
 if (testsFailed === 0) {
-  console.log('\n✅ Package is ready for npm publication!');
-  console.log('   Users will be able to import and use it without issues.\n');
+  console.log('\n✅ Every entry point above was reached by package name, through the');
+  console.log('   exports map — the same resolution a consumer of the published');
+  console.log('   package gets. Decorator-syntax behavior is covered by `pnpm test`.\n');
   process.exit(0);
 } else {
   console.log('\n❌ Package has issues that need to be fixed!\n');

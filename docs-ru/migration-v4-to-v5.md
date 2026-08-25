@@ -154,6 +154,59 @@ const dto = plainToInstance(Dto, { age: '42' }, { enableImplicitConversion: true
 в месте вызова; замена не нужна, поскольку ни одна из них не имела эффекта
 и раньше.
 
+## Легаси-API `Mapper.create`
+
+Легаси-API класса `Mapper.create({ ... })` не входит в публичную поверхность
+v5. Он и в раскладке v4 был недостижим: точка входа ядра делала
+`export * from './core/Mapper'` (легаси-класс) наряду с
+`export { Mapper } from './decorators'` (декоратор класса), а по семантике
+ES-модулей явный именованный экспорт побеждает. То есть
+`import { Mapper } from 'om-data-mapper'` всегда давал декоратор
+`@Mapper()`, а не легаси-класс. В v5 мёртвый реэкспорт удалён.
+
+Переходите на API декораторов:
+
+```typescript
+// Легаси (на самом деле никогда не был достижим через точку входа пакета)
+const mapper = Mapper.create({ fullName: 'name', emailAddress: 'email' });
+const result = mapper.execute(source).result;
+
+// v5
+@Mapper<Source, Target>()
+class UserMapper {
+  @Map('name')
+  fullName!: string;
+
+  @Map('email')
+  emailAddress!: string;
+}
+
+const result = plainToInstance(UserMapper, source);
+```
+
+## Изменения поведения в ядре маппера
+
+**Синтаксис индекса в квадратных скобках в пути `@Map()` больше не
+разрешается.** `@Map('items[0].name')` работал по случайности: генератор кода
+разбивал путь по `.` и склеивал сегменты через `?.`, поэтому `items[0]`
+попадал в генерируемый код настоящим выражением индексации. Это никогда не
+поддерживалось намеренно и никогда не было задокументировано. Генератор v5
+выводит каждый сегмент как JSON-экранированный литеральный ключ
+(`?.["items[0]"]`), чтобы ключи не могли стать кодом, — а значит такой путь
+теперь даёт `undefined` вместо значения по индексу. Для индексации массива
+используйте `@MapFrom` с явной функцией над источником, `@Map('items')` плюс
+`@Transform` над полученным массивом или вложенный маппер через `@MapWith`:
+
+```typescript
+// Раньше (случайное поведение)
+@Map('items[0].name')
+firstItemName!: string;
+
+// v5
+@MapFrom((src: Source) => src.items?.[0]?.name)
+firstItemName!: string;
+```
+
 ## Что НЕ поддерживается
 
 Полный и честный список того, что каждый адаптер реализует, а что нет —
@@ -177,6 +230,9 @@ const dto = plainToInstance(Dto, { age: '42' }, { enableImplicitConversion: true
 - [ ] Проверьте весь код, передающий `whitelist: true` (напрямую или через
       настройки `ValidationPipe` в NestJS по умолчанию) — теперь он
       действительно удаляет неизвестные свойства.
+- [ ] Замените все пути `@Map()`, использующие индексацию в квадратных
+      скобках (`@Map('items[0].name')`), на `@MapFrom`/`@Transform` или
+      вложенный маппер — теперь такой путь молча даёт `undefined`.
 - [ ] Уберите все использования удалённых опций class-transformer
       (`enableCircularCheck`, `exposeUnsetFields`, `targetMaps`,
       `enableValidation`) — они никогда ничего не делали, поэтому удалить их

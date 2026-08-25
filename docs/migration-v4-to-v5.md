@@ -152,6 +152,59 @@ now fails TypeScript compilation. The fix is to delete the option from your
 call site; no replacement is needed since none of them had any effect
 before.
 
+## Legacy `Mapper.create`
+
+The legacy `Mapper.create({ ... })` class API is not part of v5's public
+surface. It was already unreachable in the v4 layout: the core entry point
+did `export * from './core/Mapper'` (the legacy class) alongside
+`export { Mapper } from './decorators'` (the class decorator), and under ES
+module semantics the explicit named export wins. So
+`import { Mapper } from 'om-data-mapper'` has always given you the
+`@Mapper()` decorator, never the legacy class. v5 drops the dead re-export.
+
+Migrate to the decorator API:
+
+```typescript
+// Legacy (never actually reachable through the package entry point)
+const mapper = Mapper.create({ fullName: 'name', emailAddress: 'email' });
+const result = mapper.execute(source).result;
+
+// v5
+@Mapper<Source, Target>()
+class UserMapper {
+  @Map('name')
+  fullName!: string;
+
+  @Map('email')
+  emailAddress!: string;
+}
+
+const result = plainToInstance(UserMapper, source);
+```
+
+## Behavior changes in the core mapper
+
+**Bracket-index syntax in a `@Map()` path no longer resolves.**
+`@Map('items[0].name')` used to work by accident: the code generator split
+the path on `.` and joined the segments with `?.`, so `items[0]` reached the
+generated source as a real index expression. It was never deliberately
+supported and was never documented. v5's generator emits each segment as a
+JSON-escaped literal key (`?.["items[0]"]`) so that keys can never become
+code — which means such a path now yields `undefined` instead of the indexed
+value. For array indexing use `@MapFrom` with an explicit function over the
+source, `@Map('items')` plus `@Transform` over the resulting array, or a
+nested mapper via `@MapWith`:
+
+```typescript
+// Before (accidental)
+@Map('items[0].name')
+firstItemName!: string;
+
+// v5
+@MapFrom((src: Source) => src.items?.[0]?.name)
+firstItemName!: string;
+```
+
 ## What is NOT supported
 
 For the full, honest list of what each adapter does and does not implement
@@ -175,6 +228,9 @@ the supported subset described in those tables.
 - [ ] Audit any code that passes `whitelist: true` (directly, or via
       NestJS `ValidationPipe` defaults) — it now actually strips unknown
       properties.
+- [ ] Replace any `@Map()` path that uses bracket indexing
+      (`@Map('items[0].name')`) with `@MapFrom`/`@Transform` or a nested
+      mapper — it silently yields `undefined` now.
 - [ ] Remove any use of the removed class-transformer options
       (`enableCircularCheck`, `exposeUnsetFields`, `targetMaps`,
       `enableValidation`) — they never did anything, so deleting them is

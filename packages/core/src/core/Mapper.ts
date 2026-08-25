@@ -8,17 +8,26 @@ import { getValueByPath, PathObject } from './utils';
  * which compiles mappings to specialized functions instead of interpreting configuration
  * per call, and offers a better developer experience.
  *
- * This class is maintained for:
- * - Internal use by the Decorator API
- * - Backward compatibility with existing code
- * - Dynamic mapping scenarios where decorators can't be used
+ * This class is retained only as an in-repo implementation detail: the decorator API
+ * references it in type position (`decorators/core.ts` imports it as `BaseMapper`) and
+ * builds its own compiled object, and the core package's unit tests exercise it through
+ * direct `src` imports. It is not part of the published surface.
  *
  * ⚠️ **SECURITY NOTICE**: This mapper uses dynamic code generation (`new Function()`)
  * for performance optimization. Mapping configurations MUST come from trusted sources only.
  * Never pass user-controlled data as mapping configuration to prevent code injection attacks.
  *
- * See docs/DECORATOR_API.md for the recommended approach.
- * See docs/MIGRATION_GUIDE.md for migration instructions.
+ * ⚠️ **NOT EXPORTED — DO NOT RE-EXPORT WITHOUT FIXING THE CODEGEN FIRST**: this class
+ * interpolates config-derived keys and paths verbatim into the generated source — both
+ * into member expressions and into `'...'` string literals. A kebab-case key compiles to
+ * a SyntaxError; a quote-bearing key escapes the literal and injects code. The decorator
+ * API's generator was fixed to emit JSON-escaped bracket access; this one was not,
+ * because it is unreachable from the published surface (`packages/core/src/index.ts`
+ * does not re-export it, and the package declares no deep-import subpath). Fix the
+ * escaping before this class is ever exported again.
+ *
+ * See docs/transformer-usage.md for the recommended approach.
+ * See docs/migration-v4-to-v5.md for migration instructions.
  *
  * @internal
  */
@@ -316,7 +325,9 @@ export class Mapper<Source, Target> {
    * ⚠️ **SECURITY WARNING**: This method uses `new Function()` for performance optimization.
    * The mapping configuration MUST come from trusted sources only (developer-defined code).
    * DO NOT pass user-controlled data as mapping configuration, as this could lead to
-   * arbitrary code execution.
+   * arbitrary code execution. Target keys and source paths are interpolated unescaped
+   * into the generated source (see the class-level notice) — this is a code-injection and
+   * SyntaxError hazard that must be fixed before this class is exported again.
    *
    * **Safe usage**: Mapping configuration is defined by developers at compile-time
    * ```typescript
