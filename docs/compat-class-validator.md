@@ -145,23 +145,41 @@ class Dto {
 Like upstream, a class-based custom validator reports its failure under its **registered name**, not
 under a generic `custom` key. The name is resolved in this order:
 
-1. the explicit `name` passed to `registerDecorator({ name })`;
-2. `@ValidatorConstraint({ name })` on the constraint class;
-3. the class name with a lower-cased first letter (`IsLongerThanConstraint` → `isLongerThanConstraint`).
+1. `@ValidatorConstraint({ name })` on the constraint class — or, if the class is decorated without a
+   `name`, the class name as written. This mirrors upstream, where the class's own constraint
+   metadata always wins.
+2. The explicit `name` passed to `registerDecorator({ name })` — it only reaches the error key when
+   the constraint class carries no `@ValidatorConstraint` metadata. Passing a `name` that disagrees
+   with a decorated class does **not** rename the key.
+3. The class name with a lower-cased first letter
+   (`IsLongerThanConstraint` → `isLongerThanConstraint`). This step is a **compat-only extension** —
+   upstream refuses to run a constraint class that was never registered with `@ValidatorConstraint`.
 
 This applies to both `registerDecorator({ validator: SomeConstraintClass })` and
-`@Validate(SomeConstraintClass)` (which uses steps 2–3), in `validate` and `validateSync` alike:
+`@Validate(SomeConstraintClass)` (which uses steps 1 and 3), in `validate` and `validateSync` alike:
 
 ```typescript
 const errors = validateSync(dto);
 errors[0].constraints; // { isLongerThan: 'lastName must be longer than firstName' }
 ```
 
-A name that is not a valid JavaScript identifier falls back to the `custom` key. An **inline**
-validator object registered without a `name` still reports under `customValidation` — pass `name` to
-`registerDecorator` if you need a specific key.
+Because step 3 reads `Class.name`, a bundler that mangles class names silently changes the error key
+in production builds — always give a production constraint class an explicit
+`@ValidatorConstraint({ name })`.
 
-Repeated registrations are deduplicated by validator identity — the constraint class, or an inline
-validator's name plus the source of its `validate` function — together with the `constraints` array.
-Re-running the same `addInitializer` on every instantiation therefore does not grow the metadata,
-while two genuinely different registrations on the same property are both kept and both enforced.
+A name that is not a valid JavaScript identifier falls back to the `custom` key, as does the name
+`__proto__`. An **inline** validator object registered without a `name` still reports under
+`customValidation` — pass `name` to `registerDecorator` if you need a specific key.
+
+Repeated registrations are deduplicated by validator identity — the constraint class, or (for an
+inline validator) its name, object reference, and the source of its `validate` function — together
+with the `constraints` array and the `options` (`message`, `groups`, `always`). Re-running the same
+`addInitializer` on every instantiation therefore does not grow the metadata, while two genuinely
+different registrations on the same property are both kept and both enforced.
+
+One limitation follows from that source-text comparison: two applications of the **same
+parameterized inline factory** on one property (`@MinLen(3) @MinLen(5)`, where each application
+registers `{ validate: (v) => v.length >= n }`) produce identical source text and collapse into a
+single registration. Give each application a distinct `name`, or use distinct `constraints`, to keep
+both. Hoisting the validator object out of `addInitializer` is also worth doing: it makes the
+per-construction dedup exact (by reference) rather than source-text-based.

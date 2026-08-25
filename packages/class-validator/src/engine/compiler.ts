@@ -37,8 +37,13 @@ const IDENTIFIER_REGEX = /^[A-Za-z_$][A-Za-z0-9_$]*$/;
  * it's a valid identifier, otherwise the 'custom' fallback. Must be kept
  * in sync between the emitted error keys and the stopAtFirstError order
  * array — both need to agree on which key a given constraint lands on.
+ *
+ * `__proto__` is rejected even though it is a valid identifier: assigning to
+ * it hits the Object.prototype setter instead of creating an own property,
+ * which would make a failing constraint look like a passing one.
  */
 function sanitizeValidatorName(rawName: string): string {
+  if (rawName === '__proto__') return 'custom';
   return IDENTIFIER_REGEX.test(rawName) ? rawName : 'custom';
 }
 
