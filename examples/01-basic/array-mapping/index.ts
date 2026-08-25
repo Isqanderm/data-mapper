@@ -1,4 +1,4 @@
-import { Mapper } from '../../src';
+import { Mapper, MapFrom, plainToInstance } from 'om-data-mapper';
 
 type Employee = {
   name: string;
@@ -20,13 +20,28 @@ type EmployeeDTO = {
   jobName: string;
 };
 
-const employeeMapper = Mapper.create<[Employee, JobType[]], EmployeeDTO>({
-  fullName: '$0.name',
-  emailAddress: '$0.email',
-  isAdult: ([source]) => source.age >= 18,
-  job: ([source, jobs]) => jobs.find((job) => job.id === source.jobId)!,
-  jobName: '$1.[0].name',
-});
+// The decorator API maps from a single Source object, so combining two
+// independent inputs (an employee and a job catalog) is modelled as a
+// tuple source that each @MapFrom callback destructures.
+type EmployeeAndJobs = [employee: Employee, jobs: JobType[]];
+
+@Mapper<EmployeeAndJobs, EmployeeDTO>()
+class EmployeeMapper {
+  @MapFrom(([employee]: EmployeeAndJobs) => employee.name)
+  fullName!: string;
+
+  @MapFrom(([employee]: EmployeeAndJobs) => employee.email)
+  emailAddress!: string;
+
+  @MapFrom(([employee]: EmployeeAndJobs) => employee.age >= 18)
+  isAdult!: boolean;
+
+  @MapFrom(([employee, jobs]: EmployeeAndJobs) => jobs.find((job) => job.id === employee.jobId)!)
+  job!: JobType;
+
+  @MapFrom(([, jobs]: EmployeeAndJobs) => jobs[0].name)
+  jobName!: string;
+}
 
 const jobs: JobType[] = [
   {
@@ -49,19 +64,16 @@ const employee: Employee = {
   age: 30,
   jobId: 1,
 };
-const employeeDTO = employeeMapper.execute([employee, jobs]);
+const employeeDTO = plainToInstance<EmployeeAndJobs, EmployeeDTO>(EmployeeMapper, [employee, jobs]);
 
 console.log(employeeDTO);
 
 // {
-//   errors: [],
-//   result: {
-//     fullName: 'John Doe',
-//     emailAddress: 'john.doe@example.com',
-//     isAdult: true,
-//     job: {
-//       id: 1, name: 'Electronic'
-//     },
-//     jobName: 'Electronic'
-//   }
+//   fullName: 'John Doe',
+//   emailAddress: 'john.doe@example.com',
+//   isAdult: true,
+//   job: {
+//     id: 1, name: 'Electronic'
+//   },
+//   jobName: 'Electronic'
 // }

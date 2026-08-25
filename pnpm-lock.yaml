@@ -72,6 +72,22 @@ importers:
         specifier: ^3.2.4
         version: 3.2.7(@types/node@18.19.130)(yaml@2.9.0)
 
+  examples:
+    dependencies:
+      '@om-data-mapper/class-validator':
+        specifier: workspace:*
+        version: link:../packages/class-validator
+      '@om-data-mapper/core':
+        specifier: workspace:*
+        version: link:../packages/core
+      om-data-mapper:
+        specifier: workspace:*
+        version: link:../packages/om-data-mapper
+    devDependencies:
+      typescript:
+        specifier: ^5.3.3
+        version: 5.9.3
+
   packages/class-transformer: {}
 
   packages/class-validator:

@@ -1,6 +1,9 @@
 # om-data-mapper Examples
 
-This directory contains practical examples demonstrating various features and use cases of om-data-mapper.
+This directory is a private workspace package (`examples`) that contains practical,
+**type-checked** examples of om-data-mapper's mapping and validation APIs. Every example
+imports the published package names (`om-data-mapper`, `@om-data-mapper/class-validator`)
+against the built workspace packages, so it reflects the real, current API.
 
 ## 📁 Directory Structure
 
@@ -14,62 +17,67 @@ Basic examples for getting started with om-data-mapper.
 - **nested-mapping/** - Working with nested objects
   - Deep property access
   - Nested object transformations
-- **array-mapping/** - Array transformations
-  - Mapping arrays of objects
-  - Array element transformations
+- **array-mapping/** - Mapping from multiple related inputs
+  - Combining two source objects (an employee and a job catalog) via a tuple source
 
 ### 02-advanced/
 
 Advanced examples showcasing powerful features.
 
-- **complex-transformations/** - Complex mapping scenarios
-  - Multiple transformations
-  - Conditional mapping
-  - Custom transformers
+- **complex-transformations/** - Nested mapper composition with `@MapWith`
 - **error-handling/** - Error handling patterns
   - Validation
-  - Error collection
-  - Safe mode vs unsafe mode
-- **composition/** - Mapper composition
-  - Nested mappers
-  - Reusable mapping configurations
-  - Combining multiple mappers
+  - Unsafe mode (`@Mapper({ unsafe: true })`) so a throwing transformer propagates
+- **composition/** - Building a target from custom transform functions
+  - Constructing nested target objects
+  - Mapping arrays with `@MapFrom`
 
-## 🚀 Running Examples
+There is also `ergonomic-api.ts` (a tour of the decorator + helper-function API) and
+`validation-complete-example.ts` (a complete `@om-data-mapper/class-validator` walkthrough:
+nested validation, validation groups, and sync/async custom validators).
 
-Each example can be run using ts-node:
+## 🚀 Setup
+
+From the repo root:
 
 ```bash
-# Run a specific example
-npx ts-node examples/01-basic/simple-mapping/index.ts
-
-# Or using npm script (if configured)
-npm run examples
+pnpm install
+pnpm -r build          # build the workspace packages these examples import
 ```
 
-## 📚 Learning Path
+## ✅ Type-checking (verified)
 
-We recommend following this order:
+This is the workflow this package actually provides and CI runs:
 
-1. **Start with basics:**
-   - `01-basic/simple-mapping` - Understand core concepts
-   - `01-basic/nested-mapping` - Learn deep property access
-   - `01-basic/array-mapping` - Work with collections
+```bash
+pnpm --filter examples run typecheck
+```
 
-2. **Move to advanced:**
-   - `02-advanced/complex-transformations` - Master transformations
-   - `02-advanced/error-handling` - Handle errors properly
-   - `02-advanced/composition` - Build reusable mappers
+This runs `tsc --noEmit` against every `*.ts` file in this directory using the built
+`@om-data-mapper/core` / `@om-data-mapper/class-validator` / `om-data-mapper` type
+declarations, so it fails if an example ever drifts from the real API.
 
-## 💡 Tips
+## ▶️ Running an example
 
-- Each example is self-contained and can be run independently
-- Examples include comments explaining key concepts
-- Check the main [README.md](../README.md) for API documentation
-- See [CONTRIBUTING.md](../CONTRIBUTING.md) for adding new examples
+This package has no `tsx`/`ts-node` dependency, so there is no `pnpm --filter examples
+exec tsx <file>` shortcut. To actually execute an example, compile it with `tsc` (matching
+this package's `"type": "module"`) and run the emitted JavaScript with Node:
+
+```bash
+pnpm --filter examples exec tsc \
+  --target ES2022 --module esnext --moduleResolution bundler \
+  --useDefineForClassFields --esModuleInterop --skipLibCheck \
+  --outDir /tmp/examples-build \
+  examples/01-basic/simple-mapping/index.ts
+
+node /tmp/examples-build/index.js
+```
+
+Swap in whichever example file you want to run. Every file above was compiled and run this
+way while writing this package.
 
 ## 🔗 Related Documentation
 
 - [API Documentation](../README.md#api-documentation)
-- [Performance Benchmarks](../benchmarks/README.md)
+- [How to run the benchmark suite](../benchmarks/README.md)
 - [Contributing Guide](../CONTRIBUTING.md)

@@ -1,4 +1,4 @@
-import { Mapper } from '../../src';
+import { Mapper, Map, MapFrom, MapWith, plainToInstance } from 'om-data-mapper';
 
 type Address = {
   street?: string;
@@ -21,20 +21,29 @@ type UserDTO = {
   address?: AddressDTO;
 };
 
-const addressMapper = Mapper.create<Address, AddressDTO>({
-  streetName: 'street',
-  cityName: 'city',
-  fullAddress: function (object) {
-    return `${object.city}, ${object.street}`;
-  },
-});
+@Mapper<Address, AddressDTO>()
+class AddressMapper {
+  @Map('street')
+  streetName!: string;
 
-const userMapper = Mapper.create<User, UserDTO>({
-  fullName: 'name',
-  address: addressMapper,
-});
+  @Map('city')
+  cityName!: string;
 
-const user = {
+  @MapFrom((source: Address) => `${source.city}, ${source.street}`)
+  fullAddress!: string;
+}
+
+@Mapper<User, UserDTO>()
+class UserMapper {
+  @Map('name')
+  fullName!: string;
+
+  @MapWith(AddressMapper)
+  @Map('address')
+  address!: AddressDTO;
+}
+
+const user: User = {
   name: 'John Doe',
   address: {
     street: 'Main St',
@@ -42,7 +51,7 @@ const user = {
   },
 };
 
-const userDTO = userMapper.execute(user);
+const userDTO = plainToInstance<User, UserDTO>(UserMapper, user);
 console.log(userDTO);
 // {
 //   fullName: "John Doe",

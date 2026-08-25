@@ -1,0 +1,18 @@
+{
+  "name": "examples",
+  "private": true,
+  "version": "0.0.0",
+  "description": "om-data-mapper usage examples (not published)",
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "om-data-mapper": "workspace:*",
+    "@om-data-mapper/core": "workspace:*",
+    "@om-data-mapper/class-validator": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.3"
+  }
+}

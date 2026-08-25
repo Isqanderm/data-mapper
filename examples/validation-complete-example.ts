@@ -10,7 +10,7 @@
  * - Sync custom validators (cross-field validation)
  * - Mix of built-in decorators (string, number, date validators)
  *
- * Run with: npx tsx examples/validation-complete-example.ts
+ * See examples/README.md for how to type-check and run this file.
  */
 
 import {
@@ -29,13 +29,11 @@ import {
   ValidateNested,
   validate,
   validateSync,
-} from '../src/compat/class-validator';
-import {
   ValidatorConstraint,
-  ValidatorConstraintInterface,
-  ValidationArguments,
+  type ValidatorConstraintInterface,
+  type ValidationArguments,
   Validate,
-} from '../src/compat/class-validator/decorators/custom';
+} from '@om-data-mapper/class-validator';
 
 // ============================================================================
 // CUSTOM VALIDATORS
@@ -464,8 +462,6 @@ async function main() {
   console.log('  - Built-in decorators (string, number, date, enum, array)');
   console.log('  - Cross-field validation (password confirmation, date comparison)');
   console.log('  - Optional fields (billingAddress, profileUrl)');
-  console.log();
-  console.log('🚀 Performance: 200-600x faster than class-validator!');
   console.log('='.repeat(80));
 }
 

@@ -1,4 +1,4 @@
-import { Mapper } from '../../src';
+import { Mapper, Map, MapFrom, MapWith, plainToInstance } from 'om-data-mapper';
 
 class Country {
   name?: string;
@@ -35,33 +35,56 @@ class UserDTO {
   address?: AddressDTO;
 }
 
-const countryMapper = Mapper.create<Country, CountryDTO>({
-  countryName: 'name',
-  countryCode: 'code',
-});
+@Mapper<Country, CountryDTO>()
+class CountryMapper {
+  @Map('name')
+  countryName!: string;
 
-const addressMapper = Mapper.create<Address, AddressDTO>({
-  streetName: 'street',
-  cityName: 'city',
-  country: countryMapper,
-  fullAddress: (source) => {
+  @Map('code')
+  countryCode!: string;
+}
+
+// `unsafe: true` disables the mapper's internal try/catch so a throwing
+// @MapFrom transformer propagates as a real exception, matching this
+// example's try/catch-around-the-mapper pattern.
+@Mapper<Address, AddressDTO>({ unsafe: true })
+class AddressMapper {
+  @Map('street')
+  streetName!: string;
+
+  @Map('city')
+  cityName!: string;
+
+  @MapWith(CountryMapper)
+  @Map('country')
+  country!: CountryDTO;
+
+  @MapFrom((source: Address) => {
     if (!source.city || !source.street || !source.country?.name) {
       throw new Error('Incomplete address data');
     }
     return `${source.city}, ${source.street}, ${source.country.name}`;
-  },
-});
+  })
+  fullAddress!: string;
+}
 
-const userMapper = Mapper.create<User, UserDTO>({
-  fullName: 'name',
-  isAdult: (source) => {
+@Mapper<User, UserDTO>({ unsafe: true })
+class UserMapper {
+  @Map('name')
+  fullName!: string;
+
+  @MapFrom((source: User) => {
     if (source.age === undefined) {
       throw new Error('Age is required');
     }
     return source.age >= 18;
-  },
-  address: addressMapper,
-});
+  })
+  isAdult!: boolean;
+
+  @MapWith(AddressMapper)
+  @Map('address')
+  address!: AddressDTO;
+}
 
 const source: User = {
   name: 'John Doe',
@@ -90,7 +113,7 @@ const sourceWithError: User = {
 };
 
 try {
-  const target = userMapper.execute(source);
+  const target = plainToInstance<User, UserDTO>(UserMapper, source);
   console.log('Mapped user:', target);
 } catch (error) {
   const e = error as Error;
@@ -98,7 +121,7 @@ try {
 }
 
 try {
-  const targetWithError = userMapper.execute(sourceWithError);
+  const targetWithError = plainToInstance<User, UserDTO>(UserMapper, sourceWithError);
   console.log('Mapped user with error:', targetWithError);
 } catch (error) {
   const e = error as Error;

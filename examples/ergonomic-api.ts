@@ -17,7 +17,7 @@ import {
   plainToInstanceArray,
   tryPlainToInstance,
   getMapper,
-} from '../src/decorators';
+} from '@om-data-mapper/core';
 
 // ============================================================================
 // Example 1: Basic Usage with plainToInstance

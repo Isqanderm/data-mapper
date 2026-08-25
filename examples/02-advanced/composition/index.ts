@@ -1,4 +1,4 @@
-import { Mapper } from '../../src';
+import { Mapper, Map, MapFrom, plainToInstance } from 'om-data-mapper';
 
 class Employee {
   constructor(
@@ -32,21 +32,32 @@ interface EmployeeDTO {
   array: number[];
 }
 
-const employeeMapper = Mapper.create<Employee, EmployeeDTO>({
-  fullName: 'name',
-  emailAddress: 'email',
-  isAdult: (source) => source.age >= 18,
-  address: {
-    city: 'address.city',
-    street: 'address.street',
-    houseNumber: 'address.houseNumber',
+@Mapper<Employee, EmployeeDTO>()
+class EmployeeMapper {
+  @Map('name')
+  fullName!: string;
+
+  @Map('email')
+  emailAddress!: string;
+
+  @MapFrom((source: Employee) => source.age >= 18)
+  isAdult!: boolean;
+
+  @MapFrom((source: Employee) => ({
+    city: source.address.city,
+    street: source.address.street,
+    houseNumber: source.address.houseNumber,
     full: {
-      apartment: 'address.apartment',
-      floor: 'address.floor',
+      apartment: source.address.apartment,
+      floor: source.address.floor,
     },
-  },
-  array: 'array.[].numbers.[0].number',
-});
+  }))
+  address!: EmployeeDTO['address'];
+
+  // Takes the first `number` out of each element's `numbers` array
+  @MapFrom((source: Employee) => source.array.map((item) => item.numbers[0].number))
+  array!: number[];
+}
 
 const employee = new Employee(
   'John Doe',
@@ -62,6 +73,6 @@ const employee = new Employee(
   },
 );
 
-const employeeDTO = employeeMapper.execute(employee);
+const employeeDTO = plainToInstance<Employee, EmployeeDTO>(EmployeeMapper, employee);
 
 console.log(employeeDTO);
