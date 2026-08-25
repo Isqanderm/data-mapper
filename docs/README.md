@@ -29,6 +29,10 @@ Welcome to the `om-data-mapper` documentation! This directory contains comprehen
   - Common patterns and examples
   - Migration guide from class-transformer
 
+#### Troubleshooting
+
+- [Troubleshooting](./troubleshooting.md) — common issues and solutions
+
 ### Internal Architecture
 
 #### Validation JIT Compilation
