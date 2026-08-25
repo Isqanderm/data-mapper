@@ -268,12 +268,8 @@ When you submit a PR, the CI will:
 4. Post a detailed comparison comment on your PR
 5. **Block the PR from merging** if coverage decreases
 
-See the [Coverage Protection Guide](./docs/COVERAGE_PROTECTION.md) for detailed information on:
-
-- How to check coverage locally
-- How to identify uncovered code
-- How to fix coverage issues
-- Best practices for writing tests
+Coverage thresholds are enforced via the `coverage.thresholds` config in
+[`vitest.config.mts`](./vitest.config.mts); run `pnpm test` locally (it runs with coverage enabled) to see your numbers before opening a PR.
 
 ### Writing Tests
 

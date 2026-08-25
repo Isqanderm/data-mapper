@@ -10,7 +10,7 @@ This document explains the internal implementation details of the JIT compilatio
 
 ## Architecture Components
 
-### 1. Metadata Storage (`src/compat/class-validator/engine/metadata.ts`)
+### 1. Metadata Storage (`packages/class-validator/src/engine/metadata.ts`)
 
 The validation system uses **Symbol-based metadata storage** to store validation rules attached to class properties.
 
@@ -55,7 +55,7 @@ interface ValidationConstraint {
 
 ---
 
-### 2. Validator Registry (`src/compat/class-validator/engine/validator-registry.ts`)
+### 2. Validator Registry (`packages/class-validator/src/engine/validator-registry.ts`)
 
 Manages custom validator class instances with caching to avoid repeated instantiation.
 
@@ -86,7 +86,7 @@ export function getValidatorInstance(
 
 ---
 
-### 3. JIT Compiler (`src/compat/class-validator/engine/compiler.ts`)
+### 3. JIT Compiler (`packages/class-validator/src/engine/compiler.ts`)
 
 The core of the validation system - generates optimized validation functions.
 
@@ -280,28 +280,11 @@ if (hasValidationMetadata(value.constructor)) {
 
 ## Performance Characteristics
 
-### Compilation Cost
-
-- **First Call**: ~1-5ms (metadata parsing + code generation + compilation)
-- **Subsequent Calls**: ~0.001ms (cache lookup)
-- **Amortization**: Cost is amortized over thousands of validations
-
-### Execution Performance
-
-Compared to class-validator (interpreted):
-
-| Validation Type     | class-validator | om-data-mapper | Speedup |
-| ------------------- | --------------- | -------------- | ------- |
-| Simple (1 field)    | ~50K ops/sec    | ~500K ops/sec  | **10x** |
-| Complex (10 fields) | ~10K ops/sec    | ~100K ops/sec  | **10x** |
-| Nested objects      | ~5K ops/sec     | ~50K ops/sec   | **10x** |
-| Async validation    | ~8K ops/sec     | ~40K ops/sec   | **5x**  |
-
-### Memory Usage
-
-- **Metadata**: ~1KB per class
-- **Compiled Function**: ~2-10KB per class
-- **Cache Overhead**: Minimal (Map with class references)
+The validator for a class is compiled once, on first use, and the compiled
+function is cached and reused on every subsequent call — there is no
+per-call reflection or metadata re-parsing after that first compilation. For
+measured throughput against class-validator, see
+[`../benchmarks/README.md`](../benchmarks/README.md).
 
 ---
 
@@ -414,7 +397,7 @@ console.timeEnd('execution');
 
 The JIT compilation approach provides:
 
-- ✅ **10x faster** validation than interpreted approaches
+- ✅ **JIT-compiled** - a specialized validation function is compiled once and reused, with no per-call reflection
 - ✅ **Zero runtime overhead** after first compilation
 - ✅ **Type-safe** with full TypeScript support
 - ✅ **Memory efficient** with per-class caching

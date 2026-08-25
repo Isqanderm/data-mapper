@@ -13,7 +13,7 @@ import { plainToClass, Expose, Type } from 'class-transformer';
 // After (om-data-mapper) - Just change the import!
 import { plainToClass, Expose, Type } from 'om-data-mapper/class-transformer-compat';
 
-// Your existing code works exactly the same, but up to 42.7x faster! 🚀
+// Your existing code works exactly the same, backed by JIT compilation instead of interpretation 🚀
 ```
 
 ## Migration Patterns
@@ -273,14 +273,14 @@ class UserMapper {
 
 ## Key Differences
 
-| Feature          | class-transformer           | om-data-mapper           |
-| ---------------- | --------------------------- | ------------------------ |
-| **Metadata**     | Requires `reflect-metadata` | No metadata needed       |
-| **Decorators**   | Legacy experimental         | TC39 Stage 3 (standard)  |
-| **Performance**  | Baseline                    | Up to 42.7x faster       |
-| **Dependencies** | Has dependencies            | Zero dependencies        |
-| **Bundle Size**  | Larger                      | Smaller (tree-shakeable) |
-| **Type Safety**  | Limited                     | Full TypeScript support  |
+| Feature          | class-transformer           | om-data-mapper                       |
+| ---------------- | --------------------------- | ------------------------------------ |
+| **Metadata**     | Requires `reflect-metadata` | No metadata needed                   |
+| **Decorators**   | Legacy experimental         | TC39 Stage 3 (standard)              |
+| **Compilation**  | Interpreted at runtime      | JIT-compiled once, reused thereafter |
+| **Dependencies** | Has dependencies            | Zero dependencies                    |
+| **Bundle Size**  | Larger                      | Smaller (tree-shakeable)             |
+| **Type Safety**  | Limited                     | Full TypeScript support              |
 
 ## Migration Checklist
 
@@ -305,6 +305,11 @@ Update your `tsconfig.json`:
 ```
 
 ## Performance Tips
+
+For measured throughput against class-transformer, see
+[`../benchmarks/README.md`](../benchmarks/README.md), which runs this
+package's own code against the real class-transformer library. The tips
+below help either way:
 
 1. **Reuse mapper instances** instead of creating new ones:
 

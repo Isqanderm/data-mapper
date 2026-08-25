@@ -2,7 +2,7 @@
 
 ## Overview
 
-The `om-data-mapper` validation module provides a high-performance, class-validator-compatible API for validating objects using decorators. It's designed as a **drop-in replacement** for `class-validator` with **10x better performance** through JIT compilation.
+The `om-data-mapper` validation module provides a JIT-compiled, class-validator-compatible API for validating objects using decorators. It's designed as a **drop-in for the supported subset** of `class-validator` — see the [compat table](./compat-class-validator.md) for exact coverage.
 
 ---
 
@@ -1375,7 +1375,7 @@ complexField: string;
 
 ## Migration from class-validator
 
-The API is **100% compatible** with class-validator. Simply change the import:
+The API is a **drop-in for the supported subset** of class-validator — see the [compat table](./compat-class-validator.md) for exact coverage. Simply change the import:
 
 ```typescript
 // Before
@@ -1385,7 +1385,7 @@ import { validate, IsString } from 'class-validator';
 import { validate, IsString } from 'om-data-mapper/class-validator-compat';
 ```
 
-**No other changes needed!** Your existing code will work with 10x better performance.
+**No other changes needed** for the supported subset — JIT compilation happens automatically the first time each class is validated.
 
 ---
 
@@ -1427,8 +1427,8 @@ import { validate, IsString } from 'om-data-mapper/class-validator-compat';
 
 The validation module provides:
 
-- ✅ **10x faster** than class-validator
-- ✅ **100% API compatible** - drop-in replacement
+- ✅ **JIT-compiled** - a specialized validation function is compiled once and reused, with no per-call reflection
+- ✅ **Drop-in for the supported subset** - see the [compat table](./compat-class-validator.md)
 - ✅ **No dependencies** - no reflect-metadata needed
 - ✅ **Type-safe** - full TypeScript support
 - ✅ **Extensible** - custom validators supported
