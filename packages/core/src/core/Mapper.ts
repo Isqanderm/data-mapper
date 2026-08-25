@@ -5,7 +5,8 @@ import { getValueByPath, PathObject } from './utils';
  * BaseMapper - Internal/Legacy API
  *
  * @deprecated For new projects, use the Decorator API (@Mapper, @Map, @Transform, etc.)
- * which provides better performance (112-474% faster) and developer experience.
+ * which compiles mappings to specialized functions instead of interpreting configuration
+ * per call, and offers a better developer experience.
  *
  * This class is maintained for:
  * - Internal use by the Decorator API

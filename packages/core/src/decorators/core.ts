@@ -45,7 +45,7 @@ function cacheKey(key: string, suffix: string): string {
  * This decorator transforms a regular class into a high-performance mapper that uses
  * Just-In-Time (JIT) compilation to generate optimized transformation code. The mapper
  * is compiled once when the class is first instantiated and reused for all subsequent
- * transformations, delivering up to 42.7x better performance than class-transformer.
+ * transformations without per-call metadata interpretation.
  *
  * @template Source - The source object type to transform from
  * @template Target - The target object type to transform to

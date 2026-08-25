@@ -2,12 +2,12 @@
  * # om-data-mapper
  *
  * High-performance TypeScript/JavaScript data mapper with JIT compilation for ultra-fast
- * object transformations. Delivers up to **42.7x better performance** than class-transformer
- * while providing a clean, declarative API with zero runtime dependencies.
+ * object transformations. Compiles mappings to specialized functions instead of interpreting
+ * metadata per call while providing a clean, declarative API with zero runtime dependencies.
  *
  * ## 🚀 Key Features
  *
- * - **🔥 Blazing Fast**: 17.28x faster than class-transformer through JIT compilation
+ * - **🔥 JIT-compiled**: transformations compile once to specialized functions and are reused
  * - **📦 Zero Dependencies**: No reflect-metadata or other runtime dependencies required
  * - **🎨 Modern Decorators**: Uses TC39 Stage 3 decorators (not experimental)
  * - **🔄 Drop-in Replacement**: Compatible with class-transformer and class-validator APIs
@@ -82,7 +82,7 @@
  * // After (om-data-mapper) - Just change the import!
  * import { plainToClass, Expose, Type } from 'om-data-mapper/class-transformer-compat';
  *
- * // Your existing code works exactly the same, but 17.28x faster! 🚀
+ * // Your existing code works the same, backed by compiled transforms
  * ```
  *
  * ## 📚 Core API Overview
