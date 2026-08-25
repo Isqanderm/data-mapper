@@ -6,7 +6,8 @@
   "scripts": {
     "bench": "vitest bench --run",
     "bench:core": "vitest bench --run core",
-    "bench:compat": "vitest bench --run compat"
+    "bench:compat": "vitest bench --run compat",
+    "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
     "@om-data-mapper/core": "workspace:*",

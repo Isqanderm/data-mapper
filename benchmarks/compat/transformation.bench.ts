@@ -91,6 +91,18 @@ function sortedJson(value: unknown): string {
 const omInstance = omPlainToInstance(OmUser, fixture);
 const ctInstance = ctPlainToInstance(CtUser, fixture);
 
+// `omInstance`/`ctInstance` (and `.address` on each) are inferred as the
+// exact class, not `never` — the overloads resolve fine. The `never` shows
+// up only *inside* `if (!(x instanceof X))` below: TS assumes an
+// exact-class-typed value always satisfies `instanceof` its own class, so
+// it narrows the negated branch to the uninhabited type. That's precisely
+// the condition this guard exists to catch if it's ever untrue at runtime,
+// so read the diagnostic value through `unknown` instead of relying on
+// narrowing to prove it can't happen.
+function ctorName(value: unknown): string | undefined {
+  return (value as { constructor?: { name?: string } } | null | undefined)?.constructor?.name;
+}
+
 console.info(
   `[honesty guard] plainToInstance: om -> ${omInstance.constructor.name} ` +
     `(id=${omInstance.id}, address=${omInstance.address?.constructor.name}), ` +
@@ -101,7 +113,7 @@ console.info(
 // (a) om plainToInstance yields instanceof om classes with correct field values
 if (!(omInstance instanceof OmUser)) {
   throw new Error(
-    `honesty guard [plainToInstance/om]: expected instanceof OmUser, got ${omInstance?.constructor?.name}`,
+    `honesty guard [plainToInstance/om]: expected instanceof OmUser, got ${ctorName(omInstance)}`,
   );
 }
 if (omInstance.id !== 1) {
@@ -109,14 +121,14 @@ if (omInstance.id !== 1) {
 }
 if (!(omInstance.address instanceof OmAddress)) {
   throw new Error(
-    `honesty guard [plainToInstance/om]: expected address instanceof OmAddress, got ${omInstance.address?.constructor?.name}`,
+    `honesty guard [plainToInstance/om]: expected address instanceof OmAddress, got ${ctorName(omInstance.address)}`,
   );
 }
 
 // (b) upstream plainToInstance yields instanceof upstream classes with correct field values
 if (!(ctInstance instanceof CtUser)) {
   throw new Error(
-    `honesty guard [plainToInstance/ct]: expected instanceof CtUser, got ${ctInstance?.constructor?.name}`,
+    `honesty guard [plainToInstance/ct]: expected instanceof CtUser, got ${ctorName(ctInstance)}`,
   );
 }
 if (ctInstance.id !== 1) {
@@ -124,7 +136,7 @@ if (ctInstance.id !== 1) {
 }
 if (!(ctInstance.address instanceof CtAddress)) {
   throw new Error(
-    `honesty guard [plainToInstance/ct]: expected address instanceof CtAddress, got ${ctInstance.address?.constructor?.name}`,
+    `honesty guard [plainToInstance/ct]: expected address instanceof CtAddress, got ${ctorName(ctInstance.address)}`,
   );
 }
 
