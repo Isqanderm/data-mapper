@@ -4,6 +4,7 @@
  */
 
 import { updateCompatMetadata } from './metadata';
+import { classToPlain, classToClass, plainToClass } from './functions';
 import type {
   ExposeOptions,
   ExcludeOptions,
@@ -217,8 +218,6 @@ export function TransformClassToPlain(options: ClassTransformOptions = {}) {
 
     return function (this: any, ...args: any[]) {
       const result = target.call(this, ...args);
-      // Import classToPlain dynamically to avoid circular dependency
-      const { classToPlain } = require('./functions');
       return classToPlain(result, options);
     };
   };
@@ -236,8 +235,6 @@ export function TransformClassToClass(options: ClassTransformOptions = {}) {
 
     return function (this: any, ...args: any[]) {
       const result = target.call(this, ...args);
-      // Import classToClass dynamically to avoid circular dependency
-      const { classToClass } = require('./functions');
       return classToClass(result, options);
     };
   };
@@ -255,8 +252,6 @@ export function TransformPlainToClass(classType: any, options: ClassTransformOpt
 
     return function (this: any, ...args: any[]) {
       const result = target.call(this, ...args);
-      // Import plainToClass dynamically to avoid circular dependency
-      const { plainToClass } = require('./functions');
       return plainToClass(classType, result, options);
     };
   };

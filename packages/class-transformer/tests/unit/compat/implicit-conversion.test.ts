@@ -51,6 +51,7 @@ describe('enableImplicitConversion', () => {
         { enableImplicitConversion: true },
       );
       expect(dto.scores).toEqual([1, 2]);
+      expect(dto.dates).toEqual([]);
     });
 
     it('coerces date arrays per element', () => {
@@ -61,11 +62,31 @@ describe('enableImplicitConversion', () => {
       );
       expect(dto.dates).toHaveLength(1);
       expect(dto.dates[0]).toBeInstanceOf(Date);
+      expect(dto.scores).toEqual([]);
     });
 
     it('leaves arrays untouched without the flag', () => {
       const dto = plainToInstance(ArrayDto, { scores: ['1'], dates: [] });
       expect(dto.scores).toEqual(['1']);
+    });
+
+    it('passes null/undefined array elements through under a primitive @Type', () => {
+      const dto = plainToInstance(
+        ArrayDto,
+        { scores: ['1', null, undefined, '2'], dates: [] },
+        { enableImplicitConversion: true },
+      );
+      expect(dto.scores).toEqual([1, null, undefined, 2]);
+    });
+
+    it('coerces a plain-object element under a primitive @Type via Number() (NaN, documented current behavior)', () => {
+      const dto = plainToInstance(
+        ArrayDto,
+        { scores: ['1', {}], dates: [] },
+        { enableImplicitConversion: true },
+      );
+      expect(dto.scores[0]).toBe(1);
+      expect(dto.scores[1]).toBeNaN();
     });
   });
 });
