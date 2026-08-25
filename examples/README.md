@@ -28,9 +28,9 @@ Advanced examples showcasing powerful features.
 - **error-handling/** - Error handling patterns
   - Validation
   - Unsafe mode (`@Mapper({ unsafe: true })`) so a throwing transformer propagates
-- **composition/** - Building a target from custom transform functions
-  - Constructing nested target objects
-  - Mapping arrays with `@MapFrom`
+- **composition/** - Nested mappers and reusable mapping configurations
+  - A standalone `AddressMapper` composed into the outer mapper via `@MapWith`
+  - Combining `@MapWith` composition with `@MapFrom` (e.g. array flattening)
 
 There is also `ergonomic-api.ts` (a tour of the decorator + helper-function API) and
 `validation-complete-example.ts` (a complete `@om-data-mapper/class-validator` walkthrough:
@@ -47,7 +47,7 @@ pnpm -r build          # build the workspace packages these examples import
 
 ## ✅ Type-checking (verified)
 
-This is the workflow this package actually provides and CI runs:
+This is the workflow this package provides, verified locally with:
 
 ```bash
 pnpm --filter examples run typecheck
@@ -61,20 +61,25 @@ declarations, so it fails if an example ever drifts from the real API.
 
 This package has no `tsx`/`ts-node` dependency, so there is no `pnpm --filter examples
 exec tsx <file>` shortcut. To actually execute an example, compile it with `tsc` (matching
-this package's `"type": "module"`) and run the emitted JavaScript with Node:
+this package's `"type": "module"`) and run the emitted JavaScript with Node. Run both
+commands from the repo root; `pnpm --filter examples exec` changes into `examples/` before
+running `tsc`, so the source path and `--outDir` are given relative to `examples/`, while
+`node` is invoked from the repo root against the `examples/`-relative output path so it can
+still resolve `examples/node_modules`:
 
 ```bash
 pnpm --filter examples exec tsc \
   --target ES2022 --module esnext --moduleResolution bundler \
   --useDefineForClassFields --esModuleInterop --skipLibCheck \
-  --outDir /tmp/examples-build \
-  examples/01-basic/simple-mapping/index.ts
+  --outDir .tmp-build \
+  01-basic/simple-mapping/index.ts
 
-node /tmp/examples-build/index.js
+node examples/.tmp-build/index.js
 ```
 
-Swap in whichever example file you want to run. Every file above was compiled and run this
-way while writing this package.
+Swap in whichever example file you want to run (the `--outDir`/`node` path must match the
+file you compiled). Delete `examples/.tmp-build/` afterwards — it's a scratch directory, not
+checked in. Every example file was compiled and run this way while writing this package.
 
 ## 🔗 Related Documentation
 
