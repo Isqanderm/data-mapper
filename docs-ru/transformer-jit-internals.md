@@ -142,13 +142,13 @@ interface PropertyMetadata {
 ```typescript
 // Декоратор: @Map('user.profile.email')
 // Сгенерированный код:
-target.email = source?.user?.profile?.email;
+target['email'] = source?.['user']?.['profile']?.['email'];
 
 // Со значением по умолчанию: @Map('score') @Default(0)
-target.score = source?.score ?? cache['__defValues']['score'];
+target['score'] = source?.['score'] ?? cache['__defValues']['score'];
 
 // С трансформацией значения: @Map('name') @Transform(v => v.toUpperCase())
-target.name = cache['name__valueTransform'](source?.name);
+target['name'] = cache['name__valueTransform'](source?.['name']);
 ```
 
 **Оптимизация**: Использует optional chaining (`?.`) вместо try-catch для безопасности от null.
@@ -160,10 +160,10 @@ target.name = cache['name__valueTransform'](source?.name);
 ```typescript
 // Декоратор: @MapFrom((src) => src.firstName + ' ' + src.lastName)
 // Сгенерированный код:
-target.fullName = cache['fullName__transformer'](source);
+target['fullName'] = cache['fullName__transformer'](source);
 
 // Со значением по умолчанию: @MapFrom(fn) @Default('Unknown')
-target.fullName = cache['fullName__transformer'](source) ?? cache['__defValues']['fullName'];
+target['fullName'] = cache['fullName__transformer'](source) ?? cache['__defValues']['fullName'];
 
 // Кодогенерация условия существует внутри (`PropertyMapping.condition`), но
 // сегодня ни один публичный декоратор её не задаёт — функция `@MapFrom`
@@ -181,8 +181,8 @@ target.fullName = cache['fullName__transformer'](source) ?? cache['__defValues']
 ```typescript
 // Декораторы: @MapWith(AddressMapper) @Map('address')
 // Сгенерированный код:
-const __nestedSource = source?.address;
-target.address =
+const __nestedSource = source?.['address'];
+target['address'] =
   __nestedSource !== undefined && __nestedSource !== null
     ? cache['address__nestedMapper'].transform(__nestedSource)
     : undefined;
@@ -197,7 +197,7 @@ target.address =
 ```typescript
 // Декоратор: @MapFrom((src) => src.items.map(i => i.name))
 // Сгенерированный код:
-target.itemNames = cache['itemNames__transformer'](source);
+target['itemNames'] = cache['itemNames__transformer'](source);
 ```
 
 Отдельного пути кодогенерации для массивов вложенных мапперов не существует —
@@ -217,17 +217,21 @@ items!: ItemTarget[];
 
 ```typescript
 function generateSafePropertyAccess(sourcePath: string): string {
-  const parts = sourcePath.split('.');
-  if (parts.length === 1) {
-    return sourcePath;
-  }
-  return parts.join('?.');
+  return sourcePath
+    .split('.')
+    .map((part) => `?.[${JSON.stringify(part)}]`)
+    .join('');
 }
 
+// Возвращённая строка включает ведущий аксессор - вызывающий код формирует
+// `source${generateSafePropertyAccess(path)}`. Каждый ключ - это bracket-доступ
+// с JSON-экранированием, поэтому ключи с дефисами, кавычками и юникодом - это
+// данные, а не код.
+
 // Примеры:
-// 'name' → 'name'
-// 'user.name' → 'user?.name'
-// 'user.profile.email' → 'user?.profile?.email'
+// 'name' → '?.["name"]'
+// 'user.name' → '?.["user"]?.["name"]'
+// 'user.profile.email' → '?.["user"]?.["profile"]?.["email"]'
 ```
 
 **Почему Optional Chaining?**
@@ -247,8 +251,8 @@ function generateSafePropertyAccess(sourcePath: string): string {
 
 ```typescript
 // Сгенерированный код (небезопасный режим):
-target.name = source?.firstName;
-target.email = source?.user?.email;
+target['name'] = source?.['firstName'];
+target['email'] = source?.['user']?.['email'];
 ```
 
 **Использовать когда**: Данные доверенные и производительность критична.
@@ -260,13 +264,13 @@ target.email = source?.user?.email;
 ```typescript
 // Сгенерированный код (безопасный режим):
 try {
-  target.name = source?.firstName;
+  target['name'] = source?.['firstName'];
 } catch (error) {
   __errors.push("Mapping error at field 'name': " + error.message);
 }
 
 try {
-  target.email = source?.user?.email;
+  target['email'] = source?.['user']?.['email'];
 } catch (error) {
   __errors.push("Mapping error at field 'email': " + error.message);
 }
@@ -319,7 +323,7 @@ const cache = {
 target.name = transformName(source.firstName);
 
 // ✅ Быстро: Встроенный код
-target.name = source?.firstName;
+target['name'] = source?.['firstName'];
 ```
 
 ### 4. **Условная компиляция**
@@ -345,7 +349,7 @@ if (source && source.user && source.user.profile) {
 }
 
 // ✅ Быстро: Optional chaining
-target.email = source?.user?.profile?.email;
+target['email'] = source?.['user']?.['profile']?.['email'];
 ```
 
 ---
@@ -421,8 +425,8 @@ class UserMapper {
 
 // Сгенерированный код:
 function transform(source, target, __errors, cache) {
-  target.name = source?.firstName;
-  target.email = source?.email;
+  target['name'] = source?.['firstName'];
+  target['email'] = source?.['email'];
 }
 ```
 
@@ -444,9 +448,9 @@ class UserMapper {
 
 // Сгенерированный код:
 function transform(source, target, __errors, cache) {
-  target.fullName = cache['fullName__transformer'](source);
-  target.isAdult = cache['isAdult__transformer'](source);
-  target.score = source?.score ?? cache['__defValues']['score'];
+  target['fullName'] = cache['fullName__transformer'](source);
+  target['isAdult'] = cache['isAdult__transformer'](source);
+  target['score'] = source?.['score'] ?? cache['__defValues']['score'];
 }
 ```
 
@@ -461,7 +465,7 @@ class UserMapper {
 
 // Сгенерированный код:
 function transform(source, target, __errors, cache) {
-  target.features = cache['features__transformer'](source);
+  target['features'] = cache['features__transformer'](source);
 }
 ```
 
@@ -477,8 +481,8 @@ class UserMapper {
 
 // Сгенерированный код:
 function transform(source, target, __errors, cache) {
-  const __nestedSource = source?.address;
-  target.address =
+  const __nestedSource = source?.['address'];
+  target['address'] =
     __nestedSource !== undefined && __nestedSource !== null
       ? cache['address__nestedMapper'].transform(__nestedSource)
       : undefined;

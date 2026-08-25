@@ -140,13 +140,13 @@ Generates safe property access with optional chaining:
 ```typescript
 // Decorator: @Map('user.profile.email')
 // Generated code:
-target.email = source?.user?.profile?.email;
+target['email'] = source?.['user']?.['profile']?.['email'];
 
 // With default value: @Map('score') @Default(0)
-target.score = source?.score ?? cache['__defValues']['score'];
+target['score'] = source?.['score'] ?? cache['__defValues']['score'];
 
 // With value transform: @Map('name') @Transform(v => v.toUpperCase())
-target.name = cache['name__valueTransform'](source?.name);
+target['name'] = cache['name__valueTransform'](source?.['name']);
 ```
 
 **Optimization**: Uses optional chaining (`?.`) instead of try-catch for null safety.
@@ -158,10 +158,10 @@ Stores transformer in cache and calls it:
 ```typescript
 // Decorator: @MapFrom((src) => src.firstName + ' ' + src.lastName)
 // Generated code:
-target.fullName = cache['fullName__transformer'](source);
+target['fullName'] = cache['fullName__transformer'](source);
 
 // With default: @MapFrom(fn) @Default('Unknown')
-target.fullName = cache['fullName__transformer'](source) ?? cache['__defValues']['fullName'];
+target['fullName'] = cache['fullName__transformer'](source) ?? cache['__defValues']['fullName'];
 
 // Conditional codegen exists internally (`PropertyMapping.condition`) but no
 // public decorator sets it today — @MapFrom's function receives the full
@@ -178,8 +178,8 @@ Calls the nested mapper's own compiled `transform()`:
 ```typescript
 // Decorators: @MapWith(AddressMapper) @Map('address')
 // Generated code:
-const __nestedSource = source?.address;
-target.address =
+const __nestedSource = source?.['address'];
+target['address'] =
   __nestedSource !== undefined && __nestedSource !== null
     ? cache['address__nestedMapper'].transform(__nestedSource)
     : undefined;
@@ -194,7 +194,7 @@ Handles array transformations:
 ```typescript
 // Decorator: @MapFrom((src) => src.items.map(i => i.name))
 // Generated code:
-target.itemNames = cache['itemNames__transformer'](source);
+target['itemNames'] = cache['itemNames__transformer'](source);
 ```
 
 There is no separate array-of-nested-mappers codegen path — arrays of nested
@@ -214,17 +214,20 @@ The `generateSafePropertyAccess()` function converts dot-notation paths to optio
 
 ```typescript
 function generateSafePropertyAccess(sourcePath: string): string {
-  const parts = sourcePath.split('.');
-  if (parts.length === 1) {
-    return sourcePath;
-  }
-  return parts.join('?.');
+  return sourcePath
+    .split('.')
+    .map((part) => `?.[${JSON.stringify(part)}]`)
+    .join('');
 }
 
+// The returned string includes the leading accessor - callers emit
+// `source${generateSafePropertyAccess(path)}`. Every key is JSON-escaped
+// bracket access, so kebab-case, quotes, and unicode keys are data, never code.
+
 // Examples:
-// 'name' → 'name'
-// 'user.name' → 'user?.name'
-// 'user.profile.email' → 'user?.profile?.email'
+// 'name' → '?.["name"]'
+// 'user.name' → '?.["user"]?.["name"]'
+// 'user.profile.email' → '?.["user"]?.["profile"]?.["email"]'
 ```
 
 **Why Optional Chaining?**
@@ -244,8 +247,8 @@ No error handling - maximum performance:
 
 ```typescript
 // Generated code (unsafe mode):
-target.name = source?.firstName;
-target.email = source?.user?.email;
+target['name'] = source?.['firstName'];
+target['email'] = source?.['user']?.['email'];
 ```
 
 **Use when**: Data is trusted and performance is critical.
@@ -257,13 +260,13 @@ Wraps each property in try-catch:
 ```typescript
 // Generated code (safe mode):
 try {
-  target.name = source?.firstName;
+  target['name'] = source?.['firstName'];
 } catch (error) {
   __errors.push("Mapping error at field 'name': " + error.message);
 }
 
 try {
-  target.email = source?.user?.email;
+  target['email'] = source?.['user']?.['email'];
 } catch (error) {
   __errors.push("Mapping error at field 'email': " + error.message);
 }
@@ -316,7 +319,7 @@ Simple operations are inlined instead of function calls:
 target.name = transformName(source.firstName);
 
 // ✅ Fast: Inlined
-target.name = source?.firstName;
+target['name'] = source?.['firstName'];
 ```
 
 ### 4. **Conditional Compilation**
@@ -342,7 +345,7 @@ if (source && source.user && source.user.profile) {
 }
 
 // ✅ Fast: Optional chaining
-target.email = source?.user?.profile?.email;
+target['email'] = source?.['user']?.['profile']?.['email'];
 ```
 
 ---
@@ -416,8 +419,8 @@ class UserMapper {
 
 // Generated code:
 function transform(source, target, __errors, cache) {
-  target.name = source?.firstName;
-  target.email = source?.email;
+  target['name'] = source?.['firstName'];
+  target['email'] = source?.['email'];
 }
 ```
 
@@ -439,9 +442,9 @@ class UserMapper {
 
 // Generated code:
 function transform(source, target, __errors, cache) {
-  target.fullName = cache['fullName__transformer'](source);
-  target.isAdult = cache['isAdult__transformer'](source);
-  target.score = source?.score ?? cache['__defValues']['score'];
+  target['fullName'] = cache['fullName__transformer'](source);
+  target['isAdult'] = cache['isAdult__transformer'](source);
+  target['score'] = source?.['score'] ?? cache['__defValues']['score'];
 }
 ```
 
@@ -456,7 +459,7 @@ class UserMapper {
 
 // Generated code:
 function transform(source, target, __errors, cache) {
-  target.features = cache['features__transformer'](source);
+  target['features'] = cache['features__transformer'](source);
 }
 ```
 
@@ -472,8 +475,8 @@ class UserMapper {
 
 // Generated code:
 function transform(source, target, __errors, cache) {
-  const __nestedSource = source?.address;
-  target.address =
+  const __nestedSource = source?.['address'];
+  target['address'] =
     __nestedSource !== undefined && __nestedSource !== null
       ? cache['address__nestedMapper'].transform(__nestedSource)
       : undefined;

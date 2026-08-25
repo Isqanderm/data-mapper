@@ -181,5 +181,6 @@ One limitation follows from that source-text comparison: two applications of the
 parameterized inline factory** on one property (`@MinLen(3) @MinLen(5)`, where each application
 registers `{ validate: (v) => v.length >= n }`) produce identical source text and collapse into a
 single registration. Give each application a distinct `name`, or use distinct `constraints`, to keep
-both. Hoisting the validator object out of `addInitializer` is also worth doing: it makes the
-per-construction dedup exact (by reference) rather than source-text-based.
+both. Hoisting the validator object out of `addInitializer` does not change this: the dedup check
+compares by reference first as a fast path, then falls back to comparing `validate.toString()`, and
+equal references always imply equal source text — so hoisting has no effect a consumer can observe.
