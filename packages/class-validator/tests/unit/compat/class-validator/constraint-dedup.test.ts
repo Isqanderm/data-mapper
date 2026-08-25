@@ -53,4 +53,13 @@ describe('constraint metadata does not grow per instantiation', () => {
     expect(errors).toHaveLength(1);
     expect(Object.keys(errors[0].constraints!)).toEqual(['matches']);
   });
+
+  it('stores metadata under the global symbol registry key (survives duplicate installs)', () => {
+    class Dto {
+      @Matches(/^a$/)
+      s!: string;
+    }
+    new Dto();
+    expect((Dto as any)[Symbol.for('om-data-mapper:validation-metadata')]).toBeDefined();
+  });
 });

@@ -12,7 +12,7 @@ import type {
 /**
  * Symbol for storing validation metadata
  */
-const VALIDATION_METADATA = Symbol('validation:metadata');
+const VALIDATION_METADATA = Symbol.for('om-data-mapper:validation-metadata');
 
 /**
  * Get or create validation metadata for a class
