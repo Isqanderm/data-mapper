@@ -17,7 +17,7 @@ import {
   ValidateNested,
   IsArray,
   IsNotEmpty,
-} from '@om-data-mapper/class-validator/decorators';
+} from '@om-data-mapper/class-validator';
 import { Type } from '@om-data-mapper/class-transformer';
 
 // Baseline performance values (in milliseconds)

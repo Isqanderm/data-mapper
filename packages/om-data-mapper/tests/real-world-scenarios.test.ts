@@ -26,7 +26,7 @@ import {
   IsURL,
   IsMobilePhone,
   IsPostalCode,
-} from '@om-data-mapper/class-validator/decorators';
+} from '@om-data-mapper/class-validator';
 import { Type, plainToInstance } from '@om-data-mapper/class-transformer';
 
 describe('Real-World Scenarios - User Registration', () => {
