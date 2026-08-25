@@ -151,7 +151,7 @@ If you want to see how these choices actually affect your workload, run `pnpm be
 
 **Problem:** Code that worked with `class-transformer` doesn't behave the same after switching.
 
-**Solution 1:** Use the compatibility layer for a drop-in replacement — only the import path changes:
+**Solution 1:** Use the compatibility layer — it's a drop-in replacement for the supported subset of the class-transformer API (only the import path changes for covered decorators/functions); see the [compat table](./compat-class-transformer.md) for what's covered:
 
 ```ts
 // Before:
