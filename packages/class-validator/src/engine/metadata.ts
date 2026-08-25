@@ -143,8 +143,8 @@ export function markPropertyAsNested(target: any, propertyKey: string | symbol):
  * Get all validation metadata for a class instance
  */
 export function getClassValidationMetadata(instance: any): ClassValidationMetadata | undefined {
-  const constructor = instance.constructor;
-  return constructor[VALIDATION_METADATA];
+  const constructor = instance?.constructor;
+  return constructor ? constructor[VALIDATION_METADATA] : undefined;
 }
 
 /**
