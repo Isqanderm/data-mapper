@@ -27,14 +27,14 @@
 
 ## API
 
-| API                                                                        | Статус | Примечания                                                                                                                                            |
-| -------------------------------------------------------------------------- | ------ | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
-| validate / validateSync / validateOrReject                                 | ✅     | плюс отсутствующие в апстриме `validateMany` / `validateManySync` / `validateOrRejectSync`                                                            |
-| registerDecorator                                                          | ✅     | должен вызываться изнутри TC39 `addInitializer` (см. пример ниже); контекста декоратора legacy `reflect-metadata`, к которому можно подключиться, нет |
-| getMetadataStorage                                                         | ⚠️     | минимальный фасад: реализован только `getTargetValidationMetadatas(target)`; нет `addValidationMetadata`, `groupedValidationMetadatas` и т. д.        |
-| ValidationError.target/value/children/constraints                          | ✅     | `contexts` **не** реализовано — у `ValidationError` нет поля `contexts`                                                                               |
-| message как функция                                                        | ✅     | вызывается с `{ value, constraints, targetName, object, property }` (`ValidationArguments`)                                                           |
-| шаблонизация `$property` / `$value` / `$constraint` в строковых сообщениях | ❌     | строковые сообщения используются буквально; используйте вместо этого функцию-сообщение                                                                |
+| API                                                                        | Статус | Примечания                                                                                                                                                                                                                                                     |
+| -------------------------------------------------------------------------- | ------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| validate / validateSync / validateOrReject                                 | ✅     | плюс отсутствующие в апстриме `validateMany` / `validateManySync` / `validateOrRejectSync`                                                                                                                                                                     |
+| registerDecorator                                                          | ✅     | должен вызываться изнутри TC39 `addInitializer` (см. пример ниже); контекста декоратора legacy `reflect-metadata`, к которому можно подключиться, нет. Ключи ошибок берутся из зарегистрированного имени — см. «Ключи ошибок для пользовательских валидаторов» |
+| getMetadataStorage                                                         | ⚠️     | минимальный фасад: реализован только `getTargetValidationMetadatas(target)`; нет `addValidationMetadata`, `groupedValidationMetadatas` и т. д.                                                                                                                 |
+| ValidationError.target/value/children/constraints                          | ✅     | `contexts` **не** реализовано — у `ValidationError` нет поля `contexts`                                                                                                                                                                                        |
+| message как функция                                                        | ✅     | вызывается с `{ value, constraints, targetName, object, property }` (`ValidationArguments`)                                                                                                                                                                    |
+| шаблонизация `$property` / `$value` / `$constraint` в строковых сообщениях | ❌     | строковые сообщения используются буквально; используйте вместо этого функцию-сообщение                                                                                                                                                                         |
 
 ## Декораторы
 
@@ -143,3 +143,29 @@ class Dto {
   lastName: string = 'Li';
 }
 ```
+
+### Ключи ошибок для пользовательских валидаторов
+
+Как и в upstream, валидатор-класс сообщает об ошибке под своим **зарегистрированным именем**, а не
+под общим ключом `custom`. Имя определяется в следующем порядке:
+
+1. явное `name`, переданное в `registerDecorator({ name })`;
+2. `@ValidatorConstraint({ name })` на классе-ограничении;
+3. имя класса со строчной первой буквой (`IsLongerThanConstraint` → `isLongerThanConstraint`).
+
+Это работает и для `registerDecorator({ validator: SomeConstraintClass })`, и для
+`@Validate(SomeConstraintClass)` (использует шаги 2–3) — одинаково в `validate` и `validateSync`:
+
+```typescript
+const errors = validateSync(dto);
+errors[0].constraints; // { isLongerThan: 'lastName must be longer than firstName' }
+```
+
+Имя, не являющееся корректным JavaScript-идентификатором, откатывается к ключу `custom`. **Инлайновый**
+объект-валидатор, зарегистрированный без `name`, по-прежнему сообщает об ошибке под ключом
+`customValidation` — передайте `name` в `registerDecorator`, если нужен конкретный ключ.
+
+Повторные регистрации дедуплицируются по идентичности валидатора — классу-ограничению либо имени
+инлайнового валидатора вместе с исходным кодом его функции `validate` — и по массиву `constraints`.
+Поэтому повторный запуск того же `addInitializer` при каждом создании экземпляра не наращивает
+метаданные, а две действительно разные регистрации на одном свойстве сохраняются и обе применяются.

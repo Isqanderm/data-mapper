@@ -104,8 +104,8 @@ describe('Custom Validator Classes', () => {
       const invalidErrors = validateSync(invalid);
       expect(invalidErrors).toHaveLength(1);
       expect(invalidErrors[0].property).toBe('lastName');
-      expect(invalidErrors[0].constraints).toHaveProperty('custom');
-      expect(invalidErrors[0].constraints!.custom).toContain('must be longer than');
+      expect(invalidErrors[0].constraints).toHaveProperty('isLongerThan');
+      expect(invalidErrors[0].constraints!.isLongerThan).toContain('must be longer than');
     });
 
     it('should pass ValidationArguments correctly', () => {
@@ -131,7 +131,7 @@ describe('Custom Validator Classes', () => {
       const invalidErrors = validateSync(invalid);
       expect(invalidErrors).toHaveLength(1);
       expect(invalidErrors[0].property).toBe('confirmPassword');
-      expect(invalidErrors[0].constraints!.custom).toContain('must be equal to password');
+      expect(invalidErrors[0].constraints!.isEqualTo).toContain('must be equal to password');
     });
 
     it('should use custom message when provided', () => {
@@ -145,7 +145,7 @@ describe('Custom Validator Classes', () => {
 
       const errors = validateSync(invalid);
       expect(errors).toHaveLength(1);
-      expect(errors[0].constraints!.custom).toBe('Price must be positive');
+      expect(errors[0].constraints!.isPositive).toBe('Price must be positive');
     });
 
     it('should handle validator without defaultMessage', () => {
@@ -159,7 +159,7 @@ describe('Custom Validator Classes', () => {
 
       const errors = validateSync(invalid);
       expect(errors).toHaveLength(1);
-      expect(errors[0].constraints).toHaveProperty('custom');
+      expect(errors[0].constraints).toHaveProperty('isPositive');
     });
 
     it('should cache validator instances', () => {
@@ -208,7 +208,7 @@ describe('Custom Validator Classes', () => {
       const invalidErrors = await validate(invalid);
       expect(invalidErrors).toHaveLength(1);
       expect(invalidErrors[0].property).toBe('username');
-      expect(invalidErrors[0].constraints!.custom).toContain('is already taken');
+      expect(invalidErrors[0].constraints!.isUniqueUsername).toContain('is already taken');
     });
 
     it('should handle mixed sync and async custom validators', async () => {

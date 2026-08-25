@@ -99,6 +99,9 @@ export function Validate(
       type: 'custom',
       value: {
         constraintClass,
+        name:
+          (constraintClass as any).__validatorMetadata?.name ||
+          constraintClass.name.charAt(0).toLowerCase() + constraintClass.name.slice(1),
         constraints: constraints || [],
       },
       message: options?.message,

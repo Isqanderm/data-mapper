@@ -24,21 +24,39 @@ export interface RegisterDecoratorOptions {
   async?: boolean;
 }
 
+function lowerFirst(name: string): string {
+  return name.charAt(0).toLowerCase() + name.slice(1);
+}
+
+function sameConstraints(a: any[] | undefined, b: any[]): boolean {
+  const left = a || [];
+  return left.length === b.length && left.every((item, i) => item === b[i]);
+}
+
 export function registerDecorator(args: RegisterDecoratorOptions): void {
   const { validator } = args;
+  const constraints = args.constraints || [];
 
   // addInitializer runs on every instance construction; guard against
-  // re-registering the same logical constraint on repeated instantiation.
+  // re-registering the same logical constraint on repeated instantiation —
+  // without silently swallowing genuinely different registrations.
   const existingConstraints = getValidationMetadata(args.target).properties.get(
     args.propertyName,
   )?.constraints;
   if (existingConstraints) {
     const isDuplicate = existingConstraints.some((existing) => {
       if (typeof validator === 'function') {
-        return existing.type === 'custom' && existing.value?.constraintClass === validator;
+        return (
+          existing.type === 'custom' &&
+          existing.value?.constraintClass === validator &&
+          sameConstraints(existing.value?.constraints, constraints)
+        );
       }
       return (
-        existing.type === 'validateBy' && existing.value?.name === (args.name || 'customValidation')
+        existing.type === 'validateBy' &&
+        existing.value?.name === (args.name || 'customValidation') &&
+        existing.value?.validatorSource === validator.validate.toString() &&
+        sameConstraints(existing.value?.constraints, constraints)
       );
     });
     if (isDuplicate) return;
@@ -50,7 +68,9 @@ export function registerDecorator(args: RegisterDecoratorOptions): void {
       type: 'custom',
       value: {
         constraintClass: validator,
-        constraints: args.constraints || [],
+        name:
+          args.name || (validator as any).__validatorMetadata?.name || lowerFirst(validator.name),
+        constraints,
       },
       message: args.options?.message,
       groups: args.options?.groups,
@@ -65,7 +85,8 @@ export function registerDecorator(args: RegisterDecoratorOptions): void {
         validator: (value: any, validationArgs?: ValidationArguments) =>
           validator.validate(value, validationArgs),
         defaultMessage: validator.defaultMessage?.bind(validator),
-        constraints: args.constraints || [],
+        validatorSource: validator.validate.toString(),
+        constraints,
       },
       message: args.options?.message,
       groups: args.options?.groups,

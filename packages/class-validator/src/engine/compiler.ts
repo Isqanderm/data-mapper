@@ -26,13 +26,13 @@ const compiledValidatorsCache = new Map<any, CompiledValidator>();
 const compiledAsyncValidatorsCache = new Map<any, AsyncCompiledValidator>();
 
 /**
- * Matches a valid JS identifier, used to decide whether a validateBy
- * constraint's raw name is safe to use as an error-object property key.
+ * Matches a valid JS identifier, used to decide whether a validateBy or
+ * custom constraint's raw name is safe to use as an error-object property key.
  */
 const IDENTIFIER_REGEX = /^[A-Za-z_$][A-Za-z0-9_$]*$/;
 
 /**
- * Sanitize a validateBy validator's raw name into the key that will
+ * Sanitize a custom/validateBy validator's raw name into the key that will
  * actually be used on the generated error object: the name itself when
  * it's a valid identifier, otherwise the 'custom' fallback. Must be kept
  * in sync between the emitted error keys and the stopAtFirstError order
@@ -590,7 +590,7 @@ function generateAsyncPropertyValidation(
     metadata.constraints.map((c) => {
       if (c.type === 'validateBy')
         return sanitizeValidatorName((c.value && c.value.name) || 'custom');
-      if (c.type === 'custom') return 'custom';
+      if (c.type === 'custom') return sanitizeValidatorName((c.value && c.value.name) || 'custom');
       return c.type;
     }),
   );
@@ -1645,6 +1645,11 @@ function generateConstraintCheck(
           'validation failed',
         );
         const hasExplicitMessage = constraint.message != null;
+        // Error key mirrors upstream class-validator: the registered
+        // constraint name, not a hard-coded 'custom'.
+        const customKey = sanitizeValidatorName(
+          (constraint.value && constraint.value.name) || 'custom',
+        );
         lines.push(`${indent}// Custom validator class`);
         lines.push(`${indent}{`);
         lines.push(
@@ -1664,14 +1669,14 @@ function generateConstraintCheck(
         lines.push(`${indent}  const result = validatorInstance.validate(${valueName}, args);`);
         lines.push(`${indent}  if (!result) {`);
         if (hasExplicitMessage) {
-          lines.push(`${indent}    ${errorsName}.custom = ${errorMsg};`);
+          lines.push(`${indent}    ${errorsName}.${customKey} = ${errorMsg};`);
         } else {
           lines.push(`${indent}    if (validatorInstance.defaultMessage) {`);
           lines.push(
-            `${indent}      ${errorsName}.custom = validatorInstance.defaultMessage(args);`,
+            `${indent}      ${errorsName}.${customKey} = validatorInstance.defaultMessage(args);`,
           );
           lines.push(`${indent}    } else {`);
-          lines.push(`${indent}      ${errorsName}.custom = ${errorMsg};`);
+          lines.push(`${indent}      ${errorsName}.${customKey} = ${errorMsg};`);
           lines.push(`${indent}    }`);
         }
         lines.push(`${indent}  }`);
@@ -1818,6 +1823,11 @@ function generateAsyncConstraintCheck(
       'validation failed',
     );
     const hasExplicitMessage = constraint.message != null;
+    // Error key mirrors upstream class-validator: the registered
+    // constraint name, not a hard-coded 'custom'.
+    const customKey = sanitizeValidatorName(
+      (constraint.value && constraint.value.name) || 'custom',
+    );
     lines.push(`${indent}// Custom validator class (potentially async)`);
     lines.push(`${indent}const ${taskVarName} = (async () => {`);
     lines.push(
@@ -1837,12 +1847,14 @@ function generateAsyncConstraintCheck(
     lines.push(`${indent}  const result = await validatorInstance.validate(${valueName}, args);`);
     lines.push(`${indent}  if (!result) {`);
     if (hasExplicitMessage) {
-      lines.push(`${indent}    ${errorsName}.custom = ${errorMsg};`);
+      lines.push(`${indent}    ${errorsName}.${customKey} = ${errorMsg};`);
     } else {
       lines.push(`${indent}    if (validatorInstance.defaultMessage) {`);
-      lines.push(`${indent}      ${errorsName}.custom = validatorInstance.defaultMessage(args);`);
+      lines.push(
+        `${indent}      ${errorsName}.${customKey} = validatorInstance.defaultMessage(args);`,
+      );
       lines.push(`${indent}    } else {`);
-      lines.push(`${indent}      ${errorsName}.custom = ${errorMsg};`);
+      lines.push(`${indent}      ${errorsName}.${customKey} = ${errorMsg};`);
       lines.push(`${indent}    }`);
     }
     lines.push(`${indent}  }`);

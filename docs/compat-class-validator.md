@@ -25,14 +25,14 @@ upstream docs. If behavior here and the code ever disagree, the code wins — pl
 
 ## API
 
-| API                                                            | Status | Notes                                                                                                                                        |
-| -------------------------------------------------------------- | ------ | -------------------------------------------------------------------------------------------------------------------------------------------- |
-| validate / validateSync / validateOrReject                     | ✅     | plus non-upstream `validateMany` / `validateManySync` / `validateOrRejectSync`                                                               |
-| registerDecorator                                              | ✅     | must be called from inside a TC39 `addInitializer` (see example below); there is no legacy `reflect-metadata` decorator context to hook into |
-| getMetadataStorage                                             | ⚠️     | minimal facade: only `getTargetValidationMetadatas(target)` is implemented; no `addValidationMetadata`, `groupedValidationMetadatas`, etc.   |
-| ValidationError.target/value/children/constraints              | ✅     | `contexts` is **not** implemented — `ValidationError` has no `contexts` field                                                                |
-| message as function                                            | ✅     | called with `{ value, constraints, targetName, object, property }` (`ValidationArguments`)                                                   |
-| $property / $value / $constraint templating in string messages | ❌     | string messages are used verbatim; use a message function instead                                                                            |
+| API                                                            | Status | Notes                                                                                                                                                                                                                        |
+| -------------------------------------------------------------- | ------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| validate / validateSync / validateOrReject                     | ✅     | plus non-upstream `validateMany` / `validateManySync` / `validateOrRejectSync`                                                                                                                                               |
+| registerDecorator                                              | ✅     | must be called from inside a TC39 `addInitializer` (see example below); there is no legacy `reflect-metadata` decorator context to hook into. Error keys follow the registered name — see "Error keys for custom validators" |
+| getMetadataStorage                                             | ⚠️     | minimal facade: only `getTargetValidationMetadatas(target)` is implemented; no `addValidationMetadata`, `groupedValidationMetadatas`, etc.                                                                                   |
+| ValidationError.target/value/children/constraints              | ✅     | `contexts` is **not** implemented — `ValidationError` has no `contexts` field                                                                                                                                                |
+| message as function                                            | ✅     | called with `{ value, constraints, targetName, object, property }` (`ValidationArguments`)                                                                                                                                   |
+| $property / $value / $constraint templating in string messages | ❌     | string messages are used verbatim; use a message function instead                                                                                                                                                            |
 
 ## Decorators
 
@@ -139,3 +139,29 @@ class Dto {
   lastName: string = 'Li';
 }
 ```
+
+### Error keys for custom validators
+
+Like upstream, a class-based custom validator reports its failure under its **registered name**, not
+under a generic `custom` key. The name is resolved in this order:
+
+1. the explicit `name` passed to `registerDecorator({ name })`;
+2. `@ValidatorConstraint({ name })` on the constraint class;
+3. the class name with a lower-cased first letter (`IsLongerThanConstraint` → `isLongerThanConstraint`).
+
+This applies to both `registerDecorator({ validator: SomeConstraintClass })` and
+`@Validate(SomeConstraintClass)` (which uses steps 2–3), in `validate` and `validateSync` alike:
+
+```typescript
+const errors = validateSync(dto);
+errors[0].constraints; // { isLongerThan: 'lastName must be longer than firstName' }
+```
+
+A name that is not a valid JavaScript identifier falls back to the `custom` key. An **inline**
+validator object registered without a `name` still reports under `customValidation` — pass `name` to
+`registerDecorator` if you need a specific key.
+
+Repeated registrations are deduplicated by validator identity — the constraint class, or an inline
+validator's name plus the source of its `validate` function — together with the `constraints` array.
+Re-running the same `addInitializer` on every instantiation therefore does not grow the metadata,
+while two genuinely different registrations on the same property are both kept and both enforced.
