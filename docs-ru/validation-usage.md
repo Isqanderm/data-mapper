@@ -2,7 +2,7 @@
 
 ## Обзор
 
-The `om-data-mapper` валидация module provides a высокопроизводительный, class-валидатор-compatible API for validating objects using декораторs. It's разработан как **прямая замена** for `class-validator` with **10x better performance** through JIT-компиляция.
+The `om-data-mapper` валидация module provides a JIT-compiled, class-валидатор-compatible API for validating objects using декораторs. It's designed as a **готовая замена для поддерживаемого подмножества** `class-validator` - точный охват смотрите в [таблице совместимости](./compat-class-validator.md).
 
 ---
 
@@ -1375,7 +1375,7 @@ complexField: string;
 
 ## Migration from class-валидатор
 
-The API is **100% compatible** with class-валидатор. Simply change the import:
+API - это **готовая замена для поддерживаемого подмножества** class-валидатор - точный охват смотрите в [таблице совместимости](./compat-class-validator.md). Simply change the import:
 
 ```typescript
 // Before
@@ -1385,7 +1385,7 @@ import { validate, IsString } from 'class-validator';
 import { validate, IsString } from 'om-data-mapper/class-validator-compat';
 ```
 
-**No other changes needed!** Your existing code will work with 10x better performance.
+**Дополнительных изменений не требуется** для поддерживаемого подмножества - JIT-компиляция происходит автоматически при первой валидации каждого класса.
 
 ---
 
@@ -1427,8 +1427,8 @@ import { validate, IsString } from 'om-data-mapper/class-validator-compat';
 
 The валидация module provides:
 
-- ✅ **10x faster** than class-валидатор
-- ✅ **100% API compatible** - прямая замена
+- ✅ **JIT-компиляция** - специализированная функция валидации компилируется один раз и переиспользуется, без рефлексии на каждый вызов
+- ✅ **Готовая замена для поддерживаемого подмножества** - см. [таблицу совместимости](./compat-class-validator.md)
 - ✅ **No dependencies** - no reflect-metadata needed
 - ✅ **Type-safe** - full TypeScript support
 - ✅ **Extensible** - custom валидаторs supported

@@ -14,7 +14,7 @@
 
 Трансформер использует две различные системы хранения метаданных в зависимости от API:
 
-#### Decorator API (`src/decorators/metadata.ts`)
+#### Decorator API (`packages/core/src/decorators/metadata.ts`)
 
 Использует **хранение метаданных на основе Symbol** для нативного decorator API:
 
@@ -37,7 +37,7 @@ interface PropertyMapping {
 }
 ```
 
-#### API совместимости с class-transformer (`src/compat/class-transformer/metadata.ts`)
+#### API совместимости с class-transformer (`packages/class-transformer/src/metadata.ts`)
 
 Использует **хранение метаданных на основе WeakMap** для совместимости с class-transformer:
 
@@ -158,29 +158,27 @@ target.fullName = cache['fullName__transformer'](source);
 // Со значением по умолчанию: @MapFrom(fn) @Default('Unknown')
 target.fullName = cache['fullName__transformer'](source) ?? cache['__defValues']['fullName'];
 
-// С условием: @When(condition) @MapFrom(fn)
-if (cache['fullName__condition'](source)) {
-  target.fullName = cache['fullName__transformer'](source);
-}
+// Кодогенерация условия существует внутри (`PropertyMapping.condition`), но
+// сегодня ни один публичный декоратор её не задаёт — функция `@MapFrom`
+// получает весь исходный объект, поэтому условное отображение выражается
+// прямо в ней:
+// @MapFrom((src) => (src.isPremium ? src.premiumName : undefined))
 ```
 
 **Оптимизация**: Функции хранятся в кэше, чтобы избежать накладных расходов замыканий.
 
-### 3. Вложенный маппер (`@MapNested(NestedMapper)`)
+### 3. Вложенный маппер (`@MapWith(NestedMapper)`)
 
-Рекурсивно вызывает вложенный маппер:
+Вызывает собственный скомпилированный `transform()` вложенного маппера:
 
 ```typescript
-// Декоратор: @MapNested(AddressMapper)
+// Декораторы: @MapWith(AddressMapper) @Map('address')
 // Сгенерированный код:
-if (source?.address) {
-  const nestedMapper = cache['address__nestedMapper'];
-  const nestedResult = nestedMapper.execute(source.address);
-  target.address = nestedResult.result;
-  if (nestedResult.errors.length > 0) {
-    __errors.push(...nestedResult.errors.map((e) => 'address.' + e));
-  }
-}
+const __nestedSource = source?.address;
+target.address =
+  __nestedSource !== undefined && __nestedSource !== null
+    ? cache['address__nestedMapper'].transform(__nestedSource)
+    : undefined;
 ```
 
 **Оптимизация**: Вложенные мапперы предварительно компилируются и кэшируются.
@@ -193,14 +191,15 @@ if (source?.address) {
 // Декоратор: @MapFrom((src) => src.items.map(i => i.name))
 // Сгенерированный код:
 target.itemNames = cache['itemNames__transformer'](source);
+```
 
-// Для вложенных массивов с маппером:
-if (Array.isArray(source?.items)) {
-  target.items = source.items.map((item) => {
-    const nestedMapper = cache['items__nestedMapper'];
-    return nestedMapper.execute(item).result;
-  });
-}
+Отдельного пути кодогенерации для массивов вложенных мапперов не существует —
+массивы вложенных объектов обрабатываются точно так же, вызовом `transform()`
+вложенного маппера изнутри функции `@MapFrom`:
+
+```typescript
+@MapFrom((src: Source) => src.items.map((item) => new ItemMapper().transform(item)))
+items!: ItemTarget[];
 ```
 
 ---
@@ -369,41 +368,23 @@ transformPlainToClass(UserDto, plainObject, 'plainToClass', options)
 
 ### Ключевые различия с Decorator API:
 
-| Возможность          | Decorator API               | class-transformer Compat             |
-| -------------------- | --------------------------- | ------------------------------------ |
-| Компиляция           | JIT при создании экземпляра | Интерпретируется во время выполнения |
-| Производительность   | В 10 раз быстрее            | Совместим с class-transformer        |
-| Метаданные           | На основе Symbol            | На основе WeakMap                    |
-| API                  | `@Map()`, `@MapFrom()`      | `@Expose()`, `@Type()`               |
-| Случай использования | Новые проекты               | Миграция с class-transformer         |
+| Возможность          | Decorator API               | class-transformer Compat                                                |
+| -------------------- | --------------------------- | ----------------------------------------------------------------------- |
+| Компиляция           | JIT при создании экземпляра | JIT при создании экземпляра, поверхность совместима с class-transformer |
+| Метаданные           | На основе Symbol            | На основе WeakMap                                                       |
+| API                  | `@Map()`, `@MapFrom()`      | `@Expose()`, `@Type()`                                                  |
+| Случай использования | Новые проекты               | Миграция с class-transformer                                            |
 
 ---
 
 ## Характеристики производительности
 
-### Стоимость компиляции
-
-- **Первое создание экземпляра**: ~1-3мс (парсинг метаданных + генерация кода + компиляция)
-- **Последующие создания экземпляров**: ~0.001мс (использует ту же скомпилированную функцию)
-- **Амортизация**: Стоимость амортизируется на тысячи трансформаций
-
-### Производительность выполнения
-
-По сравнению с class-transformer:
-
-| Тип трансформации      | class-transformer | om-data-mapper  | Ускорение |
-| ---------------------- | ----------------- | --------------- | --------- |
-| Простое отображение    | 326K оп/сек       | **3.2M оп/сек** | **10x**   |
-| Сложные трансформации  | 150K оп/сек       | **1.5M оп/сек** | **10x**   |
-| Вложенные объекты      | 80K оп/сек        | **800K оп/сек** | **10x**   |
-| Трансформации массивов | 50K оп/сек        | **500K оп/сек** | **10x**   |
-
-### Использование памяти
-
-- **Метаданные**: ~500 байт на свойство
-- **Скомпилированная функция**: ~1-5КБ на класс маппера
-- **Объект кэша**: ~100 байт на функцию трансформации
-- **Всего**: ~5-10КБ на класс маппера
+Оба API компилируют специализированную функцию трансформации один раз, при
+первом использовании, и переиспользуют эту скомпилированную функцию при
+каждом последующем вызове — после первого создания экземпляра нет ни
+рефлексии на каждый вызов, ни повторного разбора метаданных. Измеренную
+пропускную способность смотрите в [`../benchmarks/README.md`](../benchmarks/README.md),
+где реальный код этого пакета сравнивается с настоящим class-transformer.
 
 ---
 
@@ -457,16 +438,13 @@ function transform(source, target, __errors, cache) {
 ```typescript
 @Mapper<Source, Target>()
 class UserMapper {
-  @When((src) => src.isPremium)
-  @Map('premiumFeatures')
+  @MapFrom((src) => (src.isPremium ? src.premiumFeatures : undefined))
   features?: string[];
 }
 
 // Сгенерированный код:
 function transform(source, target, __errors, cache) {
-  if (cache['features__condition'](source)) {
-    target.features = source?.premiumFeatures;
-  }
+  target.features = cache['features__transformer'](source);
 }
 ```
 
@@ -475,20 +453,18 @@ function transform(source, target, __errors, cache) {
 ```typescript
 @Mapper<Source, Target>()
 class UserMapper {
-  @MapNested(AddressMapper)
+  @MapWith(AddressMapper)
+  @Map('address')
   address!: Address;
 }
 
 // Сгенерированный код:
 function transform(source, target, __errors, cache) {
-  if (source?.address) {
-    const nestedMapper = cache['address__nestedMapper'];
-    const nestedResult = nestedMapper.execute(source.address);
-    target.address = nestedResult.result;
-    if (nestedResult.errors.length > 0) {
-      __errors.push(...nestedResult.errors.map((e) => 'address.' + e));
-    }
-  }
+  const __nestedSource = source?.address;
+  target.address =
+    __nestedSource !== undefined && __nestedSource !== null
+      ? cache['address__nestedMapper'].transform(__nestedSource)
+      : undefined;
 }
 ```
 
@@ -588,10 +564,10 @@ Decorator API использует тот же подход JIT-компиляц
 
 Подход с JIT-компиляцией обеспечивает:
 
-- ✅ **В 10 раз быстрее**, чем class-transformer
+- ✅ **JIT-компиляция** - специализированная функция генерируется один раз и переиспользуется, без рефлексии на каждый вызов
 - ✅ **Нулевые накладные расходы во время выполнения** после компиляции
 - ✅ **Типобезопасность** с полной поддержкой TypeScript
 - ✅ **Эффективность памяти** с кэшированием функций
 - ✅ **Расширяемость** с пользовательскими трансформерами
 
-Эта архитектура делает `om-data-mapper` одной из самых быстрых библиотек трансформации объектов, доступных для TypeScript/JavaScript.
+Измеренную пропускную способность относительно class-transformer смотрите в [`../benchmarks/README.md`](../benchmarks/README.md).
