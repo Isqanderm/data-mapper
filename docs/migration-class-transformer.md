@@ -13,7 +13,7 @@ import { plainToClass, Expose, Type } from 'class-transformer';
 // After (om-data-mapper) - Just change the import!
 import { plainToClass, Expose, Type } from 'om-data-mapper/class-transformer-compat';
 
-// Your existing code works exactly the same, backed by JIT compilation instead of interpretation 🚀
+// Your existing code works exactly the same, now reading TC39 decorator metadata instead of reflect-metadata 🚀
 ```
 
 ## Migration Patterns
@@ -273,14 +273,14 @@ class UserMapper {
 
 ## Key Differences
 
-| Feature          | class-transformer           | om-data-mapper                       |
-| ---------------- | --------------------------- | ------------------------------------ |
-| **Metadata**     | Requires `reflect-metadata` | No metadata needed                   |
-| **Decorators**   | Legacy experimental         | TC39 Stage 3 (standard)              |
-| **Compilation**  | Interpreted at runtime      | JIT-compiled once, reused thereafter |
-| **Dependencies** | Has dependencies            | Zero dependencies                    |
-| **Bundle Size**  | Larger                      | Smaller (tree-shakeable)             |
-| **Type Safety**  | Limited                     | Full TypeScript support              |
+| Feature          | class-transformer           | om-data-mapper                                                         |
+| ---------------- | --------------------------- | ---------------------------------------------------------------------- |
+| **Metadata**     | Requires `reflect-metadata` | No metadata needed                                                     |
+| **Decorators**   | Legacy experimental         | TC39 Stage 3 (standard)                                                |
+| **Compilation**  | Interpreted at runtime      | Interpreted at runtime (metadata registered once, at class definition) |
+| **Dependencies** | Has dependencies            | Zero dependencies                                                      |
+| **Bundle Size**  | Larger                      | Smaller (tree-shakeable)                                               |
+| **Type Safety**  | Limited                     | Full TypeScript support                                                |
 
 ## Migration Checklist
 

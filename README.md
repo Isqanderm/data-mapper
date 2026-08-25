@@ -13,10 +13,12 @@
 [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/Isqanderm/data-mapper)
 
 `om-data-mapper` maps and validates plain objects in TypeScript/JavaScript using TC39 Stage 3
-decorators (not the legacy `experimentalDecorators` flag). Each decorated mapper or validator
-class is JIT-compiled into a plain function the first time it's used, so the decorator metadata
-is read once instead of on every call. The three scoped packages have zero runtime dependencies,
-and every package ships dual CJS and ESM builds.
+decorators (not the legacy `experimentalDecorators` flag). The core mapper and the
+class-validator adapter each JIT-compile a decorated class into a plain function the first time
+it's used, so metadata is read once instead of on every call; the class-transformer adapter
+instead registers metadata once at class definition and interprets it at call time (no
+`reflect-metadata`, no per-call decorator re-evaluation). The three scoped packages have zero
+runtime dependencies, and every package ships dual CJS and ESM builds.
 
 ## Packages
 
@@ -135,9 +137,10 @@ import { validate } from 'om-data-mapper/class-validator-compat';
 
 ## Performance
 
-Mapping and validation logic is generated once per class (JIT) and reused on every subsequent
-call, avoiding repeated reflection over decorator metadata at call time. Beyond that, this
-README makes no performance claims — benchmarks are reproducible locally with `pnpm bench`; see
+Core mapping and class-validator validation logic are generated once per class (JIT) and reused
+on every subsequent call, avoiding repeated reflection over decorator metadata at call time. The
+class-transformer adapter instead walks its registered metadata at call time — there is no JIT
+step. Beyond that, this README makes no performance claims — benchmarks are reproducible locally with `pnpm bench`; see
 [`benchmarks/README.md`](./benchmarks/README.md) for how to run and read them. This project
 intentionally publishes no benchmark numbers it cannot regenerate in CI.
 

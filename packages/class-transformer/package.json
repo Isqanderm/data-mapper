@@ -1,7 +1,7 @@
 {
   "name": "@om-data-mapper/class-transformer",
   "version": "1.0.0",
-  "description": "class-transformer compatibility adapter for om-data-mapper: JIT-compiled Expose/Exclude/Type/Transform decorators and plainToInstance.",
+  "description": "class-transformer compatibility adapter for om-data-mapper: Expose/Exclude/Type/Transform decorators and plainToInstance on TC39 decorator metadata, zero dependencies.",
   "license": "MIT",
   "author": "Isqanderm <aleksandr.melnik.personal@gmail.com> (https://www.linkedin.com/in/isqander-melnik)",
   "repository": {

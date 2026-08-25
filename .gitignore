@@ -16,3 +16,4 @@ src/**/*.js.map
 .idea/
 .augment/
 benchmarks/**/build-*/
+examples/.tmp-build/

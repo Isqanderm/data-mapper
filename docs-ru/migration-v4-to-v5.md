@@ -13,7 +13,7 @@ class-transformer и class-validator, при этом сам `om-data-mapper`
 | ----------------------------------- | ------ | --------------------------------------------------------------------------------------- |
 | `om-data-mapper`                    | 5.0.0  | Мета-пакет. Реэкспортирует `@om-data-mapper/core` и сохраняет подпути совместимости v4. |
 | `@om-data-mapper/core`              | 1.0.0  | Движок маппера/трансформера (JIT-компиляция, декораторы, базовые типы).                 |
-| `@om-data-mapper/class-transformer` | 1.0.0  | API, совместимый с `class-transformer`, построенный на core.                            |
+| `@om-data-mapper/class-transformer` | 1.0.0  | API, совместимый с `class-transformer`, автономный (не зависит от core).                |
 | `@om-data-mapper/class-validator`   | 1.0.0  | API, совместимый с `class-validator`, с собственным движком валидации.                  |
 
 Скоуп-пакеты (`@om-data-mapper/core`, `@om-data-mapper/class-transformer`,

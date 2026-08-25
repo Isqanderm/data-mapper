@@ -185,8 +185,9 @@ If you want to understand the internals or contribute:
 
 ### Transformer Module
 
-- **JIT-compiled** - each mapper compiles a specialized transform function once; subsequent transforms reuse it, with no per-call reflection
 - **Two powerful APIs** - Decorator API and Compatibility API
+- **Decorator API is JIT-compiled** - each mapper compiles a specialized transform function once; subsequent transforms reuse it, with no per-call reflection
+- **Compatibility API interprets metadata at call time** - no reflect-metadata, no per-call decorator re-evaluation
 - **Drop-in for the supported subset** - see the [compat tables](./compat-class-transformer.md) for exact coverage
 - **No dependencies** - no reflect-metadata needed
 - **Type-safe** with full TypeScript support

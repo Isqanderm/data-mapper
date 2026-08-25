@@ -7,7 +7,9 @@ The `om-data-mapper` transformer module provides two powerful APIs for transform
 1. **Decorator API** - Modern, high-performance API using TC39 Stage 3 decorators (Recommended)
 2. **class-transformer Compatibility API** - Drop-in replacement for the supported subset of class-transformer (see the [compat table](./compat-class-transformer.md))
 
-Both APIs use JIT compilation for maximum performance.
+The Decorator API is JIT-compiled for maximum performance; the class-transformer Compatibility
+API interprets its registered metadata at call time (no `reflect-metadata`, no per-call decorator
+re-evaluation).
 
 ---
 
@@ -878,7 +880,8 @@ import { plainToClass, Expose, Type } from 'om-data-mapper/class-transformer-com
 
 **Benefits:**
 
-- ✅ JIT-compiled - no per-call reflection once the transform function is generated
+- ✅ Metadata is registered once at class definition and walked at call time - no per-call
+  decorator re-evaluation
 - ✅ No reflect-metadata dependency
 - ✅ Same API for the supported subset - see the compat table for gaps
 - ✅ Full TypeScript support
@@ -1345,12 +1348,13 @@ Ensure your `tsconfig.json` is configured correctly:
 
 The transformer module provides:
 
-- ✅ **JIT-compiled** - a specialized transform function is compiled once and reused, with no per-call reflection
+- ✅ **Decorator API is JIT-compiled** - a specialized transform function is compiled once and reused, with no per-call reflection
+- ✅ **class-transformer Compatibility API interprets registered metadata at call time** - no reflect-metadata, no per-call decorator re-evaluation
 - ✅ **Two powerful APIs** - Decorator API and Compatibility API
 - ✅ **Type-safe** with full TypeScript support
 - ✅ **Zero dependencies** - no reflect-metadata needed
 - ✅ **Easy migration** - drop-in for the supported subset of class-transformer
 - ✅ **Flexible** - handles simple to complex transformations
-- ✅ **Production-ready** - battle-tested and reliable
+- ✅ **Tested** - part of the project's 549-test suite across 38 files
 
 Start transforming with confidence! 🚀

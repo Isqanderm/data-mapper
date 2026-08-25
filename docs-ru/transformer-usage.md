@@ -7,7 +7,9 @@ The `om-data-mapper` трансформер module provides two powerful APIs fo
 1. **Decorator API** - Modern, высокопроизводительный API using TC39 Stage 3 декораторs (Рекомендуется)
 2. **class-трансформер API совместимости** - готовая замена для поддерживаемого подмножества class-transformer (см. [таблицу совместимости](./compat-class-transformer.md))
 
-Both APIs use JIT-компиляция for maximum performance.
+Decorator API JIT-компилируется для максимальной производительности; class-transformer API
+совместимости интерпретирует зарегистрированные метаданные при каждом вызове (без
+reflect-metadata, без повторного разбора декораторов на каждый вызов).
 
 ---
 
@@ -878,7 +880,7 @@ import { plainToClass, Expose, Type } from 'om-data-mapper/class-transformer-com
 
 **Преимущества:**
 
-- ✅ JIT-компиляция - никакой рефлексии на каждый вызов после того, как функция трансформации сгенерирована
+- ✅ Метаданные регистрируются один раз при определении класса и обходятся при каждом вызове - без повторного разбора декораторов
 - ✅ No reflect-metadata dependency
 - ✅ Same API for the supported subset - см. таблицу совместимости по пробелам
 - ✅ Full TypeScript support
@@ -1345,12 +1347,13 @@ Ensure your `tsconfig.json` is configured correctly:
 
 The трансформер module provides:
 
-- ✅ **JIT-компиляция** - специализированная функция трансформации компилируется один раз и переиспользуется, без рефлексии на каждый вызов
+- ✅ **Decorator API JIT-компилируется** - специализированная функция трансформации компилируется один раз и переиспользуется, без рефлексии на каждый вызов
+- ✅ **class-transformer API совместимости интерпретирует метаданные при каждом вызове** - без reflect-metadata, без повторного разбора декораторов
 - ✅ **Two powerful APIs** - Decorator API and API совместимости
 - ✅ **Type-safe** with full TypeScript support
 - ✅ **Zero dependencies** - no reflect-metadata needed
 - ✅ **Easy migration** - готовая замена для поддерживаемого подмножества class-трансформер
 - ✅ **Flexible** - handles simple to complex трансформацияs
-- ✅ **Production-ready** - battle-tested and reliable
+- ✅ **Протестировано** - часть тестового набора проекта из 549 тестов в 38 файлах
 
 Start transforming with confidence! 🚀

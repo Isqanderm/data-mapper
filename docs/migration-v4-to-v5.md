@@ -13,7 +13,7 @@ top-level import keeps working.
 | ----------------------------------- | ------- | --------------------------------------------------------------------------------- |
 | `om-data-mapper`                    | 5.0.0   | Meta-package. Re-exports `@om-data-mapper/core` and keeps the v4 compat subpaths. |
 | `@om-data-mapper/core`              | 1.0.0   | The mapper/transformer engine (JIT compilation, decorators, core types).          |
-| `@om-data-mapper/class-transformer` | 1.0.0   | `class-transformer`-compatible API, built on core.                                |
+| `@om-data-mapper/class-transformer` | 1.0.0   | `class-transformer`-compatible API, standalone (does not depend on core).         |
 | `@om-data-mapper/class-validator`   | 1.0.0   | `class-validator`-compatible API, with its own validation engine.                 |
 
 The scoped packages (`@om-data-mapper/core`, `@om-data-mapper/class-transformer`,

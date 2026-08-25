@@ -365,12 +365,12 @@ transformPlainToClass(UserDto, plainObject, 'plainToClass', options)
 
 ### Key Differences from Decorator API:
 
-| Feature     | Decorator API          | class-transformer Compat                                   |
-| ----------- | ---------------------- | ---------------------------------------------------------- |
-| Compilation | JIT at instantiation   | JIT at instantiation, class-transformer-compatible surface |
-| Metadata    | Symbol-based           | WeakMap-based                                              |
-| API         | `@Map()`, `@MapFrom()` | `@Expose()`, `@Type()`                                     |
-| Use Case    | New projects           | Migration from class-transformer                           |
+| Feature     | Decorator API          | class-transformer Compat                           |
+| ----------- | ---------------------- | -------------------------------------------------- |
+| Compilation | JIT at instantiation   | Interpreted at runtime (walks registered metadata) |
+| Metadata    | Symbol-based           | WeakMap-based                                      |
+| API         | `@Map()`, `@MapFrom()` | `@Expose()`, `@Type()`                             |
+| Use Case    | New projects           | Migration from class-transformer                   |
 
 ---
 
