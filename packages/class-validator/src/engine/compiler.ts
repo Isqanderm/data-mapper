@@ -598,7 +598,9 @@ function generateAsyncPropertyValidation(
   lines.push(`      const keys = Object.keys(propertyErrors);`);
   lines.push(`      if (keys.length > 1) {`);
   lines.push(`        const order = ${stopAtFirstErrorOrder};`);
-  lines.push(`        const firstKey = order.find(k => k in propertyErrors) || keys[0];`);
+  lines.push(
+    `        const firstKey = order.find(k => Object.hasOwn(propertyErrors, k)) || keys[0];`,
+  );
   lines.push(`        for (const k of keys) { if (k !== firstKey) delete propertyErrors[k]; }`);
   lines.push(`      }`);
   lines.push(`    }`);
