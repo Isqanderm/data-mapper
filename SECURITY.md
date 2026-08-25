@@ -117,7 +117,7 @@ const mapper = Mapper.create(externalConfig); // CODE INJECTION RISK!
 
 **Why this matters**: If an attacker can control the mapping configuration, they could inject arbitrary JavaScript code that executes with your application's privileges.
 
-**Recommended approach**: Use the Decorator API (`@Mapper`, `@Map`, `@Transform`) which is compile-time safe and provides better performance (112-474% faster).
+**Recommended approach**: Use the Decorator API (`@Mapper`, `@Map`, `@Transform`), which is compile-time safe.
 
 See the class documentation and `docs/DECORATOR_API.md` for more details.
 
