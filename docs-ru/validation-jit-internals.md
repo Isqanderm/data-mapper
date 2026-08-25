@@ -164,7 +164,7 @@ const opts = options || {};
 
 // Валидация свойства: name
 {
-  const value = object?.name;
+  const value = object['name'];
   const propertyErrors = {};
 
   // Проверка, должно ли свойство валидироваться
@@ -184,6 +184,7 @@ const opts = options || {};
     errors.push({
       property: 'name',
       value: value,
+      target: object,
       constraints: propertyErrors,
     });
   }
@@ -235,12 +236,13 @@ if (!validators.isString(value)) { ... }
 if (typeof value !== 'string') { ... }
 ```
 
-### 3. **Optional Chaining**
+### 3. **Доступ к свойству через скобочную нотацию**
 
-Безопасный доступ к свойствам без try-catch:
+Каждое свойство читается через выражение с квадратными скобками, использующее имя свойства,
+полученное через `JSON.stringify`, а не через optional chaining:
 
 ```javascript
-const value = object?.propertyName;
+const value = object['propertyName'];
 ```
 
 ### 4. **Условная компиляция**
@@ -308,7 +310,7 @@ const args = {
 };
 const result = validatorInstance.validate(value, args);
 if (!result) {
-  propertyErrors.customValidator = validatorInstance.defaultMessage(args);
+  propertyErrors.custom = validatorInstance.defaultMessage(args);
 }
 ```
 
@@ -318,7 +320,7 @@ if (!result) {
 const task = (async () => {
   const result = await validatorInstance.validate(value, args);
   if (!result) {
-    propertyErrors.customValidator = validatorInstance.defaultMessage(args);
+    propertyErrors.custom = validatorInstance.defaultMessage(args);
   }
 })();
 asyncTasks.push(task);
@@ -361,26 +363,36 @@ interface ValidationError {
 
 ## Отладка
 
-### Просмотр сгенерированного кода:
+Внутренности генерации кода (`generateValidationCode`, `compileValidator` и подобные функции) —
+это детали реализации `packages/class-validator/src/engine/compiler.ts` и не входят в публичный
+API — пакет реэкспортирует из этого модуля только `clearValidatorCache` и `getValidatorCacheSize`
+(см. `packages/class-validator/src/index.ts`). Чтобы увидеть сгенерированный код, читайте исходники
+компилятора напрямую.
+
+### Проверка кэша:
 
 ```typescript
-import { compileValidator } from 'om-data-mapper/class-validator-compat/engine/compiler';
+import { getValidatorCacheSize, clearValidatorCache } from 'om-data-mapper/class-validator-compat';
 
-const metadata = getValidationMetadata(MyClass);
-const code = generateValidationCode(metadata);
-console.log(code); // Просмотр сгенерированного JavaScript
+console.log(getValidatorCacheSize()); // число классов с закэшированным скомпилированным валидатором
+
+clearValidatorCache(); // принудительная перекомпиляция при следующем вызове validate() для каждого класса
 ```
 
-### Профилирование производительности:
+### Сравнение первого вызова и последующих:
+
+Так как компиляция происходит лениво при первом использовании, а результат кэшируется для
+каждого класса, разовую стоимость компиляции можно увидеть, замерив время первого вызова
+`validateSync()` в сравнении с последующим вызовом для того же класса:
 
 ```typescript
-console.time('compilation');
-const validator = compileValidator(metadata);
-console.timeEnd('compilation');
+console.time('первый вызов (включает компиляцию)');
+validateSync(new MyClass());
+console.timeEnd('первый вызов (включает компиляцию)');
 
-console.time('execution');
-const errors = validator(object, options);
-console.timeEnd('execution');
+console.time('вызов из кэша');
+validateSync(new MyClass());
+console.timeEnd('вызов из кэша');
 ```
 
 ---

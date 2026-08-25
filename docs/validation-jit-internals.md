@@ -164,7 +164,7 @@ const opts = options || {};
 
 // Validate property: name
 {
-  const value = object?.name;
+  const value = object['name'];
   const propertyErrors = {};
 
   // Check if property should be validated
@@ -184,6 +184,7 @@ const opts = options || {};
     errors.push({
       property: 'name',
       value: value,
+      target: object,
       constraints: propertyErrors,
     });
   }
@@ -235,12 +236,12 @@ if (!validators.isString(value)) { ... }
 if (typeof value !== 'string') { ... }
 ```
 
-### 3. **Optional Chaining**
+### 3. **Bracket Property Access**
 
-Safe property access without try-catch:
+Each property is read via a bracket expression using the JSON-stringified property name, not optional chaining:
 
 ```javascript
-const value = object?.propertyName;
+const value = object['propertyName'];
 ```
 
 ### 4. **Conditional Compilation**
@@ -307,7 +308,7 @@ const args = {
 };
 const result = validatorInstance.validate(value, args);
 if (!result) {
-  propertyErrors.customValidator = validatorInstance.defaultMessage(args);
+  propertyErrors.custom = validatorInstance.defaultMessage(args);
 }
 ```
 
@@ -317,7 +318,7 @@ if (!result) {
 const task = (async () => {
   const result = await validatorInstance.validate(value, args);
   if (!result) {
-    propertyErrors.customValidator = validatorInstance.defaultMessage(args);
+    propertyErrors.custom = validatorInstance.defaultMessage(args);
   }
 })();
 asyncTasks.push(task);
@@ -360,26 +361,36 @@ interface ValidationError {
 
 ## Debugging
 
-### Viewing Generated Code:
+The codegen internals (`generateValidationCode`, `compileValidator`, and friends) are
+implementation details of `packages/class-validator/src/engine/compiler.ts` and are not part of
+the public API — the package only re-exports `clearValidatorCache` and `getValidatorCacheSize`
+from that module (see `packages/class-validator/src/index.ts`). To inspect the generated code
+itself, read the compiler source directly.
+
+### Inspecting the Cache:
 
 ```typescript
-import { compileValidator } from 'om-data-mapper/class-validator-compat/engine/compiler';
+import { getValidatorCacheSize, clearValidatorCache } from 'om-data-mapper/class-validator-compat';
 
-const metadata = getValidationMetadata(MyClass);
-const code = generateValidationCode(metadata);
-console.log(code); // View generated JavaScript
+console.log(getValidatorCacheSize()); // number of classes with a compiled validator cached
+
+clearValidatorCache(); // force recompilation on the next validate() call for every class
 ```
 
-### Performance Profiling:
+### Comparing First Call vs. Cached Calls:
+
+Because compilation happens lazily on first use and the result is cached per class, you can
+observe the one-time compilation cost by timing the first `validateSync()` call against a
+subsequent one on the same class:
 
 ```typescript
-console.time('compilation');
-const validator = compileValidator(metadata);
-console.timeEnd('compilation');
+console.time('first call (includes compilation)');
+validateSync(new MyClass());
+console.timeEnd('first call (includes compilation)');
 
-console.time('execution');
-const errors = validator(object, options);
-console.timeEnd('execution');
+console.time('cached call');
+validateSync(new MyClass());
+console.timeEnd('cached call');
 ```
 
 ---

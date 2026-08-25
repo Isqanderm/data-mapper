@@ -150,11 +150,12 @@ interface ValidatorOptions {
   skipNullProperties?: boolean; // Skip null properties
   skipUndefinedProperties?: boolean; // Skip undefined properties
   groups?: string[]; // Validation groups
-  always?: boolean; // Always validate
+  always?: boolean; // accepted but currently not applied — see compat table
   stopAtFirstError?: boolean; // Stop at first error
   forbidUnknownValues?: boolean; // Forbid unknown values
   whitelist?: boolean; // Remove unknown properties
   forbidNonWhitelisted?: boolean; // Throw on unknown properties
+  validationError?: { target?: boolean; value?: boolean }; // Strip target/value from ValidationError
 }
 ```
 

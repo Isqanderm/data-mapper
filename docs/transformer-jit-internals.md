@@ -12,14 +12,16 @@ This document explains the internal implementation details of the JIT compilatio
 
 ### 1. Metadata Storage
 
-The transformer uses two different metadata storage systems depending on the API:
+Both the native decorator API and the class-transformer compatibility API store their metadata
+the same way — in a module-level `WeakMap<Function, ...>` keyed by the class constructor. What
+differs between them is the shape of the metadata each one stores, not the storage mechanism.
 
 #### Decorator API (`packages/core/src/decorators/metadata.ts`)
 
-Uses **Symbol-based metadata storage** for the native decorator API:
+Uses a **`WeakMap`-based metadata store** for the native decorator API:
 
 ```typescript
-const MAPPER_METADATA = Symbol('om-data-mapper:metadata');
+const metadataStore = new WeakMap<Function, MapperMetadata>();
 
 interface MapperMetadata {
   properties: Map<string | symbol, PropertyMapping>;
@@ -39,7 +41,8 @@ interface PropertyMapping {
 
 #### class-transformer Compatibility API (`packages/class-transformer/src/metadata.ts`)
 
-Uses **WeakMap-based metadata storage** for class-transformer compatibility:
+Also uses a **`WeakMap`-based metadata store**, keyed by the class constructor, for
+class-transformer compatibility:
 
 ```typescript
 const metadataStorage = new WeakMap<Function, ClassMetadata>();
@@ -65,8 +68,12 @@ interface PropertyMetadata {
 
 **Key Differences:**
 
-- **Decorator API**: Symbol-based, attached to class constructor
-- **Compatibility API**: WeakMap-based, prevents memory leaks
+- **Storage mechanism**: Identical — both use a `WeakMap<Function, ...>` keyed by the class
+  constructor, so metadata is garbage-collected along with the class and there is no manual
+  cleanup needed.
+- **Metadata shape**: Different — the Decorator API stores a flat `properties` map of
+  `PropertyMapping` entries plus mapper-level `options`; the compatibility API stores
+  `PropertyMetadata` entries (expose/exclude/type/transform info) plus `classOptions`.
 - **Both**: Use TC39 Stage 3 decorators
 
 ---
@@ -365,23 +372,31 @@ transformPlainToClass(UserDto, plainObject, 'plainToClass', options)
 
 ### Key Differences from Decorator API:
 
-| Feature     | Decorator API          | class-transformer Compat                           |
-| ----------- | ---------------------- | -------------------------------------------------- |
-| Compilation | JIT at instantiation   | Interpreted at runtime (walks registered metadata) |
-| Metadata    | Symbol-based           | WeakMap-based                                      |
-| API         | `@Map()`, `@MapFrom()` | `@Expose()`, `@Type()`                             |
-| Use Case    | New projects           | Migration from class-transformer                   |
+| Feature     | Decorator API                           | class-transformer Compat                           |
+| ----------- | --------------------------------------- | -------------------------------------------------- |
+| Compilation | JIT at instantiation                    | Interpreted at runtime (walks registered metadata) |
+| Metadata    | WeakMap-based (`PropertyMapping` shape) | WeakMap-based (`PropertyMetadata` shape)           |
+| API         | `@Map()`, `@MapFrom()`                  | `@Expose()`, `@Type()`                             |
+| Use Case    | New projects                            | Migration from class-transformer                   |
 
 ---
 
 ## Performance Characteristics
 
-Both APIs compile a specialized transform function once per mapper class, on
-first use, and reuse that compiled function on every subsequent call — there
-is no per-call reflection or metadata re-parsing after the first
-instantiation. For measured throughput, see
-[`../benchmarks/README.md`](../benchmarks/README.md), which runs this
-package's actual code against real class-transformer.
+The two APIs behave differently here:
+
+- **Decorator/core API**: compiles a specialized transform function once per mapper class, on
+  first use (`context.addInitializer` triggers `_compileMapper()`, see
+  `packages/core/src/decorators/core.ts` and `packages/core/src/core/Mapper.ts`), and reuses that
+  compiled function on every subsequent call — there is no per-call reflection or metadata
+  re-parsing after the first instantiation.
+- **class-transformer compatibility API**: registers metadata once, at class definition time
+  (via the `@Expose()`/`@Exclude()`/`@Type()`/`@Transform()` decorators), but does not compile a
+  function. Each call to `plainToClass`/`plainToInstance`/etc. walks that registered metadata and
+  interprets it directly — there is no `new Function()` step in this code path.
+
+For measured throughput, see [`../benchmarks/README.md`](../benchmarks/README.md), which runs
+this package's actual code against real class-transformer.
 
 ---
 
@@ -559,12 +574,15 @@ The Decorator API uses the same JIT compilation approach as BaseMapper but with 
 
 ## Conclusion
 
-The JIT compilation approach provides:
+The Decorator/core API's JIT compilation approach provides:
 
-- ✅ **JIT-compiled** - a specialized function is generated once and reused, with no per-call reflection
+- ✅ **JIT-compiled** - a specialized function is generated once per class and reused, with no per-call reflection
 - ✅ **Zero runtime overhead** after compilation
 - ✅ **Type-safe** with full TypeScript support
 - ✅ **Memory efficient** with function caching
 - ✅ **Extensible** with custom transformers
+
+The class-transformer compatibility API does not compile a function — see
+[Performance Characteristics](#performance-characteristics) above.
 
 For measured throughput against class-transformer, see [`../benchmarks/README.md`](../benchmarks/README.md).
