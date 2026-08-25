@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { Mapper, Map } from '../../../src/decorators';
+import { Mapper, Map, Transform } from '../../../src/decorators';
 
 describe('codegen escaping', () => {
   it('maps kebab-case source keys', () => {
@@ -32,6 +32,22 @@ describe('codegen escaping', () => {
     }
     const result = new WeirdMapper().transform({ a: 'ok' } as any);
     expect((result as any)['weird-key']).toBe('ok');
+  });
+
+  it('maps quote-bearing target field names (cache lookup and error message)', () => {
+    // Unlike the kebab-case target above (a property-access SyntaxError), a
+    // '"' in the target key lands INSIDE a string literal at two spots: the
+    // cache lookup (`cache["<key>__valueTransform"]`, exercised here via
+    // @Transform) and the _wrapInTryCatch error message (default safe mode).
+    // Both are built with JSON.stringify, so the quote is escaped as data.
+    @Mapper()
+    class QuoteMapper {
+      @Transform((v: string) => v.toUpperCase())
+      @Map('a')
+      'weird"quote'!: string;
+    }
+    const result = new QuoteMapper().transform({ a: 'ok' } as any);
+    expect((result as any)['weird"quote']).toBe('OK');
   });
 
   it('neutralizes code-bearing keys instead of executing them', () => {
