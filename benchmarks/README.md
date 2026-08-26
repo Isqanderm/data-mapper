@@ -3,7 +3,8 @@
 This package is a private workspace member (not published) that measures
 om-data-mapper's own throughput and, where a real upstream library exists for
 comparison, benchmarks om against it directly. It contains **no performance
-numbers or result tables** — see [Why no numbers](#why-no-numbers) below.
+numbers or result tables** — see [Why no numbers here](#why-no-numbers-here)
+below, which also states the rules the root README's dated snapshot follows.
 
 ## Structure
 
@@ -61,15 +62,31 @@ The guards in this package make that class of mistake structurally
 impossible — a benchmark that isn't exercising real logic on both sides never
 gets to the timing loop.
 
-## Why no numbers
+## Why no numbers here
 
 Benchmark results are only ever produced by actually running the suite on
 real hardware, in real conditions, at the time you need them. This README
 intentionally contains no ops/sec figures, no percentile tables, and no
-"expected performance" targets — any such numbers baked into documentation
-go stale the moment the code, the runtime, or the machine changes, and stale
-performance claims are exactly what caused the v4 failure above. Run
-`pnpm bench` (or one of the narrower scripts) and read the output.
+"expected performance" targets — such numbers go stale the moment the code,
+the runtime, or the machine changes. Run `pnpm bench` (or one of the narrower
+scripts) and read the output.
+
+The root [`README.md`](../README.md) is the one exception: it carries a dated
+snapshot of the `pnpm bench:compat` and `pnpm bench:core` results, because a
+library README that says nothing about performance is not useful to someone
+deciding whether to adopt it. That snapshot is bound by three rules, and any
+future published number is bound by the same ones:
+
+1. **It names the command that regenerates it.** A number nobody can reproduce
+   is the v4 failure described above.
+2. **It records the environment** — CPU, OS, Node version, upstream package
+   versions, and the date — so a reader can tell whether it applies to them.
+3. **It reports the losses too.** The root README's second table shows
+   hand-written JavaScript beating the core mapper in three of four scenarios.
+   Publishing only the favourable half is how "20,000% faster" happened.
+
+If you update the snapshot, rerun both scripts on one machine and replace the
+whole section, including the environment stamp — never edit individual rows.
 
 ## Fairness notes
 

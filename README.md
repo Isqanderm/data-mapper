@@ -140,9 +140,52 @@ import { validate } from 'om-data-mapper/class-validator-compat';
 Core mapping and class-validator validation logic are generated once per class (JIT) and reused
 on every subsequent call, avoiding repeated reflection over decorator metadata at call time. The
 class-transformer adapter instead walks its registered metadata at call time — there is no JIT
-step. Beyond that, this README makes no performance claims — benchmarks are reproducible locally with `pnpm bench`; see
-[`benchmarks/README.md`](./benchmarks/README.md) for how to run and read them. This project
-intentionally publishes no benchmark numbers it cannot regenerate in CI.
+step.
+
+Every number below comes from `pnpm bench:compat`, which you can run yourself. Before timing
+anything, each comparison asserts at import time that both engines do the same real work on the
+same fixtures — same error counts, deep-equal outputs. A guard failure aborts the run, so a
+benchmark cannot report a speedup for an engine that quietly did nothing.
+
+### Compared to the upstream packages
+
+| Scenario                                    | om-data-mapper | upstream     | Ratio     |
+| ------------------------------------------- | -------------- | ------------ | --------- |
+| `validateSync` — simple object, valid       | 3,494,121 op/s | 160,491 op/s | **21.8×** |
+| `validateSync` — simple object, invalid     | 3,153,949 op/s | 56,114 op/s  | **56.2×** |
+| `validateSync` — optional fields, valid     | 2,514,914 op/s | 176,044 op/s | **14.3×** |
+| `validateSync` — optional fields, invalid   | 2,558,698 op/s | 102,069 op/s | **25.1×** |
+| `validateSync` — nested object, valid       | 1,514,548 op/s | 140,032 op/s | **10.8×** |
+| `validateSync` — nested object, invalid     | 1,075,212 op/s | 71,192 op/s  | **15.1×** |
+| `instanceToPlain` — with `@Exclude`         | 1,160,009 op/s | 182,753 op/s | **6.4×**  |
+| `plainToInstance` — rename + nested `@Type` | 330,371 op/s   | 164,475 op/s | **2.0×**  |
+
+The margin widens on invalid data, where upstream spends time building error objects that the
+generated validator does not.
+
+### Compared to hand-written code
+
+The same suite measures the core mapper against plain JavaScript that does the mapping directly
+(`pnpm bench:core`). Hand-written code wins most of it:
+
+| Scenario                          | Winner         | Ratio                |
+| --------------------------------- | -------------- | -------------------- |
+| Map 100 items                     | Vanilla        | 2.3×                 |
+| Complex mapping with transformers | Vanilla        | 1.7×                 |
+| Simple mapping                    | Vanilla        | 1.4×                 |
+| Deep nested access                | om-data-mapper | 1.05× (within noise) |
+
+JIT compilation pays off against _interpreting decorator metadata on every call_, which is what
+the upstream packages do — not against direct property access. If you would otherwise write the
+mapping by hand and it is hot, write it by hand.
+
+**Measured on:** Apple M1 Pro (10 cores), macOS 26.5.2, Node 22.21.1, against `class-validator`
+0.14.4 and `class-transformer` 0.5.1, 2026-08-26. Several samples carry a wide relative margin of
+error (up to ±66%) — that variance does not account for order-of-magnitude gaps, but treat single
+digits as indicative rather than precise. Your hardware will differ; rerun the command.
+
+See [`benchmarks/README.md`](./benchmarks/README.md) for how the suite is built and what its
+fairness rules are. This project publishes no benchmark number it cannot regenerate on demand.
 
 ## Documentation
 
