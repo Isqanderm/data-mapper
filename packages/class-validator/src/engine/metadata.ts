@@ -18,7 +18,17 @@ const VALIDATION_METADATA = Symbol.for('om-data-mapper:validation-metadata');
  * Get or create validation metadata for a class
  */
 export function getValidationMetadata(target: any): ClassValidationMetadata {
-  if (!target[VALIDATION_METADATA]) {
+  // Own property, not an inherited one: a subclass reaches its parent's
+  // metadata through the static prototype chain, so a plain truthiness check
+  // makes `class Child extends Parent` write its constraints into Parent's
+  // map. Compiled validators are cached by `metadata.target`, so Child would
+  // then be served Parent's validator and its own constraints would never run.
+  //
+  // Each class gets its own map instead. Nothing is merged from the parent
+  // because TC39 field initializers run for the whole hierarchy when a
+  // subclass is constructed, with `this.constructor` pointing at the subclass,
+  // so inherited constraints are already registered here.
+  if (!Object.prototype.hasOwnProperty.call(target, VALIDATION_METADATA)) {
     target[VALIDATION_METADATA] = {
       target,
       properties: new Map<string | symbol, PropertyValidationMetadata>(),
@@ -158,5 +168,7 @@ export function getClassValidationMetadata(instance: any): ClassValidationMetada
  * Check if class has validation metadata
  */
 export function hasValidationMetadata(target: any): boolean {
-  return !!target[VALIDATION_METADATA];
+  // Own property for the same reason as getValidationMetadata: an inherited
+  // hit would report a subclass as carrying its parent's metadata.
+  return Object.prototype.hasOwnProperty.call(target, VALIDATION_METADATA);
 }
