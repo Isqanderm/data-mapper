@@ -29,6 +29,7 @@ export function IsArray(options?: ValidationDecoratorOptions) {
         message: options?.message,
         groups: options?.groups,
         always: options?.always,
+        each: options?.each,
       });
     });
   };
@@ -57,6 +58,7 @@ export function ArrayNotEmpty(options?: ValidationDecoratorOptions) {
         message: options?.message,
         groups: options?.groups,
         always: options?.always,
+        each: options?.each,
       });
     });
   };
@@ -87,6 +89,7 @@ export function ArrayMinSize(min: number, options?: ValidationDecoratorOptions) 
         message: options?.message,
         groups: options?.groups,
         always: options?.always,
+        each: options?.each,
       });
     });
   };
@@ -117,6 +120,7 @@ export function ArrayMaxSize(max: number, options?: ValidationDecoratorOptions) 
         message: options?.message,
         groups: options?.groups,
         always: options?.always,
+        each: options?.each,
       });
     });
   };
@@ -147,6 +151,7 @@ export function ArrayContains(values: any[], options?: ValidationDecoratorOption
         message: options?.message,
         groups: options?.groups,
         always: options?.always,
+        each: options?.each,
       });
     });
   };
@@ -177,6 +182,7 @@ export function ArrayNotContains(values: any[], options?: ValidationDecoratorOpt
         message: options?.message,
         groups: options?.groups,
         always: options?.always,
+        each: options?.each,
       });
     });
   };
@@ -205,6 +211,7 @@ export function ArrayUnique(options?: ValidationDecoratorOptions) {
         message: options?.message,
         groups: options?.groups,
         always: options?.always,
+        each: options?.each,
       });
     });
   };

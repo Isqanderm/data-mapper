@@ -29,6 +29,7 @@ export function IsNumber(options?: ValidationDecoratorOptions) {
         message: options?.message,
         groups: options?.groups,
         always: options?.always,
+        each: options?.each,
       });
     });
   };
@@ -57,6 +58,7 @@ export function IsInt(options?: ValidationDecoratorOptions) {
         message: options?.message,
         groups: options?.groups,
         always: options?.always,
+        each: options?.each,
       });
     });
   };
@@ -87,6 +89,7 @@ export function Min(min: number, options?: ValidationDecoratorOptions) {
         message: options?.message,
         groups: options?.groups,
         always: options?.always,
+        each: options?.each,
       });
     });
   };
@@ -117,6 +120,7 @@ export function Max(max: number, options?: ValidationDecoratorOptions) {
         message: options?.message,
         groups: options?.groups,
         always: options?.always,
+        each: options?.each,
       });
     });
   };
@@ -146,6 +150,7 @@ export function IsPositive(options?: ValidationDecoratorOptions) {
         message: options?.message || 'must be a positive number',
         groups: options?.groups,
         always: options?.always,
+        each: options?.each,
       });
     });
   };
@@ -175,6 +180,7 @@ export function IsNegative(options?: ValidationDecoratorOptions) {
         message: options?.message || 'must be a negative number',
         groups: options?.groups,
         always: options?.always,
+        each: options?.each,
       });
     });
   };
@@ -205,6 +211,7 @@ export function IsDivisibleBy(num: number, options?: ValidationDecoratorOptions)
         message: options?.message,
         groups: options?.groups,
         always: options?.always,
+        each: options?.each,
       });
     });
   };
@@ -233,6 +240,7 @@ export function IsDecimal(options?: ValidationDecoratorOptions) {
         message: options?.message,
         groups: options?.groups,
         always: options?.always,
+        each: options?.each,
       });
     });
   };

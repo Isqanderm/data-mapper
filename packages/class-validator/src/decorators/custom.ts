@@ -107,6 +107,7 @@ export function Validate(
       message: options?.message,
       groups: options?.groups,
       always: options?.always,
+      each: options?.each,
     };
 
     context.addInitializer(function (this: any) {
@@ -158,6 +159,7 @@ export function ValidateBy(
       message: validationOptions?.message,
       groups: validationOptions?.groups,
       always: validationOptions?.always,
+      each: validationOptions?.each,
     };
 
     context.addInitializer(function (this: any) {

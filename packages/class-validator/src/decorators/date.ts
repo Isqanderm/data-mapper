@@ -31,6 +31,7 @@ export function MinDate(date: Date, options?: ValidationDecoratorOptions) {
         message: options?.message,
         groups: options?.groups,
         always: options?.always,
+        each: options?.each,
       });
     });
   };
@@ -61,6 +62,7 @@ export function MaxDate(date: Date, options?: ValidationDecoratorOptions) {
         message: options?.message,
         groups: options?.groups,
         always: options?.always,
+        each: options?.each,
       });
     });
   };

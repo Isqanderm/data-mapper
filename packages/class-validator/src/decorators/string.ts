@@ -29,6 +29,7 @@ export function IsString(options?: ValidationDecoratorOptions) {
         message: options?.message,
         groups: options?.groups,
         always: options?.always,
+        each: options?.each,
       });
     });
   };
@@ -59,6 +60,7 @@ export function MinLength(min: number, options?: ValidationDecoratorOptions) {
         message: options?.message,
         groups: options?.groups,
         always: options?.always,
+        each: options?.each,
       });
     });
   };
@@ -89,6 +91,7 @@ export function MaxLength(max: number, options?: ValidationDecoratorOptions) {
         message: options?.message,
         groups: options?.groups,
         always: options?.always,
+        each: options?.each,
       });
     });
   };
@@ -121,6 +124,7 @@ export function Length(min: number, max: number, options?: ValidationDecoratorOp
         message: options?.message,
         groups: options?.groups,
         always: options?.always,
+        each: options?.each,
       });
 
       addValidationConstraint(this.constructor, propertyKey, {
@@ -129,6 +133,7 @@ export function Length(min: number, max: number, options?: ValidationDecoratorOp
         message: options?.message,
         groups: options?.groups,
         always: options?.always,
+        each: options?.each,
       });
     });
   };
@@ -161,6 +166,7 @@ export function IsEmail(options?: ValidationDecoratorOptions) {
         message: options?.message,
         groups: options?.groups,
         always: options?.always,
+        each: options?.each,
       });
     });
   };
@@ -189,6 +195,7 @@ export function IsURL(options?: ValidationDecoratorOptions) {
         message: options?.message,
         groups: options?.groups,
         always: options?.always,
+        each: options?.each,
       });
     });
   };
@@ -222,6 +229,7 @@ export function IsUUID(version?: '3' | '4' | '5' | 'all', options?: ValidationDe
         message: options?.message,
         groups: options?.groups,
         always: options?.always,
+        each: options?.each,
       });
     });
   };
@@ -250,6 +258,7 @@ export function IsJSON(options?: ValidationDecoratorOptions) {
         message: options?.message,
         groups: options?.groups,
         always: options?.always,
+        each: options?.each,
       });
     });
   };
@@ -284,6 +293,7 @@ export function IsAlpha(locale?: string, options?: ValidationDecoratorOptions) {
         message: options?.message,
         groups: options?.groups,
         always: options?.always,
+        each: options?.each,
       });
     });
   };
@@ -314,6 +324,7 @@ export function IsAlphanumeric(locale?: string, options?: ValidationDecoratorOpt
         message: options?.message,
         groups: options?.groups,
         always: options?.always,
+        each: options?.each,
       });
     });
   };
@@ -342,6 +353,7 @@ export function IsHexColor(options?: ValidationDecoratorOptions) {
         message: options?.message,
         groups: options?.groups,
         always: options?.always,
+        each: options?.each,
       });
     });
   };
@@ -375,6 +387,7 @@ export function IsIP(version?: '4' | '6', options?: ValidationDecoratorOptions) 
         message: options?.message,
         groups: options?.groups,
         always: options?.always,
+        each: options?.each,
       });
     });
   };
@@ -407,6 +420,7 @@ export function IsCreditCard(options?: ValidationDecoratorOptions) {
         message: options?.message,
         groups: options?.groups,
         always: options?.always,
+        each: options?.each,
       });
     });
   };
@@ -440,6 +454,7 @@ export function IsISBN(version?: '10' | '13', options?: ValidationDecoratorOptio
         message: options?.message,
         groups: options?.groups,
         always: options?.always,
+        each: options?.each,
       });
     });
   };
@@ -473,6 +488,7 @@ export function IsPhoneNumber(region?: string, options?: ValidationDecoratorOpti
         message: options?.message,
         groups: options?.groups,
         always: options?.always,
+        each: options?.each,
       });
     });
   };
@@ -507,6 +523,7 @@ export function Contains(seed: string, options?: ValidationDecoratorOptions) {
         message: options?.message,
         groups: options?.groups,
         always: options?.always,
+        each: options?.each,
       });
     });
   };
@@ -537,6 +554,7 @@ export function NotContains(seed: string, options?: ValidationDecoratorOptions) 
         message: options?.message,
         groups: options?.groups,
         always: options?.always,
+        each: options?.each,
       });
     });
   };
@@ -565,6 +583,7 @@ export function IsLowercase(options?: ValidationDecoratorOptions) {
         message: options?.message,
         groups: options?.groups,
         always: options?.always,
+        each: options?.each,
       });
     });
   };
@@ -593,6 +612,7 @@ export function IsUppercase(options?: ValidationDecoratorOptions) {
         message: options?.message,
         groups: options?.groups,
         always: options?.always,
+        each: options?.each,
       });
     });
   };
@@ -635,6 +655,7 @@ export function Matches(
       message: options?.message,
       groups: options?.groups,
       always: options?.always,
+      each: options?.each,
     };
 
     context.addInitializer(function (this: any) {
@@ -670,6 +691,7 @@ export function IsFQDN(options?: ValidationDecoratorOptions) {
         message: options?.message,
         groups: options?.groups,
         always: options?.always,
+        each: options?.each,
       });
     });
   };
@@ -698,6 +720,7 @@ export function IsISO8601(options?: ValidationDecoratorOptions) {
         message: options?.message,
         groups: options?.groups,
         always: options?.always,
+        each: options?.each,
       });
     });
   };
@@ -745,6 +768,7 @@ export function IsMobilePhone(locale?: string, options?: ValidationDecoratorOpti
         message: options?.message,
         groups: options?.groups,
         always: options?.always,
+        each: options?.each,
       });
     });
   };
@@ -775,6 +799,7 @@ export function IsPostalCode(locale?: string, options?: ValidationDecoratorOptio
         message: options?.message,
         groups: options?.groups,
         always: options?.always,
+        each: options?.each,
       });
     });
   };
@@ -803,6 +828,7 @@ export function IsMongoId(options?: ValidationDecoratorOptions) {
         message: options?.message,
         groups: options?.groups,
         always: options?.always,
+        each: options?.each,
       });
     });
   };
@@ -831,6 +857,7 @@ export function IsJWT(options?: ValidationDecoratorOptions) {
         message: options?.message,
         groups: options?.groups,
         always: options?.always,
+        each: options?.each,
       });
     });
   };
@@ -859,6 +886,7 @@ export function IsStrongPassword(options?: ValidationDecoratorOptions) {
         message: options?.message,
         groups: options?.groups,
         always: options?.always,
+        each: options?.each,
       });
     });
   };
@@ -887,6 +915,7 @@ export function IsPort(options?: ValidationDecoratorOptions) {
         message: options?.message,
         groups: options?.groups,
         always: options?.always,
+        each: options?.each,
       });
     });
   };
@@ -915,6 +944,7 @@ export function IsMACAddress(options?: ValidationDecoratorOptions) {
         message: options?.message,
         groups: options?.groups,
         always: options?.always,
+        each: options?.each,
       });
     });
   };
@@ -943,6 +973,7 @@ export function IsBase64(options?: ValidationDecoratorOptions) {
         message: options?.message,
         groups: options?.groups,
         always: options?.always,
+        each: options?.each,
       });
     });
   };
@@ -975,6 +1006,7 @@ export function IsIBAN(options?: ValidationDecoratorOptions) {
         message: options?.message,
         groups: options?.groups,
         always: options?.always,
+        each: options?.each,
       });
     });
   };
@@ -1003,6 +1035,7 @@ export function IsBIC(options?: ValidationDecoratorOptions) {
         message: options?.message,
         groups: options?.groups,
         always: options?.always,
+        each: options?.each,
       });
     });
   };
@@ -1031,6 +1064,7 @@ export function IsCurrency(options?: ValidationDecoratorOptions) {
         message: options?.message,
         groups: options?.groups,
         always: options?.always,
+        each: options?.each,
       });
     });
   };
@@ -1059,6 +1093,7 @@ export function IsISO4217CurrencyCode(options?: ValidationDecoratorOptions) {
         message: options?.message,
         groups: options?.groups,
         always: options?.always,
+        each: options?.each,
       });
     });
   };
@@ -1091,6 +1126,7 @@ export function IsEthereumAddress(options?: ValidationDecoratorOptions) {
         message: options?.message,
         groups: options?.groups,
         always: options?.always,
+        each: options?.each,
       });
     });
   };
@@ -1119,6 +1155,7 @@ export function IsBtcAddress(options?: ValidationDecoratorOptions) {
         message: options?.message,
         groups: options?.groups,
         always: options?.always,
+        each: options?.each,
       });
     });
   };
@@ -1153,6 +1190,7 @@ export function IsPassportNumber(locale?: string, options?: ValidationDecoratorO
         message: options?.message,
         groups: options?.groups,
         always: options?.always,
+        each: options?.each,
       });
     });
   };
@@ -1183,6 +1221,7 @@ export function IsIdentityCard(locale?: string, options?: ValidationDecoratorOpt
         message: options?.message,
         groups: options?.groups,
         always: options?.always,
+        each: options?.each,
       });
     });
   };
@@ -1211,6 +1250,7 @@ export function IsEAN(options?: ValidationDecoratorOptions) {
         message: options?.message,
         groups: options?.groups,
         always: options?.always,
+        each: options?.each,
       });
     });
   };
@@ -1239,6 +1279,7 @@ export function IsISIN(options?: ValidationDecoratorOptions) {
         message: options?.message,
         groups: options?.groups,
         always: options?.always,
+        each: options?.each,
       });
     });
   };
@@ -1271,6 +1312,7 @@ export function IsMagnetURI(options?: ValidationDecoratorOptions) {
         message: options?.message,
         groups: options?.groups,
         always: options?.always,
+        each: options?.each,
       });
     });
   };
@@ -1299,6 +1341,7 @@ export function IsDataURI(options?: ValidationDecoratorOptions) {
         message: options?.message,
         groups: options?.groups,
         always: options?.always,
+        each: options?.each,
       });
     });
   };
@@ -1331,6 +1374,7 @@ export function IsISO31661Alpha2(options?: ValidationDecoratorOptions) {
         message: options?.message,
         groups: options?.groups,
         always: options?.always,
+        each: options?.each,
       });
     });
   };
@@ -1359,6 +1403,7 @@ export function IsISO31661Alpha3(options?: ValidationDecoratorOptions) {
         message: options?.message,
         groups: options?.groups,
         always: options?.always,
+        each: options?.each,
       });
     });
   };
@@ -1387,6 +1432,7 @@ export function IsLocale(options?: ValidationDecoratorOptions) {
         message: options?.message,
         groups: options?.groups,
         always: options?.always,
+        each: options?.each,
       });
     });
   };
@@ -1419,6 +1465,7 @@ export function IsSemVer(options?: ValidationDecoratorOptions) {
         message: options?.message,
         groups: options?.groups,
         always: options?.always,
+        each: options?.each,
       });
     });
   };
@@ -1447,6 +1494,7 @@ export function IsMimeType(options?: ValidationDecoratorOptions) {
         message: options?.message,
         groups: options?.groups,
         always: options?.always,
+        each: options?.each,
       });
     });
   };
@@ -1475,6 +1523,7 @@ export function IsTimeZone(options?: ValidationDecoratorOptions) {
         message: options?.message,
         groups: options?.groups,
         always: options?.always,
+        each: options?.each,
       });
     });
   };
@@ -1503,6 +1552,7 @@ export function IsRFC3339(options?: ValidationDecoratorOptions) {
         message: options?.message,
         groups: options?.groups,
         always: options?.always,
+        each: options?.each,
       });
     });
   };

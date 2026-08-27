@@ -112,6 +112,7 @@ export function registerDecorator(args: RegisterDecoratorOptions): void {
       message: args.options?.message,
       groups: args.options?.groups,
       always: args.options?.always,
+      each: args.options?.each,
     });
   } else {
     // Inline validator object → compiled via the 'validateBy' path
@@ -130,6 +131,7 @@ export function registerDecorator(args: RegisterDecoratorOptions): void {
       message: args.options?.message,
       groups: args.options?.groups,
       always: args.options?.always,
+      each: args.options?.each,
     });
   }
 }

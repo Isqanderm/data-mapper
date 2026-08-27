@@ -29,6 +29,7 @@ export function IsLatLong(options?: ValidationDecoratorOptions) {
         message: options?.message,
         groups: options?.groups,
         always: options?.always,
+        each: options?.each,
       });
     });
   };
@@ -57,6 +58,7 @@ export function IsLatitude(options?: ValidationDecoratorOptions) {
         message: options?.message,
         groups: options?.groups,
         always: options?.always,
+        each: options?.each,
       });
     });
   };
@@ -85,6 +87,7 @@ export function IsLongitude(options?: ValidationDecoratorOptions) {
         message: options?.message,
         groups: options?.groups,
         always: options?.always,
+        each: options?.each,
       });
     });
   };

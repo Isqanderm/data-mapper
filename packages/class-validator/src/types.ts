@@ -124,6 +124,11 @@ export interface ValidationConstraint {
   always?: boolean;
 
   /**
+   * Validate each element of the value instead of the value itself
+   */
+  each?: boolean;
+
+  /**
    * Validation function (for custom validators)
    */
   validator?: (value: any, args?: ValidationArguments) => boolean | Promise<boolean>;
@@ -177,6 +182,13 @@ export interface ValidationDecoratorOptions {
    * Always validate
    */
   always?: boolean;
+
+  /**
+   * Apply the constraint to every element of an array or Set instead of to the
+   * property value itself. A value that is neither is left unvalidated, and a
+   * failing element produces one error for the property, not one per element.
+   */
+  each?: boolean;
 
   /**
    * Context for validation

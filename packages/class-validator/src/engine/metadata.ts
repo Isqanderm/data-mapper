@@ -77,6 +77,9 @@ export function addValidationConstraint(
     // Compare other properties
     if (existing.message !== constraint.message) return false;
     if (existing.always !== constraint.always) return false;
+    // `each` changes what gets validated, so two constraints that differ only
+    // by it are not duplicates — collapsing them would silently drop one.
+    if (!!existing.each !== !!constraint.each) return false;
 
     return true;
   });

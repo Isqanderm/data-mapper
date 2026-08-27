@@ -321,7 +321,7 @@ function generatePropertyValidation(
       lines.push(
         `  if (opts.groups && opts.groups.length > 0 && opts.groups.some(g => ${groupsJson}.includes(g))) {`,
       );
-      const check = generateConstraintCheck(
+      const check = emitConstraintCheck(
         constraint,
         i,
         propertyName,
@@ -344,7 +344,7 @@ function generatePropertyValidation(
       lines.push(`  }`);
     } else {
       // No groups specified on constraint - always validate
-      const check = generateConstraintCheck(constraint, i, propertyName, 'value', 'propertyErrors');
+      const check = emitConstraintCheck(constraint, i, propertyName, 'value', 'propertyErrors');
       const guardedCheck = [
         `  if (!(opts.stopAtFirstError && Object.keys(propertyErrors).length > 0)) {`,
         check,
@@ -482,7 +482,7 @@ function generateAsyncPropertyValidation(
       lines.push(
         `    if (opts.groups && opts.groups.length > 0 && opts.groups.some(g => ${groupsJson}.includes(g))) {`,
       );
-      const check = generateAsyncConstraintCheck(
+      const check = emitAsyncConstraintCheck(
         constraint,
         i,
         propertyName,
@@ -506,7 +506,7 @@ function generateAsyncPropertyValidation(
       lines.push(`    }`);
     } else {
       // No groups specified on constraint - always validate
-      const check = generateAsyncConstraintCheck(
+      const check = emitAsyncConstraintCheck(
         constraint,
         i,
         propertyName,
@@ -633,6 +633,104 @@ function generateAsyncPropertyValidation(
 /**
  * Generate validation check code for a constraint
  */
+/**
+ * Emit a constraint check, looping over the property's elements when the
+ * constraint carries `each`.
+ */
+function emitConstraintCheck(
+  constraint: ValidationConstraint,
+  constraintIndex: number,
+  propertyName: string,
+  valueName: string,
+  errorsName: string,
+  indent: string = '  ',
+): string {
+  if (!constraint.each) {
+    return generateConstraintCheck(
+      constraint,
+      constraintIndex,
+      propertyName,
+      valueName,
+      errorsName,
+      indent,
+    );
+  }
+  const itemName = `eachItem${constraintIndex}`;
+  const check = generateConstraintCheck(
+    constraint,
+    constraintIndex,
+    propertyName,
+    itemName,
+    errorsName,
+    `${indent}    `,
+  );
+  return wrapEachLoop(check, valueName, itemName, `eachIdx${constraintIndex}`, indent);
+}
+
+/**
+ * Async twin of {@link emitConstraintCheck}.
+ */
+function emitAsyncConstraintCheck(
+  constraint: ValidationConstraint,
+  constraintIndex: number,
+  propertyName: string,
+  valueName: string,
+  errorsName: string,
+  asyncTasksName: string,
+  indent: string = '  ',
+): string {
+  if (!constraint.each) {
+    return generateAsyncConstraintCheck(
+      constraint,
+      constraintIndex,
+      propertyName,
+      valueName,
+      errorsName,
+      asyncTasksName,
+      indent,
+    );
+  }
+  const itemName = `eachItem${constraintIndex}`;
+  const check = generateAsyncConstraintCheck(
+    constraint,
+    constraintIndex,
+    propertyName,
+    itemName,
+    errorsName,
+    asyncTasksName,
+    `${indent}    `,
+  );
+  return wrapEachLoop(check, valueName, itemName, `eachIdx${constraintIndex}`, indent);
+}
+
+/**
+ * Wrap a generated constraint check in a loop over the property's elements.
+ *
+ * The check is emitted against `itemName` rather than the property value, so
+ * every element is measured. Errors are keyed by constraint name, so an
+ * element that fails writes the same key as any other — which yields one error
+ * for the property, matching upstream, rather than one per element. A value
+ * that is neither an array nor a Set is left alone (upstream skips it too).
+ */
+function wrapEachLoop(
+  check: string,
+  valueName: string,
+  itemName: string,
+  loopVar: string,
+  indent: string,
+): string {
+  const itemsVar = `${itemName}s`;
+  return [
+    `${indent}if (Array.isArray(${valueName}) || ${valueName} instanceof Set) {`,
+    `${indent}  const ${itemsVar} = Array.isArray(${valueName}) ? ${valueName} : Array.from(${valueName});`,
+    `${indent}  for (let ${loopVar} = 0; ${loopVar} < ${itemsVar}.length; ${loopVar}++) {`,
+    `${indent}    const ${itemName} = ${itemsVar}[${loopVar}];`,
+    check,
+    `${indent}  }`,
+    `${indent}}`,
+  ].join('\n');
+}
+
 function generateConstraintCheck(
   constraint: ValidationConstraint,
   constraintIndex: number,
@@ -1931,7 +2029,12 @@ function getErrorMessage(constraint: ValidationConstraint, defaultMessage: strin
   if (typeof constraint.message === 'string') {
     return constraint.message;
   }
-  return defaultMessage;
+  // Upstream builds the prefix into each decorator's default message, so a
+  // message the caller supplied is left exactly as written. Upstream's prefix
+  // is "each value in ", which reads on into the property name it puts in
+  // every message; this package's messages carry no property name, so the
+  // prefix stops at "each value".
+  return constraint.each ? `each value ${defaultMessage}` : defaultMessage;
 }
 
 /**

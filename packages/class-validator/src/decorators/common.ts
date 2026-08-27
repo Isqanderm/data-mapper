@@ -53,6 +53,7 @@ export function IsDefined(options?: ValidationDecoratorOptions) {
         message: options?.message,
         groups: options?.groups,
         always: options?.always,
+        each: options?.each,
       });
     });
   };
@@ -81,6 +82,7 @@ export function IsNotEmpty(options?: ValidationDecoratorOptions) {
         message: options?.message,
         groups: options?.groups,
         always: options?.always,
+        each: options?.each,
       });
     });
   };
@@ -115,6 +117,7 @@ export function Equals(comparison: any, options?: ValidationDecoratorOptions) {
         message: options?.message,
         groups: options?.groups,
         always: options?.always,
+        each: options?.each,
       });
     });
   };
@@ -145,6 +148,7 @@ export function NotEquals(comparison: any, options?: ValidationDecoratorOptions)
         message: options?.message,
         groups: options?.groups,
         always: options?.always,
+        each: options?.each,
       });
     });
   };
@@ -175,6 +179,7 @@ export function IsIn(values: readonly any[], options?: ValidationDecoratorOption
         message: options?.message,
         groups: options?.groups,
         always: options?.always,
+        each: options?.each,
       });
     });
   };
@@ -205,6 +210,7 @@ export function IsNotIn(values: readonly any[], options?: ValidationDecoratorOpt
         message: options?.message,
         groups: options?.groups,
         always: options?.always,
+        each: options?.each,
       });
     });
   };
@@ -233,6 +239,7 @@ export function IsEmpty(options?: ValidationDecoratorOptions) {
         message: options?.message,
         groups: options?.groups,
         always: options?.always,
+        each: options?.each,
       });
     });
   };
