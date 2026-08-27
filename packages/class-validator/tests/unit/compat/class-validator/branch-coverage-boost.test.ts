@@ -41,9 +41,11 @@ describe('Branch Coverage Boost - Validation Groups', () => {
     dto.email = 'test@example.com';
     dto.name = 123 as any; // Invalid type
 
-    // Without groups - should pass (name validation not in default group)
+    // No group filter means no filtering: @IsString({ groups: ['update'] })
+    // runs too, and 123 is not a string.
     const errors1 = await validate(dto);
-    expect(errors1).toHaveLength(0);
+    expect(errors1).toHaveLength(1);
+    expect(errors1[0].property).toBe('name');
 
     // With 'update' group - name is optional, undefined should pass
     dto.name = undefined;

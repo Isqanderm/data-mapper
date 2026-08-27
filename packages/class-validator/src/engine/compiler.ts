@@ -265,6 +265,26 @@ function generateAsyncValidationCode(metadata: ClassValidationMetadata): string 
 /**
  * Generate validation code for a single property
  */
+/**
+ * JavaScript expression deciding whether a constraint runs under the caller's
+ * group filter.
+ *
+ * Upstream's rule, measured against class-validator 0.14.4: with no filter
+ * (option absent or empty) everything runs; with a filter only constraints
+ * whose groups intersect it run, and an ungrouped constraint is skipped;
+ * `always` ignores the filter entirely. `always` can be set per decorator or
+ * defaulted for the whole call through ValidatorOptions.
+ */
+function groupGateExpression(groups: string[] | undefined, always: boolean | undefined): string {
+  const alwaysExpr = always ? 'true' : 'opts.always === true';
+  const noFilter = '!opts.groups || opts.groups.length === 0';
+  if (!groups || groups.length === 0) {
+    return `${alwaysExpr} || (${noFilter})`;
+  }
+  const groupsJson = JSON.stringify(groups);
+  return `${alwaysExpr} || (${noFilter}) || opts.groups.some(g => ${groupsJson}.includes(g))`;
+}
+
 function generatePropertyValidation(
   propertyName: string,
   metadata: PropertyValidationMetadata,
@@ -294,12 +314,12 @@ function generatePropertyValidation(
   if (metadata.isOptional) {
     // Check if optional has groups
     if (metadata.optionalGroups && metadata.optionalGroups.length > 0) {
-      const groupsJson = JSON.stringify(metadata.optionalGroups);
-      lines.push(`  // Optional with groups - only skip if groups match`);
-      lines.push(
-        `  if ((value === undefined || value === null) && opts.groups && opts.groups.length > 0 && opts.groups.some(g => ${groupsJson}.includes(g))) {`,
-      );
-      lines.push(`    // Skip validation for optional property in matching group`);
+      // Same gate as a constraint's: optionality applies unless the caller
+      // filtered this group out.
+      const gate = groupGateExpression(metadata.optionalGroups, metadata.optionalAlways);
+      lines.push(`  // Optional with groups`);
+      lines.push(`  if ((value === undefined || value === null) && (${gate})) {`);
+      lines.push(`    // Skip validation for optional property in an active group`);
       lines.push(`  } else {`);
     } else {
       // No groups - always optional
@@ -313,14 +333,10 @@ function generatePropertyValidation(
   for (let i = 0; i < metadata.constraints.length; i++) {
     const constraint = metadata.constraints[i];
     const skipGuard = constraint.type !== 'isDefined';
-    // Check if constraint should be validated based on groups
-    if (constraint.groups && constraint.groups.length > 0) {
-      // Constraint has groups - only validate if options.groups matches
-      const groupsJson = JSON.stringify(constraint.groups);
-      lines.push(`  // Check validation groups`);
-      lines.push(
-        `  if (opts.groups && opts.groups.length > 0 && opts.groups.some(g => ${groupsJson}.includes(g))) {`,
-      );
+    // Group filter (see groupGateExpression)
+    const gate = groupGateExpression(constraint.groups, constraint.always);
+    lines.push(`  if (${gate}) {`);
+    {
       const check = emitConstraintCheck(
         constraint,
         i,
@@ -341,23 +357,8 @@ function generatePropertyValidation(
       } else {
         lines.push(guardedCheck);
       }
-      lines.push(`  }`);
-    } else {
-      // No groups specified on constraint - always validate
-      const check = emitConstraintCheck(constraint, i, propertyName, 'value', 'propertyErrors');
-      const guardedCheck = [
-        `  if (!(opts.stopAtFirstError && Object.keys(propertyErrors).length > 0)) {`,
-        check,
-        `  }`,
-      ].join('\n');
-      if (skipGuard) {
-        lines.push(`  if (!skipProp) {`);
-        lines.push(guardedCheck);
-        lines.push(`  }`);
-      } else {
-        lines.push(guardedCheck);
-      }
     }
+    lines.push(`  }`);
   }
 
   // Handle nested validation
@@ -455,12 +456,11 @@ function generateAsyncPropertyValidation(
   if (metadata.isOptional) {
     // Check if optional has groups
     if (metadata.optionalGroups && metadata.optionalGroups.length > 0) {
-      const groupsJson = JSON.stringify(metadata.optionalGroups);
-      lines.push(`  // Optional with groups - only skip if groups match`);
-      lines.push(
-        `  if ((value === undefined || value === null) && opts.groups && opts.groups.length > 0 && opts.groups.some(g => ${groupsJson}.includes(g))) {`,
-      );
-      lines.push(`    // Skip validation for optional property in matching group`);
+      // Same gate as the sync path and as a constraint's.
+      const gate = groupGateExpression(metadata.optionalGroups, metadata.optionalAlways);
+      lines.push(`  // Optional with groups`);
+      lines.push(`  if ((value === undefined || value === null) && (${gate})) {`);
+      lines.push(`    // Skip validation for optional property in an active group`);
       lines.push(`  } else {`);
     } else {
       // No groups - always optional
@@ -474,14 +474,10 @@ function generateAsyncPropertyValidation(
   for (let i = 0; i < metadata.constraints.length; i++) {
     const constraint = metadata.constraints[i];
     const skipGuard = constraint.type !== 'isDefined';
-    // Check if constraint should be validated based on groups
-    if (constraint.groups && constraint.groups.length > 0) {
-      // Constraint has groups - only validate if options.groups matches
-      const groupsJson = JSON.stringify(constraint.groups);
-      lines.push(`    // Check validation groups`);
-      lines.push(
-        `    if (opts.groups && opts.groups.length > 0 && opts.groups.some(g => ${groupsJson}.includes(g))) {`,
-      );
+    // Group filter (see groupGateExpression)
+    const gate = groupGateExpression(constraint.groups, constraint.always);
+    lines.push(`    if (${gate}) {`);
+    {
       const check = emitAsyncConstraintCheck(
         constraint,
         i,
@@ -503,31 +499,8 @@ function generateAsyncPropertyValidation(
       } else {
         lines.push(guardedCheck);
       }
-      lines.push(`    }`);
-    } else {
-      // No groups specified on constraint - always validate
-      const check = emitAsyncConstraintCheck(
-        constraint,
-        i,
-        propertyName,
-        'value',
-        'propertyErrors',
-        'propertyAsyncTasks',
-        '    ',
-      );
-      const guardedCheck = [
-        `    if (!(opts.stopAtFirstError && Object.keys(propertyErrors).length > 0)) {`,
-        check,
-        `    }`,
-      ].join('\n');
-      if (skipGuard) {
-        lines.push(`    if (!skipProp) {`);
-        lines.push(guardedCheck);
-        lines.push(`    }`);
-      } else {
-        lines.push(guardedCheck);
-      }
     }
+    lines.push(`    }`);
   }
 
   // Handle nested validation

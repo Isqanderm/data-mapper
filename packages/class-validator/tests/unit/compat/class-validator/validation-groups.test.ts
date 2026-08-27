@@ -57,10 +57,11 @@ describe('Validation Groups', () => {
     user.email = 'invalid-email';
     user.age = 'not a number' as any; // Invalid
 
-    // Validate without groups - should only check constraints without groups
+    // No group filter means no filtering at all: every constraint runs,
+    // grouped or not (class-validator 0.14.4).
     const errors = validateSync(user);
-    expect(errors.length).toBe(1);
-    expect(errors[0].property).toBe('age');
+    expect(errors.length).toBe(3);
+    expect(errors.map((e) => e.property).sort()).toEqual(['age', 'email', 'username']);
   });
 
   it('should validate constraints with multiple groups', () => {
@@ -132,11 +133,12 @@ describe('Validation Groups', () => {
     dto.name = 'ABC'; // Valid string but too short for strict group
     dto.value = -5; // Negative number - fails @Min(0)
 
-    // Validate without groups - should check non-grouped constraints
+    // No filter: both the grouped and the ungrouped constraints run, so the
+    // too-short name is reported alongside the negative value.
     const normalErrors = validateSync(dto);
-    expect(normalErrors.length).toBe(1);
-    expect(normalErrors[0].property).toBe('value');
-    expect(normalErrors[0].constraints).toHaveProperty('min');
+    expect(normalErrors.length).toBe(2);
+    expect(normalErrors.some((e) => e.property === 'value' && e.constraints?.min)).toBe(true);
+    expect(normalErrors.some((e) => e.property === 'name' && e.constraints?.minLength)).toBe(true);
 
     // Validate with strict group - should check grouped constraints
     dto.value = 'not a number' as any; // Change to invalid type for strict validation
@@ -159,9 +161,10 @@ describe('Validation Groups', () => {
     user.username = 123 as any;
     user.email = 'invalid-email';
 
-    // Validate with empty groups array - should only check non-grouped constraints
+    // An empty array is not a filter, so it behaves like passing nothing:
+    // every constraint runs.
     const errors = validateSync(user, { groups: [] });
-    expect(errors.length).toBe(1);
-    expect(errors[0].property).toBe('email');
+    expect(errors.length).toBe(2);
+    expect(errors.map((e) => e.property).sort()).toEqual(['email', 'username']);
   });
 });

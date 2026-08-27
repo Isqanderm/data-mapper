@@ -88,9 +88,9 @@ describe('Number Validators - Complete Coverage', () => {
       const dto = new TestDto();
       dto.value = -5;
 
-      // Without groups - should NOT validate (constraint has groups)
+      // No filter means no filtering: a grouped constraint runs too.
       const errors1 = validateSync(dto);
-      expect(errors1).toHaveLength(0);
+      expect(errors1).toHaveLength(1);
 
       // With matching group - should validate
       const errors2 = validateSync(dto, { groups: ['create'] });
@@ -184,9 +184,9 @@ describe('Number Validators - Complete Coverage', () => {
       const dto = new TestDto();
       dto.value = 5;
 
-      // Without groups - should NOT validate (constraint has groups)
+      // No filter means no filtering: a grouped constraint runs too.
       const errors1 = validateSync(dto);
-      expect(errors1).toHaveLength(0);
+      expect(errors1).toHaveLength(1);
 
       // With matching group - should validate
       const errors2 = validateSync(dto, { groups: ['debit'] });

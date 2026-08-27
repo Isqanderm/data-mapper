@@ -193,8 +193,8 @@ describe('Final Coverage Gaps', () => {
       const dto = new TestDto();
       dto.id = 'invalid';
 
-      // Without groups - should not validate
-      expect(validateSync(dto)).toHaveLength(0);
+      // No group filter means no filtering: the grouped constraint runs.
+      expect(validateSync(dto)).toHaveLength(1);
 
       // With matching group - should validate
       const errors = validateSync(dto, { groups: ['create'] });
@@ -210,8 +210,8 @@ describe('Final Coverage Gaps', () => {
       const dto = new TestDto();
       dto.ip = 'invalid';
 
-      // Without groups - should not validate
-      expect(validateSync(dto)).toHaveLength(0);
+      // No group filter means no filtering: the grouped constraint runs.
+      expect(validateSync(dto)).toHaveLength(1);
 
       // With matching group - should validate
       const errors = validateSync(dto, { groups: ['network'] });
