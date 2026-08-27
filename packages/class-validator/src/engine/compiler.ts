@@ -884,13 +884,13 @@ function generateConstraintCheck(
     case 'arrayUnique':
       lines.push(`${indent}  if (!Array.isArray(${valueName})) {`);
       lines.push(
-        `${indent}      ${errorsName}.arrayUnique = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'all elements must be unique')};`,
+        `${indent}      ${errorsName}.arrayUnique = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must contain only unique values')};`,
       );
       lines.push(`${indent}  } else {`);
       lines.push(`${indent}    const uniqueSet = new Set(${valueName});`);
       lines.push(`${indent}    if (uniqueSet.size !== ${valueName}.length) {`);
       lines.push(
-        `${indent}      ${errorsName}.arrayUnique = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'all elements must be unique')};`,
+        `${indent}      ${errorsName}.arrayUnique = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must contain only unique values')};`,
       );
       lines.push(`${indent}    }`);
       lines.push(`    }`);
@@ -1798,12 +1798,12 @@ function generateConstraintCheck(
         const minTime = constraint.value.getTime();
         lines.push(`${indent}  if (!(${valueName} instanceof Date)) {`);
         lines.push(
-          `${indent}      ${errorsName}.minDate = ${emitMessage(constraint, constraintIndex, propertyName, valueName, `minimal allowed date is ${constraint.value.toISOString()}`)};`,
+          `${indent}      ${errorsName}.minDate = ${emitMessage(constraint, constraintIndex, propertyName, valueName, `must not be before ${constraint.value.toISOString()}`)};`,
         );
         lines.push(`${indent}  } else {`);
         lines.push(`${indent}    if (${valueName}.getTime() < ${minTime}) {`);
         lines.push(
-          `${indent}      ${errorsName}.minDate = ${emitMessage(constraint, constraintIndex, propertyName, valueName, `minimal allowed date is ${constraint.value.toISOString()}`)};`,
+          `${indent}      ${errorsName}.minDate = ${emitMessage(constraint, constraintIndex, propertyName, valueName, `must not be before ${constraint.value.toISOString()}`)};`,
         );
         lines.push(`${indent}    }`);
         lines.push(`    }`);
@@ -1815,12 +1815,12 @@ function generateConstraintCheck(
         const maxTime = constraint.value.getTime();
         lines.push(`${indent}  if (!(${valueName} instanceof Date)) {`);
         lines.push(
-          `${indent}      ${errorsName}.maxDate = ${emitMessage(constraint, constraintIndex, propertyName, valueName, `maximal allowed date is ${constraint.value.toISOString()}`)};`,
+          `${indent}      ${errorsName}.maxDate = ${emitMessage(constraint, constraintIndex, propertyName, valueName, `must not be after ${constraint.value.toISOString()}`)};`,
         );
         lines.push(`${indent}  } else {`);
         lines.push(`${indent}    if (${valueName}.getTime() > ${maxTime}) {`);
         lines.push(
-          `${indent}      ${errorsName}.maxDate = ${emitMessage(constraint, constraintIndex, propertyName, valueName, `maximal allowed date is ${constraint.value.toISOString()}`)};`,
+          `${indent}      ${errorsName}.maxDate = ${emitMessage(constraint, constraintIndex, propertyName, valueName, `must not be after ${constraint.value.toISOString()}`)};`,
         );
         lines.push(`${indent}    }`);
         lines.push(`    }`);
@@ -1925,19 +1925,19 @@ function generateConstraintCheck(
         `${indent}  if (typeof ${valueName} !== 'number' && typeof ${valueName} !== 'string') {`,
       );
       lines.push(
-        `${indent}      ${errorsName}.isLatitude = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'latitude must be a number between -90 and 90')};`,
+        `${indent}      ${errorsName}.isLatitude = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be a number between -90 and 90')};`,
       );
       lines.push(`${indent}  } else if (typeof ${valueName} === 'number') {`);
       lines.push(`${indent}    if (${valueName} < -90 || ${valueName} > 90) {`);
       lines.push(
-        `${indent}      ${errorsName}.isLatitude = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'latitude must be a number between -90 and 90')};`,
+        `${indent}      ${errorsName}.isLatitude = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be a number between -90 and 90')};`,
       );
       lines.push(`${indent}    }`);
       lines.push(`${indent}  } else {`);
       lines.push(`${indent}    const parsed = parseFloat(${valueName});`);
       lines.push(`${indent}    if (isNaN(parsed) || parsed < -90 || parsed > 90) {`);
       lines.push(
-        `${indent}      ${errorsName}.isLatitude = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'latitude must be a number between -90 and 90')};`,
+        `${indent}      ${errorsName}.isLatitude = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be a number between -90 and 90')};`,
       );
       lines.push(`${indent}    }`);
       lines.push(`${indent}  }`);
@@ -1949,19 +1949,19 @@ function generateConstraintCheck(
         `${indent}  if (typeof ${valueName} !== 'number' && typeof ${valueName} !== 'string') {`,
       );
       lines.push(
-        `${indent}      ${errorsName}.isLongitude = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'longitude must be a number between -180 and 180')};`,
+        `${indent}      ${errorsName}.isLongitude = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be a number between -180 and 180')};`,
       );
       lines.push(`${indent}  } else if (typeof ${valueName} === 'number') {`);
       lines.push(`${indent}    if (${valueName} < -180 || ${valueName} > 180) {`);
       lines.push(
-        `${indent}      ${errorsName}.isLongitude = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'longitude must be a number between -180 and 180')};`,
+        `${indent}      ${errorsName}.isLongitude = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be a number between -180 and 180')};`,
       );
       lines.push(`${indent}    }`);
       lines.push(`${indent}  } else {`);
       lines.push(`${indent}    const parsed = parseFloat(${valueName});`);
       lines.push(`${indent}    if (isNaN(parsed) || parsed < -180 || parsed > 180) {`);
       lines.push(
-        `${indent}      ${errorsName}.isLongitude = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'longitude must be a number between -180 and 180')};`,
+        `${indent}      ${errorsName}.isLongitude = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be a number between -180 and 180')};`,
       );
       lines.push(`${indent}    }`);
       lines.push(`${indent}  }`);
@@ -2256,16 +2256,21 @@ function generateAsyncConstraintCheck(
 /**
  * Get error message from constraint
  */
-function getErrorMessage(constraint: ValidationConstraint, defaultMessage: string): string {
+function getErrorMessage(
+  constraint: ValidationConstraint,
+  propertyName: string,
+  defaultMessage: string,
+): string {
   if (typeof constraint.message === 'string') {
     return constraint.message;
   }
-  // Upstream builds the prefix into each decorator's default message, so a
-  // message the caller supplied is left exactly as written. Upstream's prefix
-  // is "each value in ", which reads on into the property name it puts in
-  // every message; this package's messages carry no property name, so the
-  // prefix stops at "each value".
-  return constraint.each ? `each value ${defaultMessage}` : defaultMessage;
+  // Default messages name the property they are about, as upstream's do
+  // ("username must be ..."), so a message shown on its own still says which
+  // field it belongs to. A message the caller supplied is left exactly as
+  // written. Under `each` the property follows upstream's "each value in "
+  // prefix.
+  const subject = constraint.each ? `each value in ${propertyName}` : propertyName;
+  return `${subject} ${defaultMessage}`;
 }
 
 /**
@@ -2300,7 +2305,7 @@ function emitMessage(
       `property: ${safeProp} }))`
     );
   }
-  return JSON.stringify(getErrorMessage(constraint, defaultMessage));
+  return JSON.stringify(getErrorMessage(constraint, propertyName, defaultMessage));
 }
 
 /**
