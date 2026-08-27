@@ -24,6 +24,7 @@ export {
   // Email & Web
   IsEmail,
   IsURL,
+  IsUrl,
   IsUUID,
   IsJSON,
   // Format

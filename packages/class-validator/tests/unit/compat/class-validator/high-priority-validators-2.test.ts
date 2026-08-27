@@ -266,17 +266,20 @@ describe('class-validator-compat - High Priority Validators (Part 2)', () => {
       expect(errors).toHaveLength(0);
     });
 
-    it('should validate base64 without padding', async () => {
+    it('should reject base64 whose length is not a multiple of four', async () => {
       class TestDto {
         @IsBase64()
         content!: string;
       }
 
-      const valid = new TestDto();
-      valid.content = 'SGVsbG8gV29ybGQ';
+      const dto = new TestDto();
+      // 15 characters. Upstream rejects this by default and accepts it only
+      // under `IsBase64Options.padding: false`, an option this package does
+      // not accept.
+      dto.content = 'SGVsbG8gV29ybGQ';
 
-      const errors = await validate(valid);
-      expect(errors).toHaveLength(0);
+      const errors = await validate(dto);
+      expect(errors).toHaveLength(1);
     });
 
     it('should fail for invalid base64 strings', async () => {

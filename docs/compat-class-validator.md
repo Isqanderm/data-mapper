@@ -57,7 +57,7 @@ Array: `ArrayNotEmpty`, `ArrayMinSize`, `ArrayMaxSize`, `ArrayContains`, `ArrayN
 
 Geographic: `IsLatLong`, `IsLatitude`, `IsLongitude`
 
-String: `IsString` (see above), `MinLength`, `MaxLength`, `Length`, `IsEmail`, `IsURL`, `IsUUID`,
+String: `IsString` (see above), `MinLength`, `MaxLength`, `Length`, `IsEmail`, `IsURL` (also exported as `IsUrl`), `IsUUID`,
 `IsJSON`, `IsAlpha`, `IsAlphanumeric`, `IsHexColor`, `IsIP`, `IsCreditCard`, `IsISBN`,
 `IsPhoneNumber`, `Contains`, `NotContains`, `IsLowercase`, `IsUppercase`, `Matches`, `IsFQDN`,
 `IsISO8601`, `IsDateString`, `IsMobilePhone`, `IsPostalCode`, `IsMongoId`, `IsJWT`,

@@ -1454,7 +1454,7 @@ function generateConstraintCheck(
       );
       lines.push(`${indent}  } else {`);
       lines.push(
-        `${indent}    const base64Regex = /^(?:[A-Za-z0-9+\\/]{4})*(?:[A-Za-z0-9+\\/]{2}==|[A-Za-z0-9+\\/]{3}=|[A-Za-z0-9+\\/]{2,3})?$/;`,
+        `${indent}    const base64Regex = /^(?:[A-Za-z0-9+\\/]{4})*(?:[A-Za-z0-9+\\/]{2}==|[A-Za-z0-9+\\/]{3}=)?$/;`,
       );
       lines.push(`${indent}    if (!base64Regex.test(${valueName})) {`);
       lines.push(

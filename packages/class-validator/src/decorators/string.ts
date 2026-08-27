@@ -195,6 +195,12 @@ export function IsURL(options?: ValidationDecoratorOptions) {
 }
 
 /**
+ * Alias of {@link IsURL} spelled the way class-validator spells it, so
+ * `import { IsUrl }` resolves for code migrating from upstream.
+ */
+export const IsUrl = IsURL;
+
+/**
  * Checks if string is a valid UUID (v3, v4, or v5)
  *
  * @param version - UUID version (3, 4, or 5). If not specified, validates any version

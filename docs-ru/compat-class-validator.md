@@ -60,7 +60,7 @@
 
 Географические: `IsLatLong`, `IsLatitude`, `IsLongitude`
 
-Строки: `IsString` (см. выше), `MinLength`, `MaxLength`, `Length`, `IsEmail`, `IsURL`, `IsUUID`,
+Строки: `IsString` (см. выше), `MinLength`, `MaxLength`, `Length`, `IsEmail`, `IsURL` (также экспортируется как `IsUrl`), `IsUUID`,
 `IsJSON`, `IsAlpha`, `IsAlphanumeric`, `IsHexColor`, `IsIP`, `IsCreditCard`, `IsISBN`,
 `IsPhoneNumber`, `Contains`, `NotContains`, `IsLowercase`, `IsUppercase`, `Matches`, `IsFQDN`,
 `IsISO8601`, `IsDateString`, `IsMobilePhone`, `IsPostalCode`, `IsMongoId`, `IsJWT`,
