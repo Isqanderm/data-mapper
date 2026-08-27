@@ -115,7 +115,10 @@ export async function validateOrReject(object: any, options?: ValidatorOptions):
   const errors = await validate(object, options);
 
   if (errors.length > 0) {
-    throw new ValidationFailedError(errors);
+    // Upstream rejects with the raw array, so `catch (errors) { errors.map(…) }`
+    // written against class-validator keeps working. Wrapping it in an Error
+    // subclass instead made that idiom read properties off the wrapper.
+    throw errors;
   }
 }
 
@@ -126,7 +129,9 @@ export function validateOrRejectSync(object: any, options?: ValidatorOptions): v
   const errors = validateSync(object, options);
 
   if (errors.length > 0) {
-    throw new ValidationFailedError(errors);
+    // Not an upstream API, but it must not disagree with its async twin about
+    // what it throws.
+    throw errors;
   }
 }
 

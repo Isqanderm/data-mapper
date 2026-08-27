@@ -53,7 +53,7 @@ describe('class-validator-compat - High Priority Validators', () => {
       const errors = await validate(invalid);
       expect(errors).toHaveLength(1);
       expect(errors[0].property).toBe('domain');
-      expect(errors[0].constraints).toHaveProperty('isFQDN');
+      expect(errors[0].constraints).toHaveProperty('isFqdn');
     });
 
     it('should fail for URLs with protocol', async () => {
@@ -109,7 +109,7 @@ describe('class-validator-compat - High Priority Validators', () => {
       const errors = await validate(invalid);
       expect(errors).toHaveLength(1);
       expect(errors[0].property).toBe('date');
-      expect(errors[0].constraints).toHaveProperty('isISO8601');
+      expect(errors[0].constraints).toHaveProperty('isIso8601');
     });
   });
 

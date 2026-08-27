@@ -36,7 +36,7 @@ describe('100% Coverage Tests', () => {
       invalid.isbn = 'invalid-isbn';
       const errors = validateSync(invalid);
       expect(errors).toHaveLength(1);
-      expect(errors[0].constraints?.isISBN).toBeDefined();
+      expect(errors[0].constraints?.isIsbn).toBeDefined();
     });
 
     it('should validate ISBN-13', () => {
@@ -53,7 +53,7 @@ describe('100% Coverage Tests', () => {
       invalid.isbn = 'not-an-isbn';
       const errors = validateSync(invalid);
       expect(errors).toHaveLength(1);
-      expect(errors[0].constraints?.isISBN).toBeDefined();
+      expect(errors[0].constraints?.isIsbn).toBeDefined();
     });
 
     it('should validate any ISBN version when not specified', () => {
@@ -80,7 +80,7 @@ describe('100% Coverage Tests', () => {
       const dto = new BookDto();
       dto.isbn = 'invalid';
       const errors = validateSync(dto);
-      expect(errors[0].constraints?.isISBN).toBe('Please provide a valid ISBN-13');
+      expect(errors[0].constraints?.isIsbn).toBe('Please provide a valid ISBN-13');
     });
   });
 
@@ -324,13 +324,13 @@ describe('100% Coverage Tests', () => {
       tooShort.username = 'ab';
       const errors1 = validateSync(tooShort);
       expect(errors1).toHaveLength(1);
-      expect(errors1[0].constraints?.minLength).toBeDefined();
+      expect(errors1[0].constraints?.isLength).toBeDefined();
 
       const tooLong = new UserDto();
       tooLong.username = 'verylongusername';
       const errors2 = validateSync(tooLong);
       expect(errors2).toHaveLength(1);
-      expect(errors2[0].constraints?.maxLength).toBeDefined();
+      expect(errors2[0].constraints?.isLength).toBeDefined();
     });
 
     it('should support custom error message', () => {
@@ -342,7 +342,7 @@ describe('100% Coverage Tests', () => {
       const dto = new UserDto();
       dto.username = 'ab';
       const errors = validateSync(dto);
-      expect(errors[0].constraints?.minLength).toBe('Username must be 3-10 characters');
+      expect(errors[0].constraints?.isLength).toBe('Username must be 3-10 characters');
     });
   });
 

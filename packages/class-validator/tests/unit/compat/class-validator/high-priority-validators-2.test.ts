@@ -41,7 +41,7 @@ describe('class-validator-compat - High Priority Validators (Part 2)', () => {
       const errors = await validate(invalid);
       expect(errors).toHaveLength(1);
       expect(errors[0].property).toBe('token');
-      expect(errors[0].constraints).toHaveProperty('isJWT');
+      expect(errors[0].constraints).toHaveProperty('isJwt');
     });
 
     it('should fail for tokens with only two parts', async () => {
@@ -248,7 +248,7 @@ describe('class-validator-compat - High Priority Validators (Part 2)', () => {
       const errors = await validate(invalid);
       expect(errors).toHaveLength(1);
       expect(errors[0].property).toBe('mac');
-      expect(errors[0].constraints).toHaveProperty('isMACAddress');
+      expect(errors[0].constraints).toHaveProperty('isMacAddress');
     });
   });
 

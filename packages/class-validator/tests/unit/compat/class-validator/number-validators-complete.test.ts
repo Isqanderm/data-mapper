@@ -42,8 +42,8 @@ describe('Number Validators - Complete Coverage', () => {
       const errors = validateSync(dto);
       expect(errors).toHaveLength(1);
       expect(errors[0].property).toBe('value');
-      expect(errors[0].constraints?.min).toBeDefined();
-      expect(errors[0].constraints?.min).toContain('positive');
+      expect(errors[0].constraints?.isPositive).toBeDefined();
+      expect(errors[0].constraints?.isPositive).toContain('positive');
     });
 
     it('should fail for negative numbers', () => {
@@ -76,7 +76,7 @@ describe('Number Validators - Complete Coverage', () => {
 
       const errors = validateSync(dto);
       expect(errors).toHaveLength(1);
-      expect(errors[0].constraints?.min).toBe('Value must be greater than zero');
+      expect(errors[0].constraints?.isPositive).toBe('Value must be greater than zero');
     });
 
     it('should support validation groups', () => {
@@ -138,8 +138,8 @@ describe('Number Validators - Complete Coverage', () => {
       const errors = validateSync(dto);
       expect(errors).toHaveLength(1);
       expect(errors[0].property).toBe('value');
-      expect(errors[0].constraints?.max).toBeDefined();
-      expect(errors[0].constraints?.max).toContain('negative');
+      expect(errors[0].constraints?.isNegative).toBeDefined();
+      expect(errors[0].constraints?.isNegative).toContain('negative');
     });
 
     it('should fail for positive numbers', () => {
@@ -172,7 +172,7 @@ describe('Number Validators - Complete Coverage', () => {
 
       const errors = validateSync(dto);
       expect(errors).toHaveLength(1);
-      expect(errors[0].constraints?.max).toBe('Value must be less than zero');
+      expect(errors[0].constraints?.isNegative).toBe('Value must be less than zero');
     });
 
     it('should support validation groups', () => {

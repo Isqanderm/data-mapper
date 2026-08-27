@@ -969,26 +969,26 @@ function generateConstraintCheck(
       lines.push(`    }`);
       break;
 
-    case 'isURL':
+    case 'isUrl':
       lines.push(`${indent}  if (typeof ${valueName} !== 'string') {`);
       lines.push(
-        `${indent}      ${errorsName}.isURL = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be a URL address')};`,
+        `${indent}      ${errorsName}.isUrl = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be a URL address')};`,
       );
       lines.push(`${indent}  } else {`);
       lines.push(`${indent}    try {`);
       lines.push(`${indent}      new URL(${valueName});`);
       lines.push(`${indent}    } catch {`);
       lines.push(
-        `${indent}      ${errorsName}.isURL = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be a URL address')};`,
+        `${indent}      ${errorsName}.isUrl = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be a URL address')};`,
       );
       lines.push(`${indent}    }`);
       lines.push(`    }`);
       break;
 
-    case 'isUUID':
+    case 'isUuid':
       lines.push(`${indent}  if (typeof ${valueName} !== 'string') {`);
       lines.push(
-        `${indent}      ${errorsName}.isUUID = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be a UUID')};`,
+        `${indent}      ${errorsName}.isUuid = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be a UUID')};`,
       );
       lines.push(`${indent}  } else {`);
       if (constraint.value === '3') {
@@ -1010,23 +1010,23 @@ function generateConstraintCheck(
       }
       lines.push(`${indent}    if (!uuidRegex.test(${valueName})) {`);
       lines.push(
-        `${indent}      ${errorsName}.isUUID = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be a UUID')};`,
+        `${indent}      ${errorsName}.isUuid = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be a UUID')};`,
       );
       lines.push(`${indent}    }`);
       lines.push(`    }`);
       break;
 
-    case 'isJSON':
+    case 'isJson':
       lines.push(`${indent}  if (typeof ${valueName} !== 'string') {`);
       lines.push(
-        `${indent}      ${errorsName}.isJSON = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be a json string')};`,
+        `${indent}      ${errorsName}.isJson = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be a json string')};`,
       );
       lines.push(`${indent}  } else {`);
       lines.push(`${indent}    try {`);
       lines.push(`${indent}      JSON.parse(${valueName});`);
       lines.push(`${indent}    } catch {`);
       lines.push(
-        `${indent}      ${errorsName}.isJSON = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be a json string')};`,
+        `${indent}      ${errorsName}.isJson = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be a json string')};`,
       );
       lines.push(`${indent}    }`);
       lines.push(`    }`);
@@ -1078,10 +1078,10 @@ function generateConstraintCheck(
       lines.push(`    }`);
       break;
 
-    case 'isIP':
+    case 'isIp':
       lines.push(`${indent}  if (typeof ${valueName} !== 'string') {`);
       lines.push(
-        `${indent}      ${errorsName}.isIP = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be an ip address')};`,
+        `${indent}      ${errorsName}.isIp = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be an ip address')};`,
       );
       lines.push(`${indent}  } else {`);
       if (constraint.value === '4') {
@@ -1105,7 +1105,7 @@ function generateConstraintCheck(
       }
       lines.push(`${indent}    if (!ipRegex.test(${valueName})) {`);
       lines.push(
-        `${indent}      ${errorsName}.isIP = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be an ip address')};`,
+        `${indent}      ${errorsName}.isIp = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be an ip address')};`,
       );
       lines.push(`${indent}    }`);
       lines.push(`    }`);
@@ -1145,23 +1145,23 @@ function generateConstraintCheck(
       lines.push(`    }`);
       break;
 
-    case 'isISBN':
+    case 'isIsbn':
       lines.push(`${indent}  if (typeof ${valueName} !== 'string') {`);
       lines.push(
-        `${indent}      ${errorsName}.isISBN = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be an ISBN')};`,
+        `${indent}      ${errorsName}.isIsbn = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be an ISBN')};`,
       );
       lines.push(`${indent}  } else {`);
       lines.push(`${indent}    const sanitized = ${valueName}.replace(/[- ]/g, '');`);
       if (constraint.value === '10') {
         lines.push(`${indent}    if (!/^[0-9]{9}[0-9X]$/i.test(sanitized)) {`);
         lines.push(
-          `${indent}      ${errorsName}.isISBN = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be an ISBN')};`,
+          `${indent}      ${errorsName}.isIsbn = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be an ISBN')};`,
         );
         lines.push(`${indent}    }`);
       } else if (constraint.value === '13') {
         lines.push(`${indent}    if (!/^[0-9]{13}$/.test(sanitized)) {`);
         lines.push(
-          `${indent}      ${errorsName}.isISBN = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be an ISBN')};`,
+          `${indent}      ${errorsName}.isIsbn = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be an ISBN')};`,
         );
         lines.push(`${indent}    }`);
       } else {
@@ -1169,7 +1169,7 @@ function generateConstraintCheck(
         lines.push(`${indent}    const isbn13 = /^[0-9]{13}$/.test(sanitized);`);
         lines.push(`${indent}    if (!isbn10 && !isbn13) {`);
         lines.push(
-          `${indent}      ${errorsName}.isISBN = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be an ISBN')};`,
+          `${indent}      ${errorsName}.isIsbn = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be an ISBN')};`,
         );
         lines.push(`${indent}    }`);
       }
@@ -1256,10 +1256,10 @@ function generateConstraintCheck(
       break;
 
     // High Priority Validators
-    case 'isFQDN':
+    case 'isFqdn':
       lines.push(`${indent}  if (typeof ${valueName} !== 'string') {`);
       lines.push(
-        `${indent}      ${errorsName}.isFQDN = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be a valid domain name')};`,
+        `${indent}      ${errorsName}.isFqdn = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be a valid domain name')};`,
       );
       lines.push(`${indent}  } else {`);
       lines.push(
@@ -1267,16 +1267,68 @@ function generateConstraintCheck(
       );
       lines.push(`${indent}    if (!fqdnRegex.test(${valueName})) {`);
       lines.push(
-        `${indent}      ${errorsName}.isFQDN = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be a valid domain name')};`,
+        `${indent}      ${errorsName}.isFqdn = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be a valid domain name')};`,
       );
       lines.push(`${indent}    }`);
       lines.push(`    }`);
       break;
 
-    case 'isISO8601':
+    case 'isPositive':
+      lines.push(`${indent}  if (typeof ${valueName} !== 'number' || ${valueName} <= 0) {`);
+      lines.push(
+        `${indent}    ${errorsName}.isPositive = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be a positive number')};`,
+      );
+      lines.push(`${indent}  }`);
+      break;
+
+    case 'isNegative':
+      lines.push(`${indent}  if (typeof ${valueName} !== 'number' || ${valueName} >= 0) {`);
+      lines.push(
+        `${indent}    ${errorsName}.isNegative = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be a negative number')};`,
+      );
+      lines.push(`${indent}  }`);
+      break;
+
+    case 'isLength': {
+      const lengthMin = constraint.value?.min ?? 0;
+      const lengthMax = constraint.value?.max;
+      const lengthMessage =
+        lengthMax === undefined
+          ? `must be longer than or equal to ${lengthMin} characters`
+          : `must be longer than or equal to ${lengthMin} and shorter than or equal to ${lengthMax} characters`;
+      const overMax =
+        lengthMax === undefined ? '' : ` || ${valueName}.length > ${JSON.stringify(lengthMax)}`;
+      lines.push(
+        `${indent}  if (typeof ${valueName} !== 'string' || ${valueName}.length < ${JSON.stringify(lengthMin)}${overMax}) {`,
+      );
+      lines.push(
+        `${indent}    ${errorsName}.isLength = ${emitMessage(constraint, constraintIndex, propertyName, valueName, lengthMessage)};`,
+      );
+      lines.push(`${indent}  }`);
+      break;
+    }
+
+    case 'isDateString':
       lines.push(`${indent}  if (typeof ${valueName} !== 'string') {`);
       lines.push(
-        `${indent}      ${errorsName}.isISO8601 = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be a valid ISO 8601 date string')};`,
+        `${indent}      ${errorsName}.isDateString = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be a valid ISO 8601 date string')};`,
+      );
+      lines.push(`${indent}  } else {`);
+      lines.push(
+        `${indent}    const dateStringRegex = /^\\d{4}-\\d{2}-\\d{2}(T\\d{2}:\\d{2}:\\d{2}(\\.\\d{1,3})?(Z|[+-]\\d{2}:\\d{2})?)?$/;`,
+      );
+      lines.push(`${indent}    if (!dateStringRegex.test(${valueName})) {`);
+      lines.push(
+        `${indent}      ${errorsName}.isDateString = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be a valid ISO 8601 date string')};`,
+      );
+      lines.push(`${indent}    }`);
+      lines.push(`    }`);
+      break;
+
+    case 'isIso8601':
+      lines.push(`${indent}  if (typeof ${valueName} !== 'string') {`);
+      lines.push(
+        `${indent}      ${errorsName}.isIso8601 = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be a valid ISO 8601 date string')};`,
       );
       lines.push(`${indent}  } else {`);
       lines.push(
@@ -1284,7 +1336,7 @@ function generateConstraintCheck(
       );
       lines.push(`${indent}    if (!iso8601Regex.test(${valueName})) {`);
       lines.push(
-        `${indent}      ${errorsName}.isISO8601 = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be a valid ISO 8601 date string')};`,
+        `${indent}      ${errorsName}.isIso8601 = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be a valid ISO 8601 date string')};`,
       );
       lines.push(`${indent}    }`);
       lines.push(`    }`);
@@ -1347,16 +1399,16 @@ function generateConstraintCheck(
       lines.push(`    }`);
       break;
 
-    case 'isJWT':
+    case 'isJwt':
       lines.push(`${indent}  if (typeof ${valueName} !== 'string') {`);
       lines.push(
-        `${indent}      ${errorsName}.isJWT = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be a jwt string')};`,
+        `${indent}      ${errorsName}.isJwt = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be a jwt string')};`,
       );
       lines.push(`${indent}  } else {`);
       lines.push(`${indent}    const parts = ${valueName}.split('.');`);
       lines.push(`${indent}    if (parts.length !== 3 || !parts[0] || !parts[1]) {`);
       lines.push(
-        `${indent}      ${errorsName}.isJWT = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be a jwt string')};`,
+        `${indent}      ${errorsName}.isJwt = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be a jwt string')};`,
       );
       lines.push(`${indent}    } else {`);
       lines.push(`${indent}      const jwtRegex = /^[A-Za-z0-9-_]+$/;`);
@@ -1364,7 +1416,7 @@ function generateConstraintCheck(
         `${indent}      if (!jwtRegex.test(parts[0]) || !jwtRegex.test(parts[1]) || (parts[2] && !jwtRegex.test(parts[2]))) {`,
       );
       lines.push(
-        `${indent}        ${errorsName}.isJWT = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be a jwt string')};`,
+        `${indent}        ${errorsName}.isJwt = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be a jwt string')};`,
       );
       lines.push(`${indent}      }`);
       lines.push(`${indent}    }`);
@@ -1407,16 +1459,16 @@ function generateConstraintCheck(
       lines.push(`    }`);
       break;
 
-    case 'isMACAddress':
+    case 'isMacAddress':
       lines.push(`${indent}  if (typeof ${valueName} !== 'string') {`);
       lines.push(
-        `${indent}      ${errorsName}.isMACAddress = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be a MAC Address')};`,
+        `${indent}      ${errorsName}.isMacAddress = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be a MAC Address')};`,
       );
       lines.push(`${indent}  } else {`);
       lines.push(`${indent}    const macRegex = /^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$/;`);
       lines.push(`${indent}    if (!macRegex.test(${valueName})) {`);
       lines.push(
-        `${indent}      ${errorsName}.isMACAddress = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be a MAC Address')};`,
+        `${indent}      ${errorsName}.isMacAddress = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be a MAC Address')};`,
       );
       lines.push(`${indent}    }`);
       lines.push(`    }`);
@@ -1583,16 +1635,16 @@ function generateConstraintCheck(
       lines.push(`    }`);
       break;
 
-    case 'isISIN':
+    case 'isIsin':
       lines.push(`${indent}  if (typeof ${valueName} !== 'string') {`);
       lines.push(
-        `${indent}      ${errorsName}.isISIN = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be a valid ISIN')};`,
+        `${indent}      ${errorsName}.isIsin = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be a valid ISIN')};`,
       );
       lines.push(`${indent}  } else {`);
       lines.push(`${indent}    const isinRegex = /^[A-Z]{2}[A-Z0-9]{9}[0-9]$/;`);
       lines.push(`${indent}    if (!isinRegex.test(${valueName})) {`);
       lines.push(
-        `${indent}      ${errorsName}.isISIN = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be a valid ISIN')};`,
+        `${indent}      ${errorsName}.isIsin = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be a valid ISIN')};`,
       );
       lines.push(`${indent}    }`);
       lines.push(`    }`);

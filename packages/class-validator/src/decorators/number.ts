@@ -145,9 +145,8 @@ export function IsPositive(options?: ValidationDecoratorOptions) {
 
     context.addInitializer(function (this: any) {
       addValidationConstraint(this.constructor, propertyKey, {
-        type: 'min',
-        value: 0.000001, // Slightly above 0
-        message: options?.message || 'must be a positive number',
+        type: 'isPositive',
+        message: options?.message,
         groups: options?.groups,
         always: options?.always,
         each: options?.each,
@@ -175,9 +174,8 @@ export function IsNegative(options?: ValidationDecoratorOptions) {
 
     context.addInitializer(function (this: any) {
       addValidationConstraint(this.constructor, propertyKey, {
-        type: 'max',
-        value: -0.000001, // Slightly below 0
-        message: options?.message || 'must be a negative number',
+        type: 'isNegative',
+        message: options?.message,
         groups: options?.groups,
         always: options?.always,
         each: options?.each,

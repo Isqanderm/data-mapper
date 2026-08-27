@@ -63,7 +63,7 @@ describe('Phase 2 Validators', () => {
       invalid.url = 'not-a-url';
       const errors = validateSync(invalid);
       expect(errors).toHaveLength(1);
-      expect(errors[0].constraints?.isURL).toBeDefined();
+      expect(errors[0].constraints?.isUrl).toBeDefined();
     });
 
     it('should validate UUIDs', () => {
@@ -101,7 +101,7 @@ describe('Phase 2 Validators', () => {
       invalid.data = '{invalid json}';
       const errors = validateSync(invalid);
       expect(errors).toHaveLength(1);
-      expect(errors[0].constraints?.isJSON).toBeDefined();
+      expect(errors[0].constraints?.isJson).toBeDefined();
     });
   });
 

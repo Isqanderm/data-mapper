@@ -24,7 +24,7 @@ describe('Final Coverage Gaps', () => {
       invalid.id = '6fa459ea-ee8a-4ca4-894e-db77e160355e'; // UUID v4, not v3
       const errors = validateSync(invalid);
       expect(errors).toHaveLength(1);
-      expect(errors[0].constraints?.isUUID).toBeDefined();
+      expect(errors[0].constraints?.isUuid).toBeDefined();
     });
 
     it('should validate UUID version 5', () => {
@@ -41,7 +41,7 @@ describe('Final Coverage Gaps', () => {
       invalid.id = '886313e1-3b8a-4372-9b90-0c9aee199e5d'; // UUID v4, not v5
       const errors = validateSync(invalid);
       expect(errors).toHaveLength(1);
-      expect(errors[0].constraints?.isUUID).toBeDefined();
+      expect(errors[0].constraints?.isUuid).toBeDefined();
     });
   });
 
@@ -60,7 +60,7 @@ describe('Final Coverage Gaps', () => {
       invalid.ipAddress = '192.168.1.1'; // IPv4, not IPv6
       const errors = validateSync(invalid);
       expect(errors).toHaveLength(1);
-      expect(errors[0].constraints?.isIP).toBeDefined();
+      expect(errors[0].constraints?.isIp).toBeDefined();
     });
 
     it('should validate compressed IPv6 addresses', () => {
@@ -169,7 +169,7 @@ describe('Final Coverage Gaps', () => {
       const dto = new TestDto();
       dto.id = 'invalid-uuid';
       const errors = validateSync(dto);
-      expect(errors[0].constraints?.isUUID).toBe('Must be a valid UUID version 3');
+      expect(errors[0].constraints?.isUuid).toBe('Must be a valid UUID version 3');
     });
 
     it('should handle IPv6 with custom error message', () => {
@@ -181,7 +181,7 @@ describe('Final Coverage Gaps', () => {
       const dto = new TestDto();
       dto.ip = 'not-an-ip';
       const errors = validateSync(dto);
-      expect(errors[0].constraints?.isIP).toBe('Must be a valid IPv6 address');
+      expect(errors[0].constraints?.isIp).toBe('Must be a valid IPv6 address');
     });
 
     it('should handle UUID version 5 with validation groups', () => {

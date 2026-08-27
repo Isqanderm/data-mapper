@@ -112,24 +112,17 @@ export function MaxLength(max: number, options?: ValidationDecoratorOptions) {
  * }
  * ```
  */
-export function Length(min: number, max: number, options?: ValidationDecoratorOptions) {
+export function Length(min: number, max?: number, options?: ValidationDecoratorOptions) {
   return function (target: undefined, context: ClassFieldDecoratorContext): any {
     const propertyKey = context.name;
 
     context.addInitializer(function (this: any) {
-      // Add both min and max constraints
+      // One constraint, reported under upstream's `isLength` key. Emitting a
+      // minLength and a maxLength instead would report the wrong key and,
+      // when both fail, two of them.
       addValidationConstraint(this.constructor, propertyKey, {
-        type: 'minLength',
-        value: min,
-        message: options?.message,
-        groups: options?.groups,
-        always: options?.always,
-        each: options?.each,
-      });
-
-      addValidationConstraint(this.constructor, propertyKey, {
-        type: 'maxLength',
-        value: max,
+        type: 'isLength',
+        value: { min, max },
         message: options?.message,
         groups: options?.groups,
         always: options?.always,
@@ -191,7 +184,7 @@ export function IsURL(options?: ValidationDecoratorOptions) {
 
     context.addInitializer(function (this: any) {
       addValidationConstraint(this.constructor, propertyKey, {
-        type: 'isURL',
+        type: 'isUrl',
         message: options?.message,
         groups: options?.groups,
         always: options?.always,
@@ -224,7 +217,7 @@ export function IsUUID(version?: '3' | '4' | '5' | 'all', options?: ValidationDe
 
     context.addInitializer(function (this: any) {
       addValidationConstraint(this.constructor, propertyKey, {
-        type: 'isUUID',
+        type: 'isUuid',
         value: version || 'all',
         message: options?.message,
         groups: options?.groups,
@@ -254,7 +247,7 @@ export function IsJSON(options?: ValidationDecoratorOptions) {
 
     context.addInitializer(function (this: any) {
       addValidationConstraint(this.constructor, propertyKey, {
-        type: 'isJSON',
+        type: 'isJson',
         message: options?.message,
         groups: options?.groups,
         always: options?.always,
@@ -382,7 +375,7 @@ export function IsIP(version?: '4' | '6', options?: ValidationDecoratorOptions) 
 
     context.addInitializer(function (this: any) {
       addValidationConstraint(this.constructor, propertyKey, {
-        type: 'isIP',
+        type: 'isIp',
         value: version,
         message: options?.message,
         groups: options?.groups,
@@ -449,7 +442,7 @@ export function IsISBN(version?: '10' | '13', options?: ValidationDecoratorOptio
 
     context.addInitializer(function (this: any) {
       addValidationConstraint(this.constructor, propertyKey, {
-        type: 'isISBN',
+        type: 'isIsbn',
         value: version,
         message: options?.message,
         groups: options?.groups,
@@ -687,7 +680,7 @@ export function IsFQDN(options?: ValidationDecoratorOptions) {
 
     context.addInitializer(function (this: any) {
       addValidationConstraint(this.constructor, propertyKey, {
-        type: 'isFQDN',
+        type: 'isFqdn',
         message: options?.message,
         groups: options?.groups,
         always: options?.always,
@@ -716,7 +709,7 @@ export function IsISO8601(options?: ValidationDecoratorOptions) {
 
     context.addInitializer(function (this: any) {
       addValidationConstraint(this.constructor, propertyKey, {
-        type: 'isISO8601',
+        type: 'isIso8601',
         message: options?.message,
         groups: options?.groups,
         always: options?.always,
@@ -740,7 +733,21 @@ export function IsISO8601(options?: ValidationDecoratorOptions) {
  * ```
  */
 export function IsDateString(options?: ValidationDecoratorOptions) {
-  return IsISO8601(options);
+  return function (target: undefined, context: ClassFieldDecoratorContext): any {
+    const propertyKey = context.name;
+
+    context.addInitializer(function (this: any) {
+      // Same check as @IsISO8601, but reported under its own key, as upstream
+      // does — delegating to IsISO8601 reported `isIso8601` to the caller.
+      addValidationConstraint(this.constructor, propertyKey, {
+        type: 'isDateString',
+        message: options?.message,
+        groups: options?.groups,
+        always: options?.always,
+        each: options?.each,
+      });
+    });
+  };
 }
 
 /**
@@ -853,7 +860,7 @@ export function IsJWT(options?: ValidationDecoratorOptions) {
 
     context.addInitializer(function (this: any) {
       addValidationConstraint(this.constructor, propertyKey, {
-        type: 'isJWT',
+        type: 'isJwt',
         message: options?.message,
         groups: options?.groups,
         always: options?.always,
@@ -940,7 +947,7 @@ export function IsMACAddress(options?: ValidationDecoratorOptions) {
 
     context.addInitializer(function (this: any) {
       addValidationConstraint(this.constructor, propertyKey, {
-        type: 'isMACAddress',
+        type: 'isMacAddress',
         message: options?.message,
         groups: options?.groups,
         always: options?.always,
@@ -1275,7 +1282,7 @@ export function IsISIN(options?: ValidationDecoratorOptions) {
 
     context.addInitializer(function (this: any) {
       addValidationConstraint(this.constructor, propertyKey, {
-        type: 'isISIN',
+        type: 'isIsin',
         message: options?.message,
         groups: options?.groups,
         always: options?.always,

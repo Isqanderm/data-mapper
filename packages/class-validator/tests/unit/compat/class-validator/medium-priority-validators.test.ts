@@ -392,7 +392,7 @@ describe('class-validator-compat - Medium Priority Validators (Banking & Crypto)
       const errors = await validate(invalid);
       expect(errors).toHaveLength(1);
       expect(errors[0].property).toBe('isin');
-      expect(errors[0].constraints).toHaveProperty('isISIN');
+      expect(errors[0].constraints).toHaveProperty('isIsin');
     });
   });
 
