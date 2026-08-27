@@ -1,5 +1,5 @@
 ---
-'@om-data-mapper/class-transformer': minor
+'@tech-pioneer/data-mapper-class-transformer': minor
 ---
 
 Implement `enableImplicitConversion` (primitive coercion via `@Type`). Remove dead `ClassTransformOptions` fields: `enableCircularCheck`, `exposeUnsetFields`, `targetMaps`, `enableValidation`.

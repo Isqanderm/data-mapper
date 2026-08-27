@@ -1,5 +1,5 @@
 ---
-'@om-data-mapper/class-validator': minor
+'@tech-pioneer/data-mapper-class-validator': minor
 ---
 
 Implement previously-dead `ValidatorOptions` (`whitelist`, `forbidNonWhitelisted`, `skipMissingProperties`, `skipNullProperties`, `skipUndefinedProperties`, `stopAtFirstError`, `forbidUnknownValues`), function-form `message`, `ValidationError.target`/`.value` stripping, `registerDecorator`, and `getMetadataStorage`.

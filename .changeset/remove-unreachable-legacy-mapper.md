@@ -1,5 +1,5 @@
 ---
-'@om-data-mapper/core': patch
+'@tech-pioneer/data-mapper-core': patch
 'om-data-mapper': patch
 ---
 
