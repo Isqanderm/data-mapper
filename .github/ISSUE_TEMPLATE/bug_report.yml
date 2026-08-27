@@ -1,7 +1,7 @@
 name: Bug Report
 description: Report a bug or unexpected behavior
-title: "[Bug]: "
-labels: ["bug", "triage"]
+title: '[Bug]: '
+labels: ['bug', 'triage']
 body:
   - type: markdown
     attributes:
@@ -55,7 +55,7 @@ body:
       placeholder: |
         ```typescript
         import { Mapper } from 'om-data-mapper';
-        
+
         // Your code here
         ```
       render: typescript
@@ -109,8 +109,8 @@ body:
       label: TypeScript
       description: Are you using TypeScript?
       options:
-        - "Yes"
-        - "No"
+        - 'Yes'
+        - 'No'
     validations:
       required: true
 
@@ -144,4 +144,3 @@ body:
           required: false
         - label: I am using the latest version of om-data-mapper
           required: false
-

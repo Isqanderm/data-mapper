@@ -1,7 +1,7 @@
 name: Feature Request
 description: Suggest a new feature or enhancement
-title: "[Feature]: "
-labels: ["enhancement", "triage"]
+title: '[Feature]: '
+labels: ['enhancement', 'triage']
 body:
   - type: markdown
     attributes:
@@ -86,9 +86,9 @@ body:
       label: Breaking Change
       description: Would this be a breaking change?
       options:
-        - "No"
-        - "Yes"
-        - "Not sure"
+        - 'No'
+        - 'Yes'
+        - 'Not sure'
     validations:
       required: true
 
@@ -98,9 +98,9 @@ body:
       label: Priority
       description: How important is this feature to you?
       options:
-        - "Nice to have"
-        - "Important"
-        - "Critical"
+        - 'Nice to have'
+        - 'Important'
+        - 'Critical'
     validations:
       required: true
 
@@ -125,4 +125,3 @@ body:
           required: false
         - label: I am willing to help implement this feature
           required: false
-

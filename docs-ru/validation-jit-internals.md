@@ -10,7 +10,7 @@
 
 ## Компоненты архитектуры
 
-### 1. Хранение метаданных (`src/compat/class-validator/engine/metadata.ts`)
+### 1. Хранение метаданных (`packages/class-validator/src/engine/metadata.ts`)
 
 Система валидации использует **хранение метаданных на основе Symbol** для сохранения правил валидации, привязанных к свойствам класса.
 
@@ -44,18 +44,18 @@ interface PropertyValidationMetadata {
 }
 
 interface ValidationConstraint {
-  type: string;                    // например, 'isString', 'minLength'
-  value?: any;                     // Параметры ограничения
-  message?: string | Function;     // Сообщение об ошибке
-  groups?: string[];               // Группы валидации
-  always?: boolean;                // Флаг постоянной валидации
-  validator?: Function;            // Функция пользовательского валидатора
+  type: string; // например, 'isString', 'minLength'
+  value?: any; // Параметры ограничения
+  message?: string | Function; // Сообщение об ошибке
+  groups?: string[]; // Группы валидации
+  always?: boolean; // Флаг постоянной валидации
+  validator?: Function; // Функция пользовательского валидатора
 }
 ```
 
 ---
 
-### 2. Реестр валидаторов (`src/compat/class-validator/engine/validator-registry.ts`)
+### 2. Реестр валидаторов (`packages/class-validator/src/engine/validator-registry.ts`)
 
 Управляет экземплярами классов пользовательских валидаторов с кэшированием для избежания повторного создания экземпляров.
 
@@ -73,7 +73,7 @@ const validatorInstanceCache = new Map<
 >();
 
 export function getValidatorInstance(
-  validatorClass: new () => ValidatorConstraintInterface
+  validatorClass: new () => ValidatorConstraintInterface,
 ): ValidatorConstraintInterface {
   if (validatorInstanceCache.has(validatorClass)) {
     return validatorInstanceCache.get(validatorClass)!;
@@ -86,7 +86,7 @@ export function getValidatorInstance(
 
 ---
 
-### 3. JIT-компилятор (`src/compat/class-validator/engine/compiler.ts`)
+### 3. JIT-компилятор (`packages/class-validator/src/engine/compiler.ts`)
 
 Ядро системы валидации - генерирует оптимизированные функции валидации.
 
@@ -164,27 +164,28 @@ const opts = options || {};
 
 // Валидация свойства: name
 {
-  const value = object?.name;
+  const value = object['name'];
   const propertyErrors = {};
-  
+
   // Проверка, должно ли свойство валидироваться
   if (value !== undefined && value !== null) {
     // Ограничение: isString
     if (typeof value !== 'string') {
       propertyErrors.isString = 'name must be a string';
     }
-    
+
     // Ограничение: minLength
     if (typeof value === 'string' && value.length < 3) {
       propertyErrors.minLength = 'name must be at least 3 characters';
     }
   }
-  
+
   if (Object.keys(propertyErrors).length > 0) {
     errors.push({
       property: 'name',
       value: value,
-      constraints: propertyErrors
+      target: object,
+      constraints: propertyErrors,
     });
   }
 }
@@ -235,12 +236,13 @@ if (!validators.isString(value)) { ... }
 if (typeof value !== 'string') { ... }
 ```
 
-### 3. **Optional Chaining**
+### 3. **Доступ к свойству через скобочную нотацию**
 
-Безопасный доступ к свойствам без try-catch:
+Каждое свойство читается через выражение с квадратными скобками, использующее имя свойства,
+полученное через `JSON.stringify`, а не через optional chaining:
 
 ```javascript
-const value = object?.propertyName;
+const value = object['propertyName'];
 ```
 
 ### 4. **Условная компиляция**
@@ -257,7 +259,7 @@ if (typeof value === 'string' && value.length < 3) { ... }
 Группы валидации проверяются во время компиляции:
 
 ```javascript
-if (opts.groups && opts.groups.length > 0 && opts.groups.some(g => ['admin'].includes(g))) {
+if (opts.groups && opts.groups.length > 0 && opts.groups.some((g) => ['admin'].includes(g))) {
   // Валидировать только если группа совпадает
 }
 ```
@@ -280,28 +282,12 @@ if (hasValidationMetadata(value.constructor)) {
 
 ## Характеристики производительности
 
-### Стоимость компиляции
-
-- **Первый вызов**: ~1-5мс (парсинг метаданных + генерация кода + компиляция)
-- **Последующие вызовы**: ~0.001мс (поиск в кэше)
-- **Амортизация**: Стоимость амортизируется на тысячи валидаций
-
-### Производительность выполнения
-
-По сравнению с class-validator (интерпретируемый):
-
-| Тип валидации | class-validator | om-data-mapper | Ускорение |
-|--------------|-----------------|----------------|-----------|
-| Простая (1 поле) | ~50K оп/сек | ~500K оп/сек | **10x** |
-| Сложная (10 полей) | ~10K оп/сек | ~100K оп/сек | **10x** |
-| Вложенные объекты | ~5K оп/сек | ~50K оп/сек | **10x** |
-| Асинхронная валидация | ~8K оп/сек | ~40K оп/сек | **5x** |
-
-### Использование памяти
-
-- **Метаданные**: ~1КБ на класс
-- **Скомпилированная функция**: ~2-10КБ на класс
-- **Накладные расходы кэша**: Минимальные (Map с ссылками на классы)
+Валидатор для класса компилируется один раз, при первом использовании, а
+скомпилированная функция кэшируется и переиспользуется при каждом
+последующем вызове — после этой первой компиляции нет ни рефлексии на
+каждый вызов, ни повторного разбора метаданных. Измеренную пропускную
+способность относительно class-validator смотрите в
+[`../benchmarks/README.md`](../benchmarks/README.md).
 
 ---
 
@@ -320,11 +306,11 @@ const args = {
   constraints: constraintValue.constraints || [],
   targetName: object.constructor.name,
   object: object,
-  property: 'email'
+  property: 'email',
 };
 const result = validatorInstance.validate(value, args);
 if (!result) {
-  propertyErrors.customValidator = validatorInstance.defaultMessage(args);
+  propertyErrors.custom = validatorInstance.defaultMessage(args);
 }
 ```
 
@@ -334,7 +320,7 @@ if (!result) {
 const task = (async () => {
   const result = await validatorInstance.validate(value, args);
   if (!result) {
-    propertyErrors.customValidator = validatorInstance.defaultMessage(args);
+    propertyErrors.custom = validatorInstance.defaultMessage(args);
   }
 })();
 asyncTasks.push(task);
@@ -348,13 +334,14 @@ asyncTasks.push(task);
 
 ```typescript
 interface ValidationError {
-  property: string;              // Имя свойства
-  value?: any;                   // Невалидное значение
-  constraints?: {                // Неудавшиеся ограничения
-    [type: string]: string;      // Сообщения об ошибках
+  property: string; // Имя свойства
+  value?: any; // Невалидное значение
+  constraints?: {
+    // Неудавшиеся ограничения
+    [type: string]: string; // Сообщения об ошибках
   };
-  children?: ValidationError[];  // Вложенные ошибки
-  target?: any;                  // Валидируемый объект
+  children?: ValidationError[]; // Вложенные ошибки
+  target?: any; // Валидируемый объект
 }
 ```
 
@@ -376,26 +363,36 @@ interface ValidationError {
 
 ## Отладка
 
-### Просмотр сгенерированного кода:
+Внутренности генерации кода (`generateValidationCode`, `compileValidator` и подобные функции) —
+это детали реализации `packages/class-validator/src/engine/compiler.ts` и не входят в публичный
+API — пакет реэкспортирует из этого модуля только `clearValidatorCache` и `getValidatorCacheSize`
+(см. `packages/class-validator/src/index.ts`). Чтобы увидеть сгенерированный код, читайте исходники
+компилятора напрямую.
+
+### Проверка кэша:
 
 ```typescript
-import { compileValidator } from 'om-data-mapper/class-validator-compat/engine/compiler';
+import { getValidatorCacheSize, clearValidatorCache } from 'om-data-mapper/class-validator-compat';
 
-const metadata = getValidationMetadata(MyClass);
-const code = generateValidationCode(metadata);
-console.log(code);  // Просмотр сгенерированного JavaScript
+console.log(getValidatorCacheSize()); // число классов с закэшированным скомпилированным валидатором
+
+clearValidatorCache(); // принудительная перекомпиляция при следующем вызове validate() для каждого класса
 ```
 
-### Профилирование производительности:
+### Сравнение первого вызова и последующих:
+
+Так как компиляция происходит лениво при первом использовании, а результат кэшируется для
+каждого класса, разовую стоимость компиляции можно увидеть, замерив время первого вызова
+`validateSync()` в сравнении с последующим вызовом для того же класса:
 
 ```typescript
-console.time('compilation');
-const validator = compileValidator(metadata);
-console.timeEnd('compilation');
+console.time('первый вызов (включает компиляцию)');
+validateSync(new MyClass());
+console.timeEnd('первый вызов (включает компиляцию)');
 
-console.time('execution');
-const errors = validator(object, options);
-console.timeEnd('execution');
+console.time('вызов из кэша');
+validateSync(new MyClass());
+console.timeEnd('вызов из кэша');
 ```
 
 ---
@@ -413,13 +410,10 @@ console.timeEnd('execution');
 
 Подход с JIT-компиляцией обеспечивает:
 
-- ✅ **В 10 раз быстрее** валидацию, чем интерпретируемые подходы
+- ✅ **JIT-компиляция** - специализированная функция валидации компилируется один раз и переиспользуется, без рефлексии на каждый вызов
 - ✅ **Нулевые накладные расходы во время выполнения** после первой компиляции
 - ✅ **Типобезопасность** с полной поддержкой TypeScript
 - ✅ **Эффективность памяти** с кэшированием по классу
 - ✅ **Расширяемость** с пользовательскими валидаторами
 
-Эта архитектура делает `om-data-mapper` одной из самых быстрых библиотек валидации, доступных для TypeScript/JavaScript.
-
-
-
+Измеренную пропускную способность относительно class-validator смотрите в [`../benchmarks/README.md`](../benchmarks/README.md).

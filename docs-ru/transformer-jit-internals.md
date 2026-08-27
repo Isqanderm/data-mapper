@@ -12,14 +12,16 @@
 
 ### 1. Хранение метаданных
 
-Трансформер использует две различные системы хранения метаданных в зависимости от API:
+И нативный decorator API, и API совместимости с class-transformer хранят свои метаданные
+одинаково — в модульном `WeakMap<Function, ...>`, ключом которого служит конструктор класса.
+Различается между ними форма хранимых метаданных, а не сам механизм хранения.
 
-#### Decorator API (`src/decorators/metadata.ts`)
+#### Decorator API (`packages/core/src/decorators/metadata.ts`)
 
-Использует **хранение метаданных на основе Symbol** для нативного decorator API:
+Использует **хранилище метаданных на основе `WeakMap`** для нативного decorator API:
 
 ```typescript
-const MAPPER_METADATA = Symbol('om-data-mapper:metadata');
+const metadataStore = new WeakMap<Function, MapperMetadata>();
 
 interface MapperMetadata {
   properties: Map<string | symbol, PropertyMapping>;
@@ -37,9 +39,10 @@ interface PropertyMapping {
 }
 ```
 
-#### API совместимости с class-transformer (`src/compat/class-transformer/metadata.ts`)
+#### API совместимости с class-transformer (`packages/class-transformer/src/metadata.ts`)
 
-Использует **хранение метаданных на основе WeakMap** для совместимости с class-transformer:
+Также использует **хранилище метаданных на основе `WeakMap`**, с ключом по конструктору
+класса, для совместимости с class-transformer:
 
 ```typescript
 const metadataStorage = new WeakMap<Function, ClassMetadata>();
@@ -59,13 +62,18 @@ interface PropertyMetadata {
   excludeOptions?: ExcludeOptions;
   typeFunction?: TypeHelpFunction;
   transformFn?: TransformFn;
-  name?: string;  // Отображение имени свойства
+  name?: string; // Отображение имени свойства
 }
 ```
 
 **Ключевые различия:**
-- **Decorator API**: На основе Symbol, привязан к конструктору класса
-- **Compatibility API**: На основе WeakMap, предотвращает утечки памяти
+
+- **Механизм хранения**: Идентичен — оба используют `WeakMap<Function, ...>` с ключом по
+  конструктору класса, поэтому метаданные удаляются сборщиком мусора вместе с классом и
+  ручная очистка не нужна.
+- **Форма метаданных**: Различается — Decorator API хранит плоскую карту `properties` с
+  записями `PropertyMapping` плюс `options` уровня маппера; API совместимости хранит записи
+  `PropertyMetadata` (информация expose/exclude/type/transform) плюс `classOptions`.
 - **Оба**: Используют TC39 Stage 3 декораторы
 
 ---
@@ -131,16 +139,17 @@ interface PropertyMetadata {
 
 Генерирует безопасный доступ к свойствам с optional chaining:
 
+<!-- prettier-ignore -->
 ```typescript
 // Декоратор: @Map('user.profile.email')
 // Сгенерированный код:
-target.email = source?.user?.profile?.email;
+target["email"] = source?.["user"]?.["profile"]?.["email"];
 
 // Со значением по умолчанию: @Map('score') @Default(0)
-target.score = source?.score ?? cache['__defValues']['score'];
+target["score"] = source?.["score"] ?? cache['__defValues']["score"];
 
 // С трансформацией значения: @Map('name') @Transform(v => v.toUpperCase())
-target.name = cache['name__valueTransform'](source?.name);
+target["name"] = cache["name__valueTransform"](source?.["name"]);
 ```
 
 **Оптимизация**: Использует optional chaining (`?.`) вместо try-catch для безопасности от null.
@@ -149,37 +158,37 @@ target.name = cache['name__valueTransform'](source?.name);
 
 Сохраняет трансформер в кэше и вызывает его:
 
+<!-- prettier-ignore -->
 ```typescript
 // Декоратор: @MapFrom((src) => src.firstName + ' ' + src.lastName)
 // Сгенерированный код:
-target.fullName = cache['fullName__transformer'](source);
+target["fullName"] = cache["fullName__transformer"](source);
 
 // Со значением по умолчанию: @MapFrom(fn) @Default('Unknown')
-target.fullName = cache['fullName__transformer'](source) ?? cache['__defValues']['fullName'];
+target["fullName"] = cache["fullName__transformer"](source) ?? cache['__defValues']["fullName"];
 
-// С условием: @When(condition) @MapFrom(fn)
-if (cache['fullName__condition'](source)) {
-  target.fullName = cache['fullName__transformer'](source);
-}
+// Кодогенерация условия существует внутри (`PropertyMapping.condition`), но
+// сегодня ни один публичный декоратор её не задаёт — функция `@MapFrom`
+// получает весь исходный объект, поэтому условное отображение выражается
+// прямо в ней:
+// @MapFrom((src) => (src.isPremium ? src.premiumName : undefined))
 ```
 
 **Оптимизация**: Функции хранятся в кэше, чтобы избежать накладных расходов замыканий.
 
-### 3. Вложенный маппер (`@MapNested(NestedMapper)`)
+### 3. Вложенный маппер (`@MapWith(NestedMapper)`)
 
-Рекурсивно вызывает вложенный маппер:
+Вызывает собственный скомпилированный `transform()` вложенного маппера:
 
+<!-- prettier-ignore -->
 ```typescript
-// Декоратор: @MapNested(AddressMapper)
+// Декораторы: @MapWith(AddressMapper) @Map('address')
 // Сгенерированный код:
-if (source?.address) {
-  const nestedMapper = cache['address__nestedMapper'];
-  const nestedResult = nestedMapper.execute(source.address);
-  target.address = nestedResult.result;
-  if (nestedResult.errors.length > 0) {
-    __errors.push(...nestedResult.errors.map(e => 'address.' + e));
-  }
-}
+const __nestedSource = source?.["address"];
+target["address"] =
+  __nestedSource !== undefined && __nestedSource !== null
+    ? cache["address__nestedMapper"].transform(__nestedSource)
+    : undefined;
 ```
 
 **Оптимизация**: Вложенные мапперы предварительно компилируются и кэшируются.
@@ -188,18 +197,20 @@ if (source?.address) {
 
 Обрабатывает трансформации массивов:
 
+<!-- prettier-ignore -->
 ```typescript
 // Декоратор: @MapFrom((src) => src.items.map(i => i.name))
 // Сгенерированный код:
-target.itemNames = cache['itemNames__transformer'](source);
+target["itemNames"] = cache["itemNames__transformer"](source);
+```
 
-// Для вложенных массивов с маппером:
-if (Array.isArray(source?.items)) {
-  target.items = source.items.map(item => {
-    const nestedMapper = cache['items__nestedMapper'];
-    return nestedMapper.execute(item).result;
-  });
-}
+Отдельного пути кодогенерации для массивов вложенных мапперов не существует —
+массивы вложенных объектов обрабатываются точно так же, вызовом `transform()`
+вложенного маппера изнутри функции `@MapFrom`:
+
+```typescript
+@MapFrom((src: Source) => src.items.map((item) => new ItemMapper().transform(item)))
+items!: ItemTarget[];
 ```
 
 ---
@@ -210,20 +221,25 @@ if (Array.isArray(source?.items)) {
 
 ```typescript
 function generateSafePropertyAccess(sourcePath: string): string {
-  const parts = sourcePath.split('.');
-  if (parts.length === 1) {
-    return sourcePath;
-  }
-  return parts.join('?.');
+  return sourcePath
+    .split('.')
+    .map((part) => `?.[${JSON.stringify(part)}]`)
+    .join('');
 }
 
+// Возвращённая строка включает ведущий аксессор - вызывающий код формирует
+// `source${generateSafePropertyAccess(path)}`. Каждый ключ - это bracket-доступ
+// с JSON-экранированием, поэтому ключи с дефисами, кавычками и юникодом - это
+// данные, а не код.
+
 // Примеры:
-// 'name' → 'name'
-// 'user.name' → 'user?.name'
-// 'user.profile.email' → 'user?.profile?.email'
+// 'name' → '?.["name"]'
+// 'user.name' → '?.["user"]?.["name"]'
+// 'user.profile.email' → '?.["user"]?.["profile"]?.["email"]'
 ```
 
 **Почему Optional Chaining?**
+
 - ✅ Быстрее, чем try-catch
 - ✅ Более читаемый сгенерированный код
 - ✅ Нативная возможность JavaScript (ES2020+)
@@ -237,10 +253,11 @@ function generateSafePropertyAccess(sourcePath: string): string {
 
 Без обработки ошибок - максимальная производительность:
 
+<!-- prettier-ignore -->
 ```typescript
 // Сгенерированный код (небезопасный режим):
-target.name = source?.firstName;
-target.email = source?.user?.email;
+target["name"] = source?.["firstName"];
+target["email"] = source?.["user"]?.["email"];
 ```
 
 **Использовать когда**: Данные доверенные и производительность критична.
@@ -249,17 +266,18 @@ target.email = source?.user?.email;
 
 Оборачивает каждое свойство в try-catch:
 
+<!-- prettier-ignore -->
 ```typescript
 // Сгенерированный код (безопасный режим):
 try {
-  target.name = source?.firstName;
-} catch (error) {
+  target["name"] = source?.["firstName"];
+} catch(error) {
   __errors.push("Mapping error at field 'name': " + error.message);
 }
 
 try {
-  target.email = source?.user?.email;
-} catch (error) {
+  target["email"] = source?.["user"]?.["email"];
+} catch(error) {
   __errors.push("Mapping error at field 'email': " + error.message);
 }
 ```
@@ -290,13 +308,14 @@ const result3 = mapper.transform(source3);
 
 ```typescript
 const cache = {
-  'fullName__transformer': (src) => src.firstName + ' ' + src.lastName,
-  'age__condition': (src) => src.age !== undefined,
-  '__defValues': { score: 0, status: 'active' }
+  fullName__transformer: (src) => src.firstName + ' ' + src.lastName,
+  age__condition: (src) => src.age !== undefined,
+  __defValues: { score: 0, status: 'active' },
 };
 ```
 
 **Преимущества:**
+
 - Избегает накладных расходов замыканий
 - Позволяет переиспользовать функции
 - Упрощает сгенерированный код
@@ -305,12 +324,13 @@ const cache = {
 
 Простые операции встраиваются вместо вызовов функций:
 
+<!-- prettier-ignore -->
 ```typescript
 // ❌ Медленно: Вызов функции
 target.name = transformName(source.firstName);
 
 // ✅ Быстро: Встроенный код
-target.name = source?.firstName;
+target["name"] = source?.["firstName"];
 ```
 
 ### 4. **Условная компиляция**
@@ -321,7 +341,7 @@ target.name = source?.firstName;
 // Если нет декоратора @Ignore(), генерирует код
 // Если есть декоратор @Ignore(), пропускает генерацию кода
 if (mapping.type === 'ignore') {
-  continue;  // Пропустить это свойство
+  continue; // Пропустить это свойство
 }
 ```
 
@@ -329,6 +349,7 @@ if (mapping.type === 'ignore') {
 
 Использует нативный optional chaining вместо ручных проверок на null:
 
+<!-- prettier-ignore -->
 ```typescript
 // ❌ Медленно: Ручные проверки
 if (source && source.user && source.user.profile) {
@@ -336,7 +357,7 @@ if (source && source.user && source.user.profile) {
 }
 
 // ✅ Быстро: Optional chaining
-target.email = source?.user?.profile?.email;
+target["email"] = source?.["user"]?.["profile"]?.["email"];
 ```
 
 ---
@@ -366,41 +387,33 @@ transformPlainToClass(UserDto, plainObject, 'plainToClass', options)
 
 ### Ключевые различия с Decorator API:
 
-| Возможность | Decorator API | class-transformer Compat |
-|------------|--------------|-------------------------|
-| Компиляция | JIT при создании экземпляра | Интерпретируется во время выполнения |
-| Производительность | В 10 раз быстрее | Совместим с class-transformer |
-| Метаданные | На основе Symbol | На основе WeakMap |
-| API | `@Map()`, `@MapFrom()` | `@Expose()`, `@Type()` |
-| Случай использования | Новые проекты | Миграция с class-transformer |
+| Возможность          | Decorator API                               | class-transformer Compat                                                   |
+| -------------------- | ------------------------------------------- | -------------------------------------------------------------------------- |
+| Компиляция           | JIT при создании экземпляра                 | Интерпретируется во время выполнения (обход зарегистрированных метаданных) |
+| Метаданные           | На основе WeakMap (форма `PropertyMapping`) | На основе WeakMap (форма `PropertyMetadata`)                               |
+| API                  | `@Map()`, `@MapFrom()`                      | `@Expose()`, `@Type()`                                                     |
+| Случай использования | Новые проекты                               | Миграция с class-transformer                                               |
 
 ---
 
 ## Характеристики производительности
 
-### Стоимость компиляции
+Эти два API ведут себя по-разному:
 
-- **Первое создание экземпляра**: ~1-3мс (парсинг метаданных + генерация кода + компиляция)
-- **Последующие создания экземпляров**: ~0.001мс (использует ту же скомпилированную функцию)
-- **Амортизация**: Стоимость амортизируется на тысячи трансформаций
+- **Decorator/core API**: компилирует специализированную функцию трансформации один раз для
+  каждого класса маппера, при первом использовании (`context.addInitializer` запускает
+  `_compileMapper()`, см. `packages/core/src/decorators/core.ts` и
+  `packages/core/src/core/Mapper.ts`), и переиспользует эту скомпилированную функцию при каждом
+  последующем вызове — после первого создания экземпляра нет ни рефлексии на каждый вызов, ни
+  повторного разбора метаданных.
+- **API совместимости с class-transformer**: регистрирует метаданные один раз, во время
+  определения класса (через декораторы `@Expose()`/`@Exclude()`/`@Type()`/`@Transform()`), но
+  функцию не компилирует. Каждый вызов `plainToClass`/`plainToInstance`/и т. п. обходит эти
+  зарегистрированные метаданные и интерпретирует их напрямую — в этом пути кода нет шага
+  `new Function()`.
 
-### Производительность выполнения
-
-По сравнению с class-transformer:
-
-| Тип трансформации | class-transformer | om-data-mapper | Ускорение |
-|------------------|------------------|----------------|-----------|
-| Простое отображение | 326K оп/сек | **3.2M оп/сек** | **10x** |
-| Сложные трансформации | 150K оп/сек | **1.5M оп/сек** | **10x** |
-| Вложенные объекты | 80K оп/сек | **800K оп/сек** | **10x** |
-| Трансформации массивов | 50K оп/сек | **500K оп/сек** | **10x** |
-
-### Использование памяти
-
-- **Метаданные**: ~500 байт на свойство
-- **Скомпилированная функция**: ~1-5КБ на класс маппера
-- **Объект кэша**: ~100 байт на функцию трансформации
-- **Всего**: ~5-10КБ на класс маппера
+Измеренную пропускную способность смотрите в [`../benchmarks/README.md`](../benchmarks/README.md),
+где реальный код этого пакета сравнивается с настоящим class-transformer.
 
 ---
 
@@ -408,6 +421,7 @@ transformPlainToClass(UserDto, plainObject, 'plainToClass', options)
 
 ### Пример 1: Простое отображение
 
+<!-- prettier-ignore -->
 ```typescript
 @Mapper<Source, Target>()
 class UserMapper {
@@ -420,13 +434,14 @@ class UserMapper {
 
 // Сгенерированный код:
 function transform(source, target, __errors, cache) {
-  target.name = source?.firstName;
-  target.email = source?.email;
+  target["name"] = source?.["firstName"];
+  target["email"] = source?.["email"];
 }
 ```
 
 ### Пример 2: Сложные трансформации
 
+<!-- prettier-ignore -->
 ```typescript
 @Mapper<Source, Target>()
 class UserMapper {
@@ -443,49 +458,46 @@ class UserMapper {
 
 // Сгенерированный код:
 function transform(source, target, __errors, cache) {
-  target.fullName = cache['fullName__transformer'](source);
-  target.isAdult = cache['isAdult__transformer'](source);
-  target.score = source?.score ?? cache['__defValues']['score'];
+  target["fullName"] = cache["fullName__transformer"](source);
+  target["isAdult"] = cache["isAdult__transformer"](source);
+  target["score"] = source?.["score"] ?? cache['__defValues']["score"];
 }
 ```
 
 ### Пример 3: Условное отображение
 
+<!-- prettier-ignore -->
 ```typescript
 @Mapper<Source, Target>()
 class UserMapper {
-  @When((src) => src.isPremium)
-  @Map('premiumFeatures')
+  @MapFrom((src) => (src.isPremium ? src.premiumFeatures : undefined))
   features?: string[];
 }
 
 // Сгенерированный код:
 function transform(source, target, __errors, cache) {
-  if (cache['features__condition'](source)) {
-    target.features = source?.premiumFeatures;
-  }
+  target["features"] = cache["features__transformer"](source);
 }
 ```
 
 ### Пример 4: Вложенное отображение
 
+<!-- prettier-ignore -->
 ```typescript
 @Mapper<Source, Target>()
 class UserMapper {
-  @MapNested(AddressMapper)
+  @MapWith(AddressMapper)
+  @Map('address')
   address!: Address;
 }
 
 // Сгенерированный код:
 function transform(source, target, __errors, cache) {
-  if (source?.address) {
-    const nestedMapper = cache['address__nestedMapper'];
-    const nestedResult = nestedMapper.execute(source.address);
-    target.address = nestedResult.result;
-    if (nestedResult.errors.length > 0) {
-      __errors.push(...nestedResult.errors.map(e => 'address.' + e));
-    }
-  }
+  const __nestedSource = source?.["address"];
+  target["address"] =
+    __nestedSource !== undefined && __nestedSource !== null
+      ? cache["address__nestedMapper"].transform(__nestedSource)
+      : undefined;
 }
 ```
 
@@ -514,7 +526,7 @@ class UserMapper {
         mapping,
         cache,
         defaultValues,
-        false
+        false,
       );
       if (code) codeLines.push(code);
     }
@@ -560,14 +572,14 @@ console.timeEnd('1000 executions');
 
 Decorator API использует тот же подход JIT-компиляции, что и BaseMapper, но с лучшей эргономикой:
 
-| Возможность | BaseMapper | Decorator API |
-|------------|-----------|---------------|
-| Стиль API | Императивный | Декларативный |
-| Типобезопасность | Ручная | Автоматическая |
-| Генерация кода | ✅ Да | ✅ Да |
-| Производительность | Быстрая | **Быстрее** (меньше накладных расходов) |
-| Поддерживаемость | Средняя | Высокая |
-| Рекомендуется | ❌ Устаревший | ✅ Современный |
+| Возможность        | BaseMapper    | Decorator API                           |
+| ------------------ | ------------- | --------------------------------------- |
+| Стиль API          | Императивный  | Декларативный                           |
+| Типобезопасность   | Ручная        | Автоматическая                          |
+| Генерация кода     | ✅ Да         | ✅ Да                                   |
+| Производительность | Быстрая       | **Быстрее** (меньше накладных расходов) |
+| Поддерживаемость   | Средняя       | Высокая                                 |
+| Рекомендуется      | ❌ Устаревший | ✅ Современный                          |
 
 ---
 
@@ -583,15 +595,15 @@ Decorator API использует тот же подход JIT-компиляц
 
 ## Заключение
 
-Подход с JIT-компиляцией обеспечивает:
+Подход с JIT-компиляцией Decorator/core API обеспечивает:
 
-- ✅ **В 10 раз быстрее**, чем class-transformer
+- ✅ **JIT-компиляция** - специализированная функция генерируется один раз для каждого класса и переиспользуется, без рефлексии на каждый вызов
 - ✅ **Нулевые накладные расходы во время выполнения** после компиляции
 - ✅ **Типобезопасность** с полной поддержкой TypeScript
 - ✅ **Эффективность памяти** с кэшированием функций
 - ✅ **Расширяемость** с пользовательскими трансформерами
 
-Эта архитектура делает `om-data-mapper` одной из самых быстрых библиотек трансформации объектов, доступных для TypeScript/JavaScript.
+API совместимости с class-transformer функцию не компилирует — см. раздел
+[Характеристики производительности](#характеристики-производительности) выше.
 
-
-
+Измеренную пропускную способность относительно class-transformer смотрите в [`../benchmarks/README.md`](../benchmarks/README.md).

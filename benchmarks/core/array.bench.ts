@@ -1,5 +1,5 @@
 import { bench, describe } from 'vitest';
-import { Mapper } from '../../../src/core/Mapper';
+import { Mapper, Map as MapProp, createMapper } from '@tech-pioneer/data-mapper-core';
 
 interface Item {
   id: number;
@@ -19,11 +19,19 @@ const items: Item[] = Array.from({ length: 100 }, (_, i) => ({
   price: Math.random() * 100,
 }));
 
-const itemMapper = Mapper.create<Item, ItemDTO>({
-  itemId: 'id',
-  itemName: 'name',
-  cost: 'price',
-});
+@Mapper<Item, ItemDTO>()
+class ItemMapper {
+  @MapProp('id')
+  itemId!: number;
+
+  @MapProp('name')
+  itemName!: string;
+
+  @MapProp('price')
+  cost!: number;
+}
+
+const itemMapper = createMapper<Item, ItemDTO>(ItemMapper);
 
 function vanillaArrayMapper(items: Item[]): ItemDTO[] {
   return items.map((item) => ({
@@ -33,13 +41,22 @@ function vanillaArrayMapper(items: Item[]): ItemDTO[] {
   }));
 }
 
+// Honesty guard: prove the JIT-compiled mapper produces the vanilla-equivalent
+// array output (per-item, in order) before trusting the throughput numbers below.
+const omResult = items.map((item) => itemMapper.transform(item));
+const vanillaResult = vanillaArrayMapper(items);
+if (JSON.stringify(omResult) !== JSON.stringify(vanillaResult)) {
+  throw new Error(
+    `honesty guard: om mapping output differs from vanilla baseline: ${JSON.stringify(omResult)} vs ${JSON.stringify(vanillaResult)}`,
+  );
+}
+
 describe('Array Mapping Benchmark', () => {
   bench('OmDataMapper - Map 100 items', () => {
-    items.map((item) => itemMapper.execute(item).result);
+    items.map((item) => itemMapper.transform(item));
   });
 
   bench('Vanilla - Map 100 items', () => {
     vanillaArrayMapper(items);
   });
 });
-

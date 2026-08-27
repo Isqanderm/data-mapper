@@ -1,4 +1,4 @@
-import { Mapper } from '../../src';
+import { Mapper, Map, MapFrom, plainToInstance } from 'om-data-mapper';
 
 class Employee {
   constructor(
@@ -8,20 +8,26 @@ class Employee {
   ) {}
 }
 
-class EmployeeDTO {
+type EmployeeDTO = {
   fullName?: string;
   emailAddress?: string;
   isAdult?: boolean;
+};
+
+@Mapper<Employee, EmployeeDTO>()
+class EmployeeMapper {
+  @Map('person.fullName')
+  fullName!: string;
+
+  @Map('email')
+  emailAddress!: string;
+
+  @MapFrom((source: Employee) => source.age >= 18)
+  isAdult!: boolean;
 }
 
-const employeeMapper = Mapper.create<Employee, EmployeeDTO>({
-  fullName: 'person.fullName',
-  emailAddress: 'email',
-  isAdult: (source) => source.age >= 18,
-});
-
 const employee = new Employee({ fullName: 'John Doe' }, 'john.doe@example.com', 30);
-const employeeDTO = employeeMapper.execute(employee);
+const employeeDTO = plainToInstance<Employee, EmployeeDTO>(EmployeeMapper, employee);
 
 console.log(employeeDTO);
 // { fullName: 'John Doe', emailAddress: 'john.doe@example.com', isAdult: true }

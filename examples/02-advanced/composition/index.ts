@@ -1,4 +1,4 @@
-import { Mapper } from '../../src';
+import { Mapper, Map, MapFrom, MapWith, plainToInstance } from 'om-data-mapper';
 
 class Employee {
   constructor(
@@ -16,37 +16,67 @@ class Employee {
   ) {}
 }
 
+type EmployeeAddress = Employee['address'];
+
+interface EmployeeAddressDTO {
+  city: string;
+  street: string;
+  houseNumber: number;
+  full: {
+    apartment: number;
+    floor: number;
+  };
+}
+
 interface EmployeeDTO {
   fullName?: string;
   emailAddress?: string;
   isAdult?: boolean;
-  address: {
-    city: string;
-    street: string;
-    houseNumber: number;
-    full: {
-      apartment: number;
-      floor: number;
-    };
-  };
+  address: EmployeeAddressDTO;
   array: number[];
 }
 
-const employeeMapper = Mapper.create<Employee, EmployeeDTO>({
-  fullName: 'name',
-  emailAddress: 'email',
-  isAdult: (source) => source.age >= 18,
-  address: {
-    city: 'address.city',
-    street: 'address.street',
-    houseNumber: 'address.houseNumber',
-    full: {
-      apartment: 'address.apartment',
-      floor: 'address.floor',
-    },
-  },
-  array: 'array.[].numbers.[0].number',
-});
+// A standalone, reusable sub-mapper. Composed into EmployeeMapper below via
+// @MapWith, rather than inlined as a one-off transform function.
+@Mapper<EmployeeAddress, EmployeeAddressDTO>()
+class AddressMapper {
+  @Map('city')
+  city!: string;
+
+  @Map('street')
+  street!: string;
+
+  @Map('houseNumber')
+  houseNumber!: number;
+
+  @MapFrom((source: EmployeeAddress) => ({
+    apartment: source.apartment,
+    floor: source.floor,
+  }))
+  full!: EmployeeAddressDTO['full'];
+}
+
+@Mapper<Employee, EmployeeDTO>()
+class EmployeeMapper {
+  @Map('name')
+  fullName!: string;
+
+  @Map('email')
+  emailAddress!: string;
+
+  @MapFrom((source: Employee) => source.age >= 18)
+  isAdult!: boolean;
+
+  // Nested/reusable mapper composition: AddressMapper does the work,
+  // EmployeeMapper just wires it to the `address` property.
+  @MapWith(AddressMapper)
+  @Map('address')
+  address!: EmployeeAddressDTO;
+
+  // Takes the first `number` out of each element's `numbers` array
+  @MapFrom((source: Employee) => source.array.map((item) => item.numbers[0].number))
+  array!: number[];
+}
 
 const employee = new Employee(
   'John Doe',
@@ -62,6 +92,6 @@ const employee = new Employee(
   },
 );
 
-const employeeDTO = employeeMapper.execute(employee);
+const employeeDTO = plainToInstance<Employee, EmployeeDTO>(EmployeeMapper, employee);
 
 console.log(employeeDTO);

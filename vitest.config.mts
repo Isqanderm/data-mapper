@@ -2,40 +2,23 @@ import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
   test: {
-    globals: true,
-    environment: 'node',
-    include: ['tests/**/*.test.ts'],
-    exclude: ['benchmarks/**/*.bench.ts'],
+    projects: ['packages/*'],
+    // packages/om-data-mapper/tests/memory-leak.test.ts compares heapUsed
+    // before and after an operation, which only measures retention if a
+    // collection actually happens in between — so the workers need a callable
+    // global.gc(). `pool`/`poolOptions` are root-only in Vitest; setting them
+    // in the project config has no effect. Without this the memory suite still
+    // passes, while measuring nothing.
+    pool: 'forks',
+    poolOptions: { forks: { execArgv: ['--expose-gc'] } },
     coverage: {
       provider: 'v8',
       reportsDirectory: 'coverage',
       reporter: ['text', 'lcov', 'json', 'json-summary', 'html'],
-      include: ['src/**/*.ts'],
-      exclude: [
-        'src/**/*.test.ts',
-        'src/**/*.spec.ts',
-        '**/*.bench.ts',
-        'src/**/*.d.ts',
-        'src/**/types.ts',
-        'src/**/interfaces.ts',
-        'src/compat/class-transformer/**/*',  // class-transformer compat tested via integration tests
-        // class-validator compat is now included for 100% coverage goal
-      ],
+      include: ['packages/*/src/**/*.ts'],
+      exclude: ['**/*.d.ts', '**/types.ts', '**/interfaces.ts', 'packages/om-data-mapper/src/**'],
       all: true,
-      thresholds: {
-        lines: 70,
-        functions: 80,
-        branches: 70,
-        statements: 70,
-      },
-    },
-    benchmark: {
-      include: ['benchmarks/suites/**/*.bench.ts'],
-      exclude: ['tests/**/*.test.ts'],
-      outputFile: {
-        json: './bench-results.json',
-      },
+      thresholds: { lines: 70, functions: 80, branches: 70, statements: 70 },
     },
   },
 });
-

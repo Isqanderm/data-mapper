@@ -1,0 +1,174 @@
+/**
+ * Metadata management for validation decorators
+ * Using TC39 Stage 3 decorators with Symbol-based storage
+ */
+
+import type {
+  ValidationConstraint,
+  PropertyValidationMetadata,
+  ClassValidationMetadata,
+} from '../types';
+
+/**
+ * Symbol for storing validation metadata
+ */
+const VALIDATION_METADATA = Symbol.for('om-data-mapper:validation-metadata');
+
+/**
+ * Get or create validation metadata for a class
+ */
+export function getValidationMetadata(target: any): ClassValidationMetadata {
+  // Own property, not an inherited one: a subclass reaches its parent's
+  // metadata through the static prototype chain, so a plain truthiness check
+  // makes `class Child extends Parent` write its constraints into Parent's
+  // map. Compiled validators are cached by `metadata.target`, so Child would
+  // then be served Parent's validator and its own constraints would never run.
+  //
+  // Each class gets its own map instead. Nothing is merged from the parent
+  // because TC39 field initializers run for the whole hierarchy when a
+  // subclass is constructed, with `this.constructor` pointing at the subclass,
+  // so inherited constraints are already registered here.
+  if (!Object.prototype.hasOwnProperty.call(target, VALIDATION_METADATA)) {
+    target[VALIDATION_METADATA] = {
+      target,
+      properties: new Map<string | symbol, PropertyValidationMetadata>(),
+    };
+  }
+  return target[VALIDATION_METADATA];
+}
+
+/**
+ * Get or create property validation metadata
+ */
+export function getPropertyMetadata(
+  target: any,
+  propertyKey: string | symbol,
+): PropertyValidationMetadata {
+  const classMetadata = getValidationMetadata(target);
+
+  if (!classMetadata.properties.has(propertyKey)) {
+    classMetadata.properties.set(propertyKey, {
+      propertyKey,
+      constraints: [],
+    });
+  }
+
+  return classMetadata.properties.get(propertyKey)!;
+}
+
+/**
+ * Add validation constraint to a property
+ * Prevents duplicate constraints from being added
+ */
+export function addValidationConstraint(
+  target: any,
+  propertyKey: string | symbol,
+  constraint: ValidationConstraint,
+): void {
+  const propertyMetadata = getPropertyMetadata(target, propertyKey);
+
+  // Fast path: the same constraint object re-registered by a repeated
+  // addInitializer run (decorators hoist one object per application).
+  if (propertyMetadata.constraints.includes(constraint)) return;
+
+  // Check if this exact constraint already exists to prevent duplicates
+  // This can happen because addInitializer runs on every instance creation
+  const isDuplicate = propertyMetadata.constraints.some((existing) => {
+    // Compare constraint type and value
+    if (existing.type !== constraint.type) return false;
+    if (existing.value !== constraint.value) return false;
+
+    // Compare groups arrays
+    const existingGroups = existing.groups || [];
+    const newGroups = constraint.groups || [];
+    if (existingGroups.length !== newGroups.length) return false;
+    if (existingGroups.some((g, i) => g !== newGroups[i])) return false;
+
+    // Compare other properties
+    if (existing.message !== constraint.message) return false;
+    if (existing.always !== constraint.always) return false;
+    // `each` changes what gets validated, so two constraints that differ only
+    // by it are not duplicates — collapsing them would silently drop one.
+    if (!!existing.each !== !!constraint.each) return false;
+
+    return true;
+  });
+
+  // Only add if not a duplicate
+  if (!isDuplicate) {
+    propertyMetadata.constraints.push(constraint);
+  }
+}
+
+/**
+ * Mark property as optional
+ */
+export function markPropertyAsOptional(
+  target: any,
+  propertyKey: string | symbol,
+  groups?: string[],
+  always?: boolean,
+): void {
+  const propertyMetadata = getPropertyMetadata(target, propertyKey);
+  propertyMetadata.isOptional = true;
+  propertyMetadata.optionalGroups = groups;
+  propertyMetadata.optionalAlways = always;
+}
+
+/**
+ * Mark property as conditional
+ */
+export function markPropertyAsConditional(
+  target: any,
+  propertyKey: string | symbol,
+  condition: (object: any) => boolean,
+): void {
+  const propertyMetadata = getPropertyMetadata(target, propertyKey);
+  propertyMetadata.isConditional = true;
+  propertyMetadata.condition = condition;
+}
+
+/**
+ * Set nested validation type
+ */
+export function setNestedValidationType(
+  target: any,
+  propertyKey: string | symbol,
+  typeFunction: () => any,
+): void {
+  const propertyMetadata = getPropertyMetadata(target, propertyKey);
+  propertyMetadata.nestedType = typeFunction;
+}
+
+/**
+ * Mark property as array
+ */
+export function markPropertyAsArray(target: any, propertyKey: string | symbol): void {
+  const propertyMetadata = getPropertyMetadata(target, propertyKey);
+  propertyMetadata.isArray = true;
+}
+
+/**
+ * Mark property as nested (for ValidateNested)
+ */
+export function markPropertyAsNested(target: any, propertyKey: string | symbol): void {
+  const propertyMetadata = getPropertyMetadata(target, propertyKey);
+  propertyMetadata.isNested = true;
+}
+
+/**
+ * Get all validation metadata for a class instance
+ */
+export function getClassValidationMetadata(instance: any): ClassValidationMetadata | undefined {
+  const constructor = instance?.constructor;
+  return constructor ? constructor[VALIDATION_METADATA] : undefined;
+}
+
+/**
+ * Check if class has validation metadata
+ */
+export function hasValidationMetadata(target: any): boolean {
+  // Own property for the same reason as getValidationMetadata: an inherited
+  // hit would report a subclass as carrying its parent's metadata.
+  return Object.prototype.hasOwnProperty.call(target, VALIDATION_METADATA);
+}

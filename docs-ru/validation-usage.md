@@ -2,7 +2,7 @@
 
 ## Обзор
 
-The `om-data-mapper` валидация module provides a высокопроизводительный, class-валидатор-compatible API for validating objects using декораторs. It's разработан как **прямая замена** for `class-validator` with **10x better performance** through JIT-компиляция.
+The `om-data-mapper` валидация module provides a JIT-compiled, class-валидатор-compatible API for validating objects using декораторs. It's designed as a **готовая замена для поддерживаемого подмножества** `class-validator` - точный охват смотрите в [таблице совместимости](./compat-class-validator.md).
 
 ---
 
@@ -37,7 +37,7 @@ class UserDto {
 }
 
 const user = new UserDto();
-user.name = 'Jo';  // Too short
+user.name = 'Jo'; // Too short
 user.email = 'invalid-email';
 
 const errors = await validate(user);
@@ -146,15 +146,16 @@ const allErrors = validateManySync(users);
 
 ```typescript
 interface ValidatorOptions {
-  skipMissingProperties?: boolean;      // Skip undefined properties
-  skipNullProperties?: boolean;         // Skip null properties
-  skipUndefinedProperties?: boolean;    // Skip undefined properties
-  groups?: string[];                    // Validation groups
-  always?: boolean;                     // Always validate
-  stopAtFirstError?: boolean;           // Stop at first error
-  forbidUnknownValues?: boolean;        // Forbid unknown values
-  whitelist?: boolean;                  // Remove unknown properties
-  forbidNonWhitelisted?: boolean;       // Throw on unknown properties
+  skipMissingProperties?: boolean; // Skip undefined properties
+  skipNullProperties?: boolean; // Skip null properties
+  skipUndefinedProperties?: boolean; // Skip undefined properties
+  groups?: string[]; // Validation groups
+  always?: boolean; // accepted but currently not applied — see compat table
+  stopAtFirstError?: boolean; // Stop at first error
+  forbidUnknownValues?: boolean; // Forbid unknown values
+  whitelist?: boolean; // Remove unknown properties
+  forbidNonWhitelisted?: boolean; // Throw on unknown properties
+  validationError?: { target?: boolean; value?: boolean }; // Strip target/value from ValidationError
 }
 ```
 
@@ -164,7 +165,7 @@ interface ValidatorOptions {
 const errors = await validate(user, {
   skipMissingProperties: true,
   groups: ['create'],
-  stopAtFirstError: true
+  stopAtFirstError: true,
 });
 ```
 
@@ -175,6 +176,7 @@ const errors = await validate(user, {
 ### Общие валидаторы
 
 #### `@IsOptional()`
+
 Помечает свойство как необязательное - skips валидация if unОпределитьd.
 
 ```typescript
@@ -186,6 +188,7 @@ class UserDto {
 ```
 
 #### `@IsDefined()`
+
 Проверяет, является ли значение Определитьd (not unОпределитьd).
 
 ```typescript
@@ -196,6 +199,7 @@ class UserDto {
 ```
 
 #### `@IsNotEmpty()`
+
 Проверяет, является ли значение not empty.
 
 ```typescript
@@ -206,6 +210,7 @@ class UserDto {
 ```
 
 #### `@Equals(value)`
+
 Проверяет, является ли значение equals the specified value.
 
 ```typescript
@@ -216,6 +221,7 @@ class ConfigDto {
 ```
 
 #### `@NotEquals(value)`
+
 Проверяет, является ли значение does not equal the specified value.
 
 ```typescript
@@ -226,6 +232,7 @@ class UserDto {
 ```
 
 #### `@IsIn(values)`
+
 Проверяет, является ли значение in an array of allowed values.
 
 ```typescript
@@ -236,6 +243,7 @@ class UserDto {
 ```
 
 #### `@IsNotIn(values)`
+
 Проверяет, является ли значение not in an array of disallowed values.
 
 ```typescript
@@ -250,6 +258,7 @@ class UserDto {
 ### Валидаторы строк
 
 #### `@IsString()`
+
 Проверяет, является ли значение a string.
 
 ```typescript
@@ -260,6 +269,7 @@ class UserDto {
 ```
 
 #### `@MinLength(min)`
+
 Checks if string length is at least min.
 
 ```typescript
@@ -270,6 +280,7 @@ class UserDto {
 ```
 
 #### `@MaxLength(max)`
+
 Checks if string length is at most max.
 
 ```typescript
@@ -280,6 +291,7 @@ class UserDto {
 ```
 
 #### `@Length(min, max)`
+
 Checks if string length is between min and max.
 
 ```typescript
@@ -290,6 +302,7 @@ class UserDto {
 ```
 
 #### `@IsEmail()`
+
 Проверяет, является ли значение a valid email.
 
 ```typescript
@@ -300,6 +313,7 @@ class UserDto {
 ```
 
 #### `@IsURL()`
+
 Проверяет, является ли значение a valid URL.
 
 ```typescript
@@ -310,6 +324,7 @@ class UserDto {
 ```
 
 #### `@IsUUID()`
+
 Проверяет, является ли значение a valid UUID.
 
 ```typescript
@@ -320,6 +335,7 @@ class UserDto {
 ```
 
 #### `@IsJSON()`
+
 Проверяет, является ли значение valid JSON.
 
 ```typescript
@@ -330,6 +346,7 @@ class ConfigDto {
 ```
 
 #### `@IsAlpha()`
+
 Checks if string contains only letters.
 
 ```typescript
@@ -340,6 +357,7 @@ class UserDto {
 ```
 
 #### `@IsAlphanumeric()`
+
 Checks if string contains only letters and numbers.
 
 ```typescript
@@ -350,6 +368,7 @@ class UserDto {
 ```
 
 #### `@IsHexColor()`
+
 Проверяет, является ли значение a valid hex color.
 
 ```typescript
@@ -360,6 +379,7 @@ class ThemeDto {
 ```
 
 #### `@IsIP()`
+
 Проверяет, является ли значение a valid IP address.
 
 ```typescript
@@ -370,6 +390,7 @@ class ServerDto {
 ```
 
 #### `@IsCreditCard()`
+
 Проверяет, является ли значение a valid credit card number.
 
 ```typescript
@@ -380,6 +401,7 @@ class PaymentDto {
 ```
 
 #### `@IsISBN()`
+
 Проверяет, является ли значение a valid ISBN.
 
 ```typescript
@@ -390,6 +412,7 @@ class BookDto {
 ```
 
 #### `@IsPhoneNumber(region?)`
+
 Проверяет, является ли значение a valid phone number.
 
 ```typescript
@@ -400,6 +423,7 @@ class UserDto {
 ```
 
 #### `@Contains(seed)`
+
 Checks if string contains the seed.
 
 ```typescript
@@ -410,6 +434,7 @@ class UserDto {
 ```
 
 #### `@NotContains(seed)`
+
 Checks if string does not contain the seed.
 
 ```typescript
@@ -420,6 +445,7 @@ class UserDto {
 ```
 
 #### `@IsLowercase()`
+
 Checks if string is lowercase.
 
 ```typescript
@@ -430,6 +456,7 @@ class UserDto {
 ```
 
 #### `@IsUppercase()`
+
 Checks if string is uppercase.
 
 ```typescript
@@ -440,6 +467,7 @@ class CodeDto {
 ```
 
 #### `@Matches(pattern)`
+
 Checks if string matches a regex pattern.
 
 ```typescript
@@ -450,6 +478,7 @@ class UserDto {
 ```
 
 #### `@IsFQDN()`
+
 Проверяет, является ли значение полным доменным именем (FQDN).
 
 ```typescript
@@ -460,6 +489,7 @@ class WebsiteDto {
 ```
 
 #### `@IsISO8601()`
+
 Проверяет, является ли значение валидной датой в формате ISO 8601.
 
 ```typescript
@@ -470,6 +500,7 @@ class EventDto {
 ```
 
 #### `@IsDateString()`
+
 Алиас для `@IsISO8601()`. Проверяет, является ли значение валидной датой в формате ISO 8601.
 
 ```typescript
@@ -480,6 +511,7 @@ class EventDto {
 ```
 
 #### `@IsMobilePhone(locale?)`
+
 Проверяет, является ли значение валидным номером мобильного телефона. Поддерживает валидацию для конкретных локалей.
 
 ```typescript
@@ -496,6 +528,7 @@ class ContactDto {
 ```
 
 #### `@IsPostalCode(locale?)`
+
 Проверяет, является ли значение валидным почтовым индексом. Поддерживает локали US, RU и GB.
 
 ```typescript
@@ -511,6 +544,7 @@ class RussianAddressDto {
 ```
 
 #### `@IsMongoId()`
+
 Проверяет, является ли значение валидным MongoDB ObjectId (24-символьная шестнадцатеричная строка).
 
 ```typescript
@@ -521,6 +555,7 @@ class DocumentDto {
 ```
 
 #### `@IsJWT()`
+
 Проверяет, является ли значение валидным JWT токеном.
 
 ```typescript
@@ -531,6 +566,7 @@ class AuthDto {
 ```
 
 #### `@IsStrongPassword()`
+
 Проверяет, является ли значение надежным паролем (минимум 8 символов, заглавные и строчные буквы, цифры, спецсимволы).
 
 ```typescript
@@ -541,6 +577,7 @@ class UserDto {
 ```
 
 #### `@IsPort()`
+
 Проверяет, является ли значение валидным номером порта (0-65535).
 
 ```typescript
@@ -551,6 +588,7 @@ class ServerDto {
 ```
 
 #### `@IsMACAddress()`
+
 Проверяет, является ли значение валидным MAC-адресом.
 
 ```typescript
@@ -561,6 +599,7 @@ class DeviceDto {
 ```
 
 #### `@IsBase64()`
+
 Проверяет, является ли значение валидной строкой в кодировке base64.
 
 ```typescript
@@ -571,6 +610,7 @@ class FileDto {
 ```
 
 #### `@IsIBAN()`
+
 Проверяет, является ли значение валидным международным номером банковского счета (IBAN).
 
 ```typescript
@@ -581,6 +621,7 @@ class BankAccountDto {
 ```
 
 #### `@IsBIC()`
+
 Проверяет, является ли значение валидным банковским идентификационным кодом (BIC/SWIFT).
 
 ```typescript
@@ -591,6 +632,7 @@ class BankDto {
 ```
 
 #### `@IsCurrency()`
+
 Проверяет, является ли значение валидной денежной суммой.
 
 ```typescript
@@ -601,6 +643,7 @@ class PaymentDto {
 ```
 
 #### `@IsISO4217CurrencyCode()`
+
 Проверяет, является ли значение валидным кодом валюты по стандарту ISO 4217.
 
 ```typescript
@@ -611,6 +654,7 @@ class TransactionDto {
 ```
 
 #### `@IsEthereumAddress()`
+
 Проверяет, является ли значение валидным адресом Ethereum.
 
 ```typescript
@@ -621,6 +665,7 @@ class WalletDto {
 ```
 
 #### `@IsBtcAddress()`
+
 Проверяет, является ли значение валидным адресом Bitcoin (legacy или SegWit).
 
 ```typescript
@@ -631,6 +676,7 @@ class CryptoDto {
 ```
 
 #### `@IsPassportNumber(locale?)`
+
 Проверяет, является ли значение валидным номером паспорта. Поддерживает валидацию для конкретных локалей.
 
 ```typescript
@@ -646,6 +692,7 @@ class InternationalDto {
 ```
 
 #### `@IsIdentityCard(locale?)`
+
 Проверяет, является ли значение валидным номером удостоверения личности.
 
 ```typescript
@@ -656,6 +703,7 @@ class IdentityDto {
 ```
 
 #### `@IsEAN()`
+
 Проверяет, является ли значение валидным европейским артикульным номером (EAN-8 или EAN-13).
 
 ```typescript
@@ -666,6 +714,7 @@ class ProductDto {
 ```
 
 #### `@IsISIN()`
+
 Проверяет, является ли значение валидным международным идентификационным номером ценной бумаги (ISIN).
 
 ```typescript
@@ -676,6 +725,7 @@ class SecurityDto {
 ```
 
 #### `@IsMagnetURI()`
+
 Проверяет, является ли значение валидным Magnet URI.
 
 ```typescript
@@ -686,6 +736,7 @@ class TorrentDto {
 ```
 
 #### `@IsDataURI()`
+
 Проверяет, является ли значение валидным Data URI.
 
 ```typescript
@@ -696,6 +747,7 @@ class ImageDto {
 ```
 
 #### `@IsISO31661Alpha2()`
+
 Проверяет, является ли значение валидным двухбуквенным кодом страны по стандарту ISO 3166-1 alpha-2.
 
 ```typescript
@@ -706,6 +758,7 @@ class AddressDto {
 ```
 
 #### `@IsISO31661Alpha3()`
+
 Проверяет, является ли значение валидным трёхбуквенным кодом страны по стандарту ISO 3166-1 alpha-3.
 
 ```typescript
@@ -716,6 +769,7 @@ class CountryDto {
 ```
 
 #### `@IsLocale()`
+
 Проверяет, является ли значение валидным кодом локали.
 
 ```typescript
@@ -726,6 +780,7 @@ class UserDto {
 ```
 
 #### `@IsSemVer()`
+
 Проверяет, является ли значение валидной семантической версией.
 
 ```typescript
@@ -736,6 +791,7 @@ class PackageDto {
 ```
 
 #### `@IsMimeType()`
+
 Проверяет, является ли значение валидным MIME-типом.
 
 ```typescript
@@ -746,6 +802,7 @@ class FileDto {
 ```
 
 #### `@IsTimeZone()`
+
 Проверяет, является ли значение валидным часовым поясом.
 
 ```typescript
@@ -756,6 +813,7 @@ class EventDto {
 ```
 
 #### `@IsRFC3339()`
+
 Проверяет, является ли значение валидной датой в формате RFC 3339.
 
 ```typescript
@@ -770,6 +828,7 @@ class TimestampDto {
 ### Валидаторы чисел
 
 #### `@IsNumber()`
+
 Проверяет, является ли значение a number.
 
 ```typescript
@@ -780,6 +839,7 @@ class ProductDto {
 ```
 
 #### `@IsInt()`
+
 Проверяет, является ли значение an integer.
 
 ```typescript
@@ -790,6 +850,7 @@ class ProductDto {
 ```
 
 #### `@Min(min)`
+
 Checks if number is at least min.
 
 ```typescript
@@ -800,6 +861,7 @@ class ProductDto {
 ```
 
 #### `@Max(max)`
+
 Checks if number is at most max.
 
 ```typescript
@@ -810,6 +872,7 @@ class ProductDto {
 ```
 
 #### `@IsPositive()`
+
 Checks if number is positive.
 
 ```typescript
@@ -820,6 +883,7 @@ class ProductDto {
 ```
 
 #### `@IsNegative()`
+
 Checks if number is negative.
 
 ```typescript
@@ -830,6 +894,7 @@ class TransactionDto {
 ```
 
 #### `@IsDivisibleBy(num)`
+
 Checks if number is divisible by num.
 
 ```typescript
@@ -840,6 +905,7 @@ class ProductDto {
 ```
 
 #### `@IsDecimal()`
+
 Проверяет, является ли значение a decimal number.
 
 ```typescript
@@ -854,6 +920,7 @@ class ProductDto {
 ### Валидаторы дат
 
 #### `@MinDate(date)`
+
 Checks if date is after or equal to the specified date.
 
 ```typescript
@@ -864,6 +931,7 @@ class EventDto {
 ```
 
 #### `@MaxDate(date)`
+
 Checks if date is before or equal to the specified date.
 
 ```typescript
@@ -878,6 +946,7 @@ class EventDto {
 ### Валидаторы массивов
 
 #### `@IsArray()`
+
 Проверяет, является ли значение an array.
 
 ```typescript
@@ -888,6 +957,7 @@ class ProductDto {
 ```
 
 #### `@ArrayNotEmpty()`
+
 Checks if array is not empty.
 
 ```typescript
@@ -898,6 +968,7 @@ class ProductDto {
 ```
 
 #### `@ArrayMinSize(min)`
+
 Checks if array has at least min elements.
 
 ```typescript
@@ -908,6 +979,7 @@ class ProductDto {
 ```
 
 #### `@ArrayMaxSize(max)`
+
 Checks if array has at most max elements.
 
 ```typescript
@@ -918,6 +990,7 @@ class ProductDto {
 ```
 
 #### `@ArrayContains(values)`
+
 Checks if array contains all specified values.
 
 ```typescript
@@ -928,6 +1001,7 @@ class ProductDto {
 ```
 
 #### `@ArrayNotContains(values)`
+
 Checks if array does not contain any of the specified values.
 
 ```typescript
@@ -938,6 +1012,7 @@ class ProductDto {
 ```
 
 #### `@ArrayUnique()`
+
 Checks if all array elements are unique.
 
 ```typescript
@@ -952,6 +1027,7 @@ class ProductDto {
 ### Type Checker Validators
 
 #### `@IsBoolean()`
+
 Проверяет, является ли значение a boolean.
 
 ```typescript
@@ -962,6 +1038,7 @@ class UserDto {
 ```
 
 #### `@IsDate()`
+
 Проверяет, является ли значение a Date object.
 
 ```typescript
@@ -972,6 +1049,7 @@ class EventDto {
 ```
 
 #### `@IsObject()`
+
 Проверяет, является ли значение an object.
 
 ```typescript
@@ -982,13 +1060,14 @@ class UserDto {
 ```
 
 #### `@IsEnum(enum)`
+
 Проверяет, является ли значение a valid enum value.
 
 ```typescript
 enum UserRole {
   Admin = 'admin',
   User = 'user',
-  Guest = 'guest'
+  Guest = 'guest',
 }
 
 class UserDto {
@@ -998,6 +1077,7 @@ class UserDto {
 ```
 
 #### `@IsInstance(class)`
+
 Проверяет, является ли значение an instance of a class.
 
 ```typescript
@@ -1008,6 +1088,7 @@ class UserDto {
 ```
 
 #### `@IsNotEmptyObject()`
+
 Проверяет, является ли значение a non-empty object.
 
 ```typescript
@@ -1022,16 +1103,18 @@ class UserDto {
 ### Geographic Validators
 
 #### `@IsLatLong()`
+
 Проверяет, является ли значение a valid latitude-longitude pair.
 
 ```typescript
 class LocationDto {
   @IsLatLong()
-  coordinates: string;  // "40.7128,-74.0060"
+  coordinates: string; // "40.7128,-74.0060"
 }
 ```
 
 #### `@IsLatitude()`
+
 Проверяет, является ли значение a valid latitude.
 
 ```typescript
@@ -1042,6 +1125,7 @@ class LocationDto {
 ```
 
 #### `@IsLongitude()`
+
 Проверяет, является ли значение a valid longitude.
 
 ```typescript
@@ -1083,7 +1167,7 @@ class UserDto {
 const user = new UserDto();
 user.name = 'John';
 user.address = new Address();
-user.address.street = '';  // Invalid
+user.address.street = ''; // Invalid
 
 const errors = await validate(user);
 // Errors will include nested валидация errors
@@ -1102,7 +1186,7 @@ class UserDto {
   @IsString()
   accountType: string;
 
-  @ValidateIf(o => o.accountType === 'premium')
+  @ValidateIf((o) => o.accountType === 'premium')
   @IsString()
   premiumFeature?: string;
 }
@@ -1158,7 +1242,7 @@ Use functions for dynamic error messages.
 ```typescript
 class UserDto {
   @MinLength(3, {
-    message: (args) => `${args.property} is too short. Minimum length is ${args.constraints[0]}`
+    message: (args) => `${args.property} is too short. Minimum length is ${args.constraints[0]}`,
   })
   name: string;
 }
@@ -1175,19 +1259,19 @@ import {
   ValidatorConstraint,
   ValidatorConstraintInterface,
   ValidationArguments,
-  Validate
+  Validate,
 } from 'om-data-mapper/class-validator-compat';
 
 @ValidatorConstraint({ name: 'isStrongPassword', async: false })
 class IsStrongPasswordConstraint implements ValidatorConstraintInterface {
   validate(value: any, args: ValidationArguments): boolean {
     if (typeof value !== 'string') return false;
-    
+
     const hasUpperCase = /[A-Z]/.test(value);
     const hasLowerCase = /[a-z]/.test(value);
     const hasNumber = /[0-9]/.test(value);
     const hasSpecialChar = /[!@#$%^&*]/.test(value);
-    
+
     return hasUpperCase && hasLowerCase && hasNumber && hasSpecialChar && value.length >= 8;
   }
 
@@ -1210,7 +1294,7 @@ class IsUserAlreadyExistConstraint implements ValidatorConstraintInterface {
   async validate(value: any, args: ValidationArguments): Promise<boolean> {
     // Check database
     const user = await database.findUserByEmail(value);
-    return !user;  // Return false if user exists
+    return !user; // Return false if user exists
   }
 
   defaultMessage(args: ValidationArguments): string {
@@ -1276,7 +1360,7 @@ class UserDto {
 
   @IsOptional()
   @IsString()
-  middleName?: string;  // Only validated if provided
+  middleName?: string; // Only validated if provided
 }
 ```
 
@@ -1292,7 +1376,7 @@ complexField: string;
 
 ## Migration from class-валидатор
 
-The API is **100% compatible** with class-валидатор. Simply change the import:
+API - это **готовая замена для поддерживаемого подмножества** class-валидатор - точный охват смотрите в [таблице совместимости](./compat-class-validator.md). Simply change the import:
 
 ```typescript
 // Before
@@ -1302,7 +1386,7 @@ import { validate, IsString } from 'class-validator';
 import { validate, IsString } from 'om-data-mapper/class-validator-compat';
 ```
 
-**No other changes needed!** Your existing code will work with 10x better performance.
+**Дополнительных изменений не требуется** для поддерживаемого подмножества - JIT-компиляция происходит автоматически при первой валидации каждого класса.
 
 ---
 
@@ -1319,6 +1403,7 @@ import { validate, IsString } from 'om-data-mapper/class-validator-compat';
 ## Справочник API Summary
 
 ### Functions
+
 - `validate(object, options?)` - Async валидация
 - `validateSync(object, options?)` - Sync валидация
 - `validateOrReject(object, options?)` - Async валидация with throw
@@ -1327,6 +1412,7 @@ import { validate, IsString } from 'om-data-mapper/class-validator-compat';
 - `validateManySync(objects, options?)` - Validate array sync
 
 ### Decorators
+
 - **Common**: `@IsOptional()`, `@IsDefined()`, `@IsNotEmpty()`, `@Equals()`, `@NotEquals()`, `@IsIn()`, `@IsNotIn()`
 - **String**: `@IsString()`, `@MinLength()`, `@MaxLength()`, `@Length()`, `@IsEmail()`, `@IsURL()`, `@IsUUID()`, `@Matches()`
 - **Number**: `@IsNumber()`, `@IsInt()`, `@Min()`, `@Max()`, `@IsPositive()`, `@IsNegative()`
@@ -1342,11 +1428,10 @@ import { validate, IsString } from 'om-data-mapper/class-validator-compat';
 
 The валидация module provides:
 
-- ✅ **10x faster** than class-валидатор
-- ✅ **100% API compatible** - прямая замена
+- ✅ **JIT-компиляция** - специализированная функция валидации компилируется один раз и переиспользуется, без рефлексии на каждый вызов
+- ✅ **Готовая замена для поддерживаемого подмножества** - см. [таблицу совместимости](./compat-class-validator.md)
 - ✅ **No dependencies** - no reflect-metadata needed
 - ✅ **Type-safe** - full TypeScript support
 - ✅ **Extensible** - custom валидаторs supported
 
 Start validating with confidence! 🚀
-

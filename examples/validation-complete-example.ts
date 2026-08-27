@@ -10,7 +10,7 @@
  * - Sync custom validators (cross-field validation)
  * - Mix of built-in decorators (string, number, date validators)
  *
- * Run with: npx tsx examples/validation-complete-example.ts
+ * See examples/README.md for how to type-check and run this file.
  */
 
 import {
@@ -29,13 +29,11 @@ import {
   ValidateNested,
   validate,
   validateSync,
-} from '../src/compat/class-validator';
-import {
   ValidatorConstraint,
-  ValidatorConstraintInterface,
-  ValidationArguments,
+  type ValidatorConstraintInterface,
+  type ValidationArguments,
   Validate,
-} from '../src/compat/class-validator/decorators/custom';
+} from '@tech-pioneer/data-mapper-class-validator';
 
 // ============================================================================
 // CUSTOM VALIDATORS
@@ -48,7 +46,7 @@ import {
 class IsUniqueEmailConstraint implements ValidatorConstraintInterface {
   async validate(value: string, args: ValidationArguments) {
     // Simulate async database check
-    await new Promise(resolve => setTimeout(resolve, 10));
+    await new Promise((resolve) => setTimeout(resolve, 10));
 
     // Simulate checking if email exists
     const takenEmails = ['admin@example.com', 'test@example.com'];
@@ -344,7 +342,7 @@ async function main() {
 
   const invalidUserErrors = await validate(invalidUser, { groups: ['create'] });
   console.log('Invalid user errors:', invalidUserErrors.length);
-  invalidUserErrors.forEach(error => {
+  invalidUserErrors.forEach((error) => {
     console.log(`  - ${error.property}:`, Object.keys(error.constraints || {}).join(', '));
   });
   console.log('❌ User has validation errors');
@@ -378,11 +376,11 @@ async function main() {
   const item2 = new OrderItemDto();
   item2.productId = 'PROD-002';
   item2.quantity = 1;
-  item2.subtotal = 100.00;
+  item2.subtotal = 100.0;
   item2.productDetails = new ProductDetailsDto();
   item2.productDetails.name = 'Wireless Mouse';
   item2.productDetails.description = 'Ergonomic wireless mouse with USB receiver';
-  item2.productDetails.price = 100.00;
+  item2.productDetails.price = 100.0;
   item2.productDetails.quantity = 50;
 
   validOrder.items = [item1, item2];
@@ -436,10 +434,10 @@ async function main() {
 
   const invalidOrderErrors = validateSync(invalidOrder);
   console.log('Invalid order errors:', invalidOrderErrors.length);
-  invalidOrderErrors.forEach(error => {
+  invalidOrderErrors.forEach((error) => {
     if (error.children && error.children.length > 0) {
       console.log(`  - ${error.property}: has ${error.children.length} nested errors`);
-      error.children.forEach(child => {
+      error.children.forEach((child) => {
         console.log(`    - ${child.property}:`, Object.keys(child.constraints || {}).join(', '));
       });
     } else {
@@ -464,11 +462,8 @@ async function main() {
   console.log('  - Built-in decorators (string, number, date, enum, array)');
   console.log('  - Cross-field validation (password confirmation, date comparison)');
   console.log('  - Optional fields (billingAddress, profileUrl)');
-  console.log();
-  console.log('🚀 Performance: 200-600x faster than class-validator!');
   console.log('='.repeat(80));
 }
 
 // Run the example
 main().catch(console.error);
-

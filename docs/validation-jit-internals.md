@@ -10,7 +10,7 @@ This document explains the internal implementation details of the JIT compilatio
 
 ## Architecture Components
 
-### 1. Metadata Storage (`src/compat/class-validator/engine/metadata.ts`)
+### 1. Metadata Storage (`packages/class-validator/src/engine/metadata.ts`)
 
 The validation system uses **Symbol-based metadata storage** to store validation rules attached to class properties.
 
@@ -44,18 +44,18 @@ interface PropertyValidationMetadata {
 }
 
 interface ValidationConstraint {
-  type: string;                    // e.g., 'isString', 'minLength'
-  value?: any;                     // Constraint parameters
-  message?: string | Function;     // Error message
-  groups?: string[];               // Validation groups
-  always?: boolean;                // Always validate flag
-  validator?: Function;            // Custom validator function
+  type: string; // e.g., 'isString', 'minLength'
+  value?: any; // Constraint parameters
+  message?: string | Function; // Error message
+  groups?: string[]; // Validation groups
+  always?: boolean; // Always validate flag
+  validator?: Function; // Custom validator function
 }
 ```
 
 ---
 
-### 2. Validator Registry (`src/compat/class-validator/engine/validator-registry.ts`)
+### 2. Validator Registry (`packages/class-validator/src/engine/validator-registry.ts`)
 
 Manages custom validator class instances with caching to avoid repeated instantiation.
 
@@ -73,7 +73,7 @@ const validatorInstanceCache = new Map<
 >();
 
 export function getValidatorInstance(
-  validatorClass: new () => ValidatorConstraintInterface
+  validatorClass: new () => ValidatorConstraintInterface,
 ): ValidatorConstraintInterface {
   if (validatorInstanceCache.has(validatorClass)) {
     return validatorInstanceCache.get(validatorClass)!;
@@ -86,7 +86,7 @@ export function getValidatorInstance(
 
 ---
 
-### 3. JIT Compiler (`src/compat/class-validator/engine/compiler.ts`)
+### 3. JIT Compiler (`packages/class-validator/src/engine/compiler.ts`)
 
 The core of the validation system - generates optimized validation functions.
 
@@ -164,27 +164,28 @@ const opts = options || {};
 
 // Validate property: name
 {
-  const value = object?.name;
+  const value = object['name'];
   const propertyErrors = {};
-  
+
   // Check if property should be validated
   if (value !== undefined && value !== null) {
     // Constraint: isString
     if (typeof value !== 'string') {
       propertyErrors.isString = 'name must be a string';
     }
-    
+
     // Constraint: minLength
     if (typeof value === 'string' && value.length < 3) {
       propertyErrors.minLength = 'name must be at least 3 characters';
     }
   }
-  
+
   if (Object.keys(propertyErrors).length > 0) {
     errors.push({
       property: 'name',
       value: value,
-      constraints: propertyErrors
+      target: object,
+      constraints: propertyErrors,
     });
   }
 }
@@ -235,12 +236,12 @@ if (!validators.isString(value)) { ... }
 if (typeof value !== 'string') { ... }
 ```
 
-### 3. **Optional Chaining**
+### 3. **Bracket Property Access**
 
-Safe property access without try-catch:
+Each property is read via a bracket expression using the JSON-stringified property name, not optional chaining:
 
 ```javascript
-const value = object?.propertyName;
+const value = object['propertyName'];
 ```
 
 ### 4. **Conditional Compilation**
@@ -257,7 +258,7 @@ if (typeof value === 'string' && value.length < 3) { ... }
 Validation groups are checked at compile time:
 
 ```javascript
-if (opts.groups && opts.groups.length > 0 && opts.groups.some(g => ['admin'].includes(g))) {
+if (opts.groups && opts.groups.length > 0 && opts.groups.some((g) => ['admin'].includes(g))) {
   // Only validate if group matches
 }
 ```
@@ -280,28 +281,11 @@ if (hasValidationMetadata(value.constructor)) {
 
 ## Performance Characteristics
 
-### Compilation Cost
-
-- **First Call**: ~1-5ms (metadata parsing + code generation + compilation)
-- **Subsequent Calls**: ~0.001ms (cache lookup)
-- **Amortization**: Cost is amortized over thousands of validations
-
-### Execution Performance
-
-Compared to class-validator (interpreted):
-
-| Validation Type | class-validator | om-data-mapper | Speedup |
-|----------------|-----------------|----------------|---------|
-| Simple (1 field) | ~50K ops/sec | ~500K ops/sec | **10x** |
-| Complex (10 fields) | ~10K ops/sec | ~100K ops/sec | **10x** |
-| Nested objects | ~5K ops/sec | ~50K ops/sec | **10x** |
-| Async validation | ~8K ops/sec | ~40K ops/sec | **5x** |
-
-### Memory Usage
-
-- **Metadata**: ~1KB per class
-- **Compiled Function**: ~2-10KB per class
-- **Cache Overhead**: Minimal (Map with class references)
+The validator for a class is compiled once, on first use, and the compiled
+function is cached and reused on every subsequent call — there is no
+per-call reflection or metadata re-parsing after that first compilation. For
+measured throughput against class-validator, see
+[`../benchmarks/README.md`](../benchmarks/README.md).
 
 ---
 
@@ -320,11 +304,11 @@ const args = {
   constraints: constraintValue.constraints || [],
   targetName: object.constructor.name,
   object: object,
-  property: 'email'
+  property: 'email',
 };
 const result = validatorInstance.validate(value, args);
 if (!result) {
-  propertyErrors.customValidator = validatorInstance.defaultMessage(args);
+  propertyErrors.custom = validatorInstance.defaultMessage(args);
 }
 ```
 
@@ -334,7 +318,7 @@ if (!result) {
 const task = (async () => {
   const result = await validatorInstance.validate(value, args);
   if (!result) {
-    propertyErrors.customValidator = validatorInstance.defaultMessage(args);
+    propertyErrors.custom = validatorInstance.defaultMessage(args);
   }
 })();
 asyncTasks.push(task);
@@ -348,13 +332,14 @@ asyncTasks.push(task);
 
 ```typescript
 interface ValidationError {
-  property: string;              // Property name
-  value?: any;                   // Invalid value
-  constraints?: {                // Failed constraints
-    [type: string]: string;      // Error messages
+  property: string; // Property name
+  value?: any; // Invalid value
+  constraints?: {
+    // Failed constraints
+    [type: string]: string; // Error messages
   };
-  children?: ValidationError[];  // Nested errors
-  target?: any;                  // Object being validated
+  children?: ValidationError[]; // Nested errors
+  target?: any; // Object being validated
 }
 ```
 
@@ -376,26 +361,36 @@ interface ValidationError {
 
 ## Debugging
 
-### Viewing Generated Code:
+The codegen internals (`generateValidationCode`, `compileValidator`, and friends) are
+implementation details of `packages/class-validator/src/engine/compiler.ts` and are not part of
+the public API — the package only re-exports `clearValidatorCache` and `getValidatorCacheSize`
+from that module (see `packages/class-validator/src/index.ts`). To inspect the generated code
+itself, read the compiler source directly.
+
+### Inspecting the Cache:
 
 ```typescript
-import { compileValidator } from 'om-data-mapper/class-validator-compat/engine/compiler';
+import { getValidatorCacheSize, clearValidatorCache } from 'om-data-mapper/class-validator-compat';
 
-const metadata = getValidationMetadata(MyClass);
-const code = generateValidationCode(metadata);
-console.log(code);  // View generated JavaScript
+console.log(getValidatorCacheSize()); // number of classes with a compiled validator cached
+
+clearValidatorCache(); // force recompilation on the next validate() call for every class
 ```
 
-### Performance Profiling:
+### Comparing First Call vs. Cached Calls:
+
+Because compilation happens lazily on first use and the result is cached per class, you can
+observe the one-time compilation cost by timing the first `validateSync()` call against a
+subsequent one on the same class:
 
 ```typescript
-console.time('compilation');
-const validator = compileValidator(metadata);
-console.timeEnd('compilation');
+console.time('first call (includes compilation)');
+validateSync(new MyClass());
+console.timeEnd('first call (includes compilation)');
 
-console.time('execution');
-const errors = validator(object, options);
-console.timeEnd('execution');
+console.time('cached call');
+validateSync(new MyClass());
+console.timeEnd('cached call');
 ```
 
 ---
@@ -413,11 +408,10 @@ console.timeEnd('execution');
 
 The JIT compilation approach provides:
 
-- ✅ **10x faster** validation than interpreted approaches
+- ✅ **JIT-compiled** - a specialized validation function is compiled once and reused, with no per-call reflection
 - ✅ **Zero runtime overhead** after first compilation
 - ✅ **Type-safe** with full TypeScript support
 - ✅ **Memory efficient** with per-class caching
 - ✅ **Extensible** with custom validators
 
-This architecture makes `om-data-mapper` one of the fastest validation libraries available for TypeScript/JavaScript.
-
+For measured throughput against class-validator, see [`../benchmarks/README.md`](../benchmarks/README.md).

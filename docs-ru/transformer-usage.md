@@ -5,9 +5,11 @@
 The `om-data-mapper` трансформер module provides two powerful APIs for transforming objects:
 
 1. **Decorator API** - Modern, высокопроизводительный API using TC39 Stage 3 декораторs (Рекомендуется)
-2. **class-трансформер API совместимости** - Drop-in replacement for class-трансформер with 10x better performance
+2. **class-трансформер API совместимости** - готовая замена для поддерживаемого подмножества class-transformer (см. [таблицу совместимости](./compat-class-transformer.md))
 
-Both APIs use JIT-компиляция for maximum performance.
+Decorator API JIT-компилируется для максимальной производительности; class-transformer API
+совместимости интерпретирует зарегистрированные метаданные при каждом вызове (без
+reflect-metadata, без повторного разбора декораторов на каждый вызов).
 
 ---
 
@@ -87,16 +89,15 @@ import {
   Mapper,
   Map,
   MapFrom,
-  MapNested,
+  MapWith,
   Transform,
   Default,
-  When,
   Ignore,
   plainToInstance,
   plainToInstanceArray,
   tryPlainToInstance,
   createMapper,
-  getMapper
+  getMapper,
 } from 'om-data-mapper';
 ```
 
@@ -122,6 +123,7 @@ class UnsafeUserMapper {
 ```
 
 **Опции:**
+
 - `unsafe?: boolean` - Disable error handling for maximum performance
 - `useUnsafe?: boolean` - Alias for `unsafe`
 
@@ -224,23 +226,22 @@ class UserMapper {
 
 ---
 
-#### `@When(condition)`
+#### Условное отображение с помощью `@MapFrom`
 
-Условно отображает a property.
+Отдельного декоратора «условия» не существует — `@MapFrom` получает весь
+исходный объект, поэтому условная логика выражается обычной функцией,
+которая возвращает `undefined`, когда условие не выполняется:
 
 ```typescript
 @Mapper<Source, Target>()
 class UserMapper {
-  @When((src: Source) => src.isPremium)
-  @Map('premiumFeatures')
+  @MapFrom((src: Source) => (src.isPremium ? src.premiumFeatures : undefined))
   features?: string[];
 
-  @When((src: Source) => src.age >= 18)
-  @Map('adultContent')
+  @MapFrom((src: Source) => (src.age >= 18 ? src.adultContent : undefined))
   adultContent?: string;
 
-  @When((src: Source) => src.role === 'admin')
-  @MapFrom((src) => src.adminData)
+  @MapFrom((src: Source) => (src.role === 'admin' ? src.adminData : undefined))
   adminData?: any;
 }
 ```
@@ -258,15 +259,16 @@ class UserMapper {
   name!: string;
 
   @Ignore()
-  internalField!: string;  // Won't be mapped
+  internalField!: string; // Won't be mapped
 }
 ```
 
 ---
 
-#### `@MapNested(MapperClass)`
+#### `@MapWith(MapperClass)`
 
-Maps nested objects using another маппер.
+Maps nested objects using another маппер. Ставится над `@Map()` или
+`@MapFrom()`, который предоставляет вложенное исходное значение:
 
 ```typescript
 class Address {
@@ -288,7 +290,8 @@ class UserMapper {
   @Map('name')
   name!: string;
 
-  @MapNested(AddressMapper)
+  @MapWith(AddressMapper)
+  @Map('address')
   address!: Address;
 }
 ```
@@ -405,7 +408,7 @@ const product = {
   price: 1000,
   discount: 10,
   category: { id: 'cat1', name: 'Electronics' },
-  tags: ['new', 'featured']
+  tags: ['new', 'featured'],
 };
 
 const dto = plainToInstance(ProductMapper, product);
@@ -442,14 +445,14 @@ class UserMapper {
   @Map('email')
   email!: string;
 
-  @MapNested(AddressMapper)
+  @MapWith(AddressMapper)
+  @Map('address')
   address!: AddressDTO;
 
   @MapFrom((src) => src.age >= 18)
   isAdult!: boolean;
 
-  @When((src) => src.isPremium)
-  @Map('premiumFeatures')
+  @MapFrom((src) => (src.isPremium ? src.premiumFeatures : undefined))
   features?: string[];
 }
 ```
@@ -470,12 +473,10 @@ class OrderMapper {
   @Default('pending')
   status!: string;
 
-  @When((src) => src.isPaid)
-  @Map('paymentMethod')
+  @MapFrom((src) => (src.isPaid ? src.paymentMethod : undefined))
   paymentMethod?: string;
 
-  @When((src) => src.isShipped)
-  @Map('trackingNumber')
+  @MapFrom((src) => (src.isShipped ? src.trackingNumber : undefined))
   trackingNumber?: string;
 
   @MapFrom((src) => src.items?.length || 0)
@@ -507,7 +508,7 @@ import {
   Transform,
   TransformClassToPlain,
   TransformClassToClass,
-  TransformPlainToClass
+  TransformPlainToClass,
 } from 'om-data-mapper/class-transformer-compat';
 ```
 
@@ -536,6 +537,7 @@ class UserDTO {
 ```
 
 **Опции:**
+
 - `name?: string` - Map from different property name
 - `groups?: string[]` - Only expose in specific groups
 - `since?: number` - Expose starting from Версия
@@ -563,6 +565,7 @@ class UserDTO {
 ```
 
 **Опции:**
+
 - `toClassOnly?: boolean` - Only exclude when transforming to class
 - `toPlainOnly?: boolean` - Only exclude when transforming to plain
 
@@ -597,7 +600,7 @@ class UserDTO {
 const plain = {
   name: 'John',
   address: { street: '123 Main St', city: 'NYC' },
-  createdAt: '2024-01-01'
+  createdAt: '2024-01-01',
 };
 
 const user = plainToClass(UserDTO, plain);
@@ -628,6 +631,7 @@ class UserDTO {
 ```
 
 **Transform Function Параметры:**
+
 - `value` - The property value
 - `key` - The property key
 - `obj` - The source object
@@ -635,6 +639,7 @@ class UserDTO {
 - `options` - Transformation options
 
 **Опции:**
+
 - `toClassOnly?: boolean` - Only apply when transforming to class
 - `toPlainOnly?: boolean` - Only apply when transforming to plain
 
@@ -736,8 +741,6 @@ interface ClassTransformOptions {
   excludePrefixes?: string[];
   ignoreDecorators?: boolean;
   enableImplicitConversion?: boolean;
-  enableCircularCheck?: boolean;
-  exposeUnsetFields?: boolean;
 }
 ```
 
@@ -745,9 +748,9 @@ interface ClassTransformOptions {
 
 ```typescript
 const user = plainToClass(UserDTO, plain, {
-  excludeExtraneousValues: true,  // Only @Expose properties
-  groups: ['admin'],               // Only admin group
-  version: 2.0                     // Version 2.0 properties
+  excludeExtraneousValues: true, // Only @Expose properties
+  groups: ['admin'], // Only admin group
+  version: 2.0, // Version 2.0 properties
 });
 ```
 
@@ -792,10 +795,10 @@ const plain = {
       name: 'Vacation',
       photos: [
         { url: 'photo1.jpg', uploadedAt: '2024-01-01' },
-        { url: 'photo2.jpg', uploadedAt: '2024-01-02' }
-      ]
-    }
-  ]
+        { url: 'photo2.jpg', uploadedAt: '2024-01-02' },
+      ],
+    },
+  ],
 };
 
 const user = plainToClass(UserDTO, plain);
@@ -865,7 +868,7 @@ class ProductDTO {
 
 ## Migration from class-трансформер
 
-The compatibility API is **100% compatible** with class-трансформер. Simply change the import:
+API совместимости - это **готовая замена для поддерживаемого подмножества** class-трансформер - точный охват смотрите в [таблице совместимости](./compat-class-transformer.md). Simply change the import:
 
 ```typescript
 // Before
@@ -876,21 +879,13 @@ import { plainToClass, Expose, Type } from 'om-data-mapper/class-transformer-com
 ```
 
 **Преимущества:**
-- ✅ 10x better performance
+
+- ✅ Метаданные регистрируются один раз при определении класса и обходятся при каждом вызове - без повторного разбора декораторов
 - ✅ No reflect-metadata dependency
-- ✅ Same API - no code changes needed
+- ✅ Same API for the supported subset - см. таблицу совместимости по пробелам
 - ✅ Full TypeScript support
 
----
-
-## Производительность Comparison
-
-| Operation | class-трансформер | om-data-маппер | Speedup |
-|-----------|------------------|----------------|---------|
-| Simple трансформация | 326K ops/sec | **3.2M ops/sec** | **10x** |
-| Nested objects | 80K ops/sec | **800K ops/sec** | **10x** |
-| Array трансформация | 50K ops/sec | **500K ops/sec** | **10x** |
-| Complex трансформацияs | 150K ops/sec | **1.5M ops/sec** | **10x** |
+Реальные цифры производительности смотрите в [`../benchmarks/README.md`](../benchmarks/README.md).
 
 ---
 
@@ -945,7 +940,8 @@ class UserMapper {
 
 ```typescript
 // ✅ Good: Reusable nested маппер
-@MapNested(AddressMapper)
+@MapWith(AddressMapper)
+@Map('address')
 address!: Address;
 
 // ❌ Bad: Inline трансформация
@@ -958,15 +954,16 @@ address!: Address;
 
 ### 5. Use Conditional Mapping Wisely
 
+`@MapFrom` получает весь исходный объект, поэтому и простые, и составные
+условия обрабатываются одним и тем же способом:
+
 ```typescript
 // ✅ Good: Simple condition
-@When((src) => src.isPremium)
-@Map('features')
+@MapFrom((src) => (src.isPremium ? src.features : undefined))
 features?: string[];
 
-// ❌ Bad: Complex condition (use @MapFrom instead)
-@When((src) => src.role === 'admin' && src.permissions.includes('read'))
-@Map('data')
+// ✅ Also fine: compound condition, same decorator
+@MapFrom((src) => (src.role === 'admin' && src.permissions.includes('read') ? src.data : undefined))
 data?: any;
 ```
 
@@ -1221,11 +1218,12 @@ const result = plainToInstance(UserMapper, source);
 // result.address is a plain object, not an Address instance
 ```
 
-**Solution**: Use `@MapNested()` or `@Type()`.
+**Solution**: Use `@MapWith()` or `@Type()`.
 
 ```typescript
 // ✅ Solution 1: Decorator API
-@MapNested(AddressMapper)
+@MapWith(AddressMapper)
+@Map('address')
 address!: Address;
 
 // ✅ Solution 2: API совместимости
@@ -1286,6 +1284,7 @@ Ensure your `tsconfig.json` is configured correctly:
 ```
 
 **Важно:**
+
 - ✅ `experimentalDecorators: false` - Use TC39 Stage 3 декораторs
 - ✅ `useDefineForClassFields: true` - Обязательно for декораторs
 - ✅ `target: "ES2022"` - For optional chaining support
@@ -1297,18 +1296,20 @@ Ensure your `tsconfig.json` is configured correctly:
 ### Decorator API
 
 **Class Decorators:**
+
 - `@Mapper<Source, Target>(options?)` - Mark class as маппер
 
 **Property Decorators:**
+
 - `@Map(sourcePath)` - Map from source path
-- `@MapFrom(transformer)` - Map using трансформер function
+- `@MapFrom(transformer)` - Map using трансформер function (также используется для условного отображения, так как получает весь source)
 - `@Transform(transformer)` - Transform value after mapping
 - `@Default(value)` - Provide default value
-- `@When(condition)` - Conditional mapping
 - `@Ignore()` - Ignore property
-- `@MapNested(MapperClass)` - Map nested object
+- `@MapWith(MapperClass)` - Map nested object using another mapper
 
 **Functions:**
+
 - `plainToInstance(MapperClass, source)` - Transform to instance
 - `plainToInstanceArray(MapperClass, sources)` - Transform array
 - `tryPlainToInstance(MapperClass, source)` - Transform with errors
@@ -1318,6 +1319,7 @@ Ensure your `tsconfig.json` is configured correctly:
 ### API совместимости
 
 **Decorators:**
+
 - `@Expose(options?)` - Expose property
 - `@Exclude(options?)` - Exclude property
 - `@Type(typeFunction, options?)` - Specify type
@@ -1327,6 +1329,7 @@ Ensure your `tsconfig.json` is configured correctly:
 - `@TransformPlainToClass(classType, options?)` - Method декоратор
 
 **Functions:**
+
 - `plainToClass(Class, plain, options?)` - Plain to class
 - `plainToInstance(Class, plain, options?)` - Alias for plainToClass
 - `plainToClassFromExist(instance, plain, options?)` - Update instance
@@ -1344,13 +1347,13 @@ Ensure your `tsconfig.json` is configured correctly:
 
 The трансформер module provides:
 
-- ✅ **10x faster** than class-трансформер
+- ✅ **Decorator API JIT-компилируется** - специализированная функция трансформации компилируется один раз и переиспользуется, без рефлексии на каждый вызов
+- ✅ **class-transformer API совместимости интерпретирует метаданные при каждом вызове** - без reflect-metadata, без повторного разбора декораторов
 - ✅ **Two powerful APIs** - Decorator API and API совместимости
 - ✅ **Type-safe** with full TypeScript support
 - ✅ **Zero dependencies** - no reflect-metadata needed
-- ✅ **Easy migration** - прямая замена for class-трансформер
+- ✅ **Easy migration** - готовая замена для поддерживаемого подмножества class-трансформер
 - ✅ **Flexible** - handles simple to complex трансформацияs
-- ✅ **Production-ready** - battle-tested and reliable
+- ✅ **Протестировано** - часть тестового набора проекта из 549 тестов в 38 файлах
 
 Start transforming with confidence! 🚀
-

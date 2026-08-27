@@ -9,6 +9,7 @@ Welcome to the `om-data-mapper` documentation! This directory contains comprehen
 ### User Guides
 
 #### Validation Module
+
 - **[Validation Usage Guide](./validation-usage.md)** - Complete guide on how to use the validation module
   - Available validators and decorators
   - Validation functions (validate, validateSync, etc.)
@@ -18,6 +19,7 @@ Welcome to the `om-data-mapper` documentation! This directory contains comprehen
   - Best practices and examples
 
 #### Transformer Module
+
 - **[Transformer Usage Guide](./transformer-usage.md)** - Complete guide on how to use the transformer module
   - Decorator API (recommended for new projects)
   - class-transformer Compatibility API (for migration)
@@ -27,19 +29,31 @@ Welcome to the `om-data-mapper` documentation! This directory contains comprehen
   - Common patterns and examples
   - Migration guide from class-transformer
 
+#### Troubleshooting
+
+- **[Troubleshooting](./troubleshooting.md)** - Common issues and solutions
+
+### Compatibility & Migration
+
+- **[class-transformer Compatibility](./compat-class-transformer.md)** - API-by-API status of `@tech-pioneer/data-mapper-class-transformer` vs `class-transformer@0.5`, generated from the current source
+- **[class-validator Compatibility](./compat-class-validator.md)** - API-by-API status of `@tech-pioneer/data-mapper-class-validator` vs `class-validator@0.14`, generated from the current source
+- **[Migrating from class-transformer](./migration-class-transformer.md)** - Step-by-step migration patterns from `class-transformer` to `om-data-mapper`
+- **[Migrating v4 → v5](./migration-v4-to-v5.md)** - Upgrading from the pre-monorepo `om-data-mapper` v4 package layout
+
 ### Internal Architecture
 
 #### Validation JIT Compilation
+
 - **[Validation JIT Internals](./validation-jit-internals.md)** - Deep dive into validation JIT compilation
   - Architecture components
   - Metadata storage system
   - Code generation strategy
   - Optimization techniques
-  - Performance characteristics
   - Custom validator integration
   - Debugging and profiling
 
 #### Transformer JIT Compilation
+
 - **[Transformer JIT Internals](./transformer-jit-internals.md)** - Deep dive into transformer JIT compilation
   - Architecture components
   - Metadata storage (Symbol-based vs WeakMap-based)
@@ -47,8 +61,12 @@ Welcome to the `om-data-mapper` documentation! This directory contains comprehen
   - Safe property access generation
   - Error handling strategies
   - Optimization techniques
-  - Performance characteristics
   - Comparison with BaseMapper
+
+### Benchmarks & Examples
+
+- **[Benchmarks](../benchmarks/README.md)** - How to run and interpret the workspace's own throughput measurements
+- **[Examples](../examples/README.md)** - Practical, runnable examples covering both modules
 
 ---
 
@@ -73,6 +91,7 @@ If you want to understand the internals or contribute:
 ## 📖 What's in Each Guide?
 
 ### Validation Usage Guide
+
 - ✅ Installation and setup
 - ✅ All available validators with examples
 - ✅ Validation functions (async and sync)
@@ -84,27 +103,28 @@ If you want to understand the internals or contribute:
 - ✅ Migration from class-validator
 
 ### Transformer Usage Guide
+
 - ✅ Two APIs: Decorator API and Compatibility API
 - ✅ All transformation decorators with examples
 - ✅ Transformation functions
 - ✅ Nested transformations
 - ✅ Common patterns (API responses, form data, etc.)
 - ✅ Troubleshooting guide
-- ✅ Performance tips
 - ✅ Migration from class-transformer
 
 ### Validation JIT Internals
+
 - ✅ Architecture overview
 - ✅ Metadata storage with Symbols
 - ✅ Validator registry and caching
 - ✅ JIT compilation process
 - ✅ Code generation for sync and async validation
 - ✅ Optimization techniques (caching, inlining, etc.)
-- ✅ Performance benchmarks
 - ✅ Custom validator integration
 - ✅ Debugging generated code
 
 ### Transformer JIT Internals
+
 - ✅ Architecture overview
 - ✅ Two metadata storage systems
 - ✅ JIT compilation process
@@ -112,7 +132,6 @@ If you want to understand the internals or contribute:
 - ✅ Safe property access with optional chaining
 - ✅ Error handling (safe vs unsafe mode)
 - ✅ Optimization techniques
-- ✅ Performance benchmarks
 - ✅ Comparison with class-transformer
 - ✅ Debugging generated code
 
@@ -121,21 +140,35 @@ If you want to understand the internals or contribute:
 ## 🎯 Choose Your Path
 
 ### I want to validate objects
+
 → Start with [Validation Usage Guide](./validation-usage.md)
 
 ### I want to transform objects
+
 → Start with [Transformer Usage Guide](./transformer-usage.md)
 
 ### I'm migrating from class-validator
+
 → Read the "Migration from class-validator" section in [Validation Usage Guide](./validation-usage.md)
 
 ### I'm migrating from class-transformer
-→ Read the "Migration from class-transformer" section in [Transformer Usage Guide](./transformer-usage.md)
+
+→ Read [Migrating from class-transformer](./migration-class-transformer.md) and the [class-transformer Compatibility](./compat-class-transformer.md) tables
+
+### I'm upgrading from om-data-mapper v4
+
+→ Read [Migrating v4 → v5](./migration-v4-to-v5.md)
+
+### Something isn't working
+
+→ Check [Troubleshooting](./troubleshooting.md)
 
 ### I want to understand how it works internally
+
 → Read [Validation JIT Internals](./validation-jit-internals.md) and [Transformer JIT Internals](./transformer-jit-internals.md)
 
 ### I want to contribute
+
 → Read all internal architecture docs, then check the main repository README for contribution guidelines
 
 ---
@@ -143,61 +176,45 @@ If you want to understand the internals or contribute:
 ## 🔥 Key Features
 
 ### Validation Module
-- **10x faster** than class-validator
-- **100% API compatible** - drop-in replacement
+
+- **JIT-compiled** - each class compiles a specialized validation function once; subsequent validations reuse it, with no per-call reflection
+- **Drop-in for the supported subset** - see the [compat tables](./compat-class-validator.md) for exact coverage
 - **No dependencies** - no reflect-metadata needed
-- **JIT compilation** for maximum performance
 - **Custom validators** supported
 - **Nested validation** with full type safety
 
 ### Transformer Module
-- **10x faster** than class-transformer
+
 - **Two powerful APIs** - Decorator API and Compatibility API
-- **100% compatible** with class-transformer
+- **Decorator API is JIT-compiled** - each mapper compiles a specialized transform function once; subsequent transforms reuse it, with no per-call reflection
+- **Compatibility API interprets metadata at call time** - no reflect-metadata, no per-call decorator re-evaluation
+- **Drop-in for the supported subset** - see the [compat tables](./compat-class-transformer.md) for exact coverage
 - **No dependencies** - no reflect-metadata needed
-- **JIT compilation** for maximum performance
 - **Type-safe** with full TypeScript support
-
----
-
-## 📊 Performance
-
-Both modules use JIT compilation to achieve exceptional performance:
-
-### Validation Performance
-| Validation Type | class-validator | om-data-mapper | Speedup |
-|----------------|-----------------|----------------|---------|
-| Simple (1 field) | ~50K ops/sec | ~500K ops/sec | **10x** |
-| Complex (10 fields) | ~10K ops/sec | ~100K ops/sec | **10x** |
-| Nested objects | ~5K ops/sec | ~50K ops/sec | **10x** |
-
-### Transformation Performance
-| Transformation Type | class-transformer | om-data-mapper | Speedup |
-|--------------------|------------------|----------------|---------|
-| Simple mapping | 326K ops/sec | 3.2M ops/sec | **10x** |
-| Complex transformations | 150K ops/sec | 1.5M ops/sec | **10x** |
-| Nested objects | 80K ops/sec | 800K ops/sec | **10x** |
 
 ---
 
 ## 💡 Best Practices
 
 ### General
+
 1. **Use TypeScript** - Full type safety and better developer experience
 2. **Reuse instances** - Mappers and validators are compiled once
 3. **Enable strict mode** - Catch errors early
 4. **Read the guides** - Comprehensive examples for common scenarios
 
 ### Validation
+
 1. **Use validateSync** when you don't need async validators
 2. **Leverage validation groups** for different scenarios
 3. **Create custom validators** for complex business logic
 4. **Use @IsOptional()** for optional fields
 
 ### Transformation
+
 1. **Choose the right API** - Decorator API for new projects, Compatibility API for migration
 2. **Reuse mapper instances** - Use createMapper() or getMapper()
-3. **Use @MapNested()** for nested objects
+3. **Use @MapWith()** for nested objects
 4. **Enable unsafe mode** for maximum performance when data is trusted
 
 ---
@@ -236,4 +253,3 @@ If you have questions or need help:
 ---
 
 **Happy coding! 🚀**
-

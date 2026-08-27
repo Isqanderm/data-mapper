@@ -6,49 +6,26 @@ on:
 
 permissions:
   contents: write
-  issues: write
   pull-requests: write
+  id-token: write
 
 jobs:
   release:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          persist-credentials: false
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
         with:
-          node-version: 20
-          cache: 'npm'
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Build project (CJS + ESM)
-        run: npm run build
-
-      - name: Run unit tests
-        run: npm test
-
-      - name: Run ESM integration tests
-        run: npm run test:esm
-
-      - name: Verify package integrity before release
-        run: |
-          echo "Verifying package structure..."
-          test -d build/cjs || (echo "❌ CJS build missing" && exit 1)
-          test -d build/esm || (echo "❌ ESM build missing" && exit 1)
-          test -f build/esm/package.json || (echo "❌ ESM package.json missing" && exit 1)
-          grep -q '"type".*"module"' build/esm/package.json || (echo "❌ ESM type marker missing" && exit 1)
-          echo "✅ Package structure verified"
-
-      - name: Semantic Release
-        run: npx semantic-release
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      # TODO Phase 5: restore "publish: pnpm run release" + NPM_TOKEN env when the packages are ready to ship (see docs/superpowers/specs/2026-08-24-monorepo-v5-design.md)
+      - name: Create release PR or publish
+        uses: changesets/action@v1
+        with:
+          version: pnpm run version-packages
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-

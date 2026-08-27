@@ -24,7 +24,7 @@ This project and everyone participating in it is governed by our [Code of Conduc
 ### Prerequisites
 
 - Node.js 20.x or higher
-- npm 10.x or higher
+- pnpm 10.x or higher
 - Git
 
 ### Fork and Clone
@@ -43,41 +43,45 @@ This project and everyone participating in it is governed by our [Code of Conduc
 ## Development Setup
 
 1. Install dependencies:
+
    ```bash
-   npm install
+   pnpm install
    ```
 
 2. Build the project:
+
    ```bash
-   npm run build
+   pnpm run build
    ```
 
 3. Run tests:
+
    ```bash
-   npm test
+   pnpm test
    ```
 
 4. Run linting:
+
    ```bash
-   npm run lint
+   pnpm run lint
    ```
 
 5. Format code:
    ```bash
-   npm run format
+   pnpm run format
    ```
 
 ### Available Scripts
 
-- `npm run build` - Compile TypeScript to JavaScript
-- `npm run build:watch` - Watch mode for development
-- `npm test` - Run tests with coverage
-- `npm run test:watch` - Run tests in watch mode
-- `npm run lint` - Check code for linting errors
-- `npm run lint:fix` - Fix linting errors automatically
-- `npm run format` - Format code with Prettier
-- `npm run format:check` - Check code formatting
-- `npm run clean` - Remove build artifacts
+- `pnpm run build` - Compile TypeScript to JavaScript
+- `pnpm run build` - Watch mode for development
+- `pnpm test` - Run tests with coverage
+- `pnpm run test:watch` - Run tests in watch mode
+- `pnpm run lint` - Check code for linting errors
+- `pnpm run lint:fix` - Fix linting errors automatically
+- `pnpm run format` - Format code with Prettier
+- `pnpm run format:check` - Check code formatting
+- `pnpm run clean` - Remove build artifacts
 
 ## Making Changes
 
@@ -92,6 +96,7 @@ git checkout -b fix/your-bug-fix
 ```
 
 Branch naming conventions:
+
 - `feature/` - New features
 - `fix/` - Bug fixes
 - `docs/` - Documentation changes
@@ -104,9 +109,9 @@ Branch naming conventions:
 1. Write your code following our [coding standards](#coding-standards)
 2. Add or update tests as needed
 3. Update documentation if necessary
-4. Ensure all tests pass: `npm test`
-5. Ensure linting passes: `npm run lint`
-6. Ensure formatting is correct: `npm run format:check`
+4. Ensure all tests pass: `pnpm test`
+5. Ensure linting passes: `pnpm run lint`
+6. Ensure formatting is correct: `pnpm run format:check`
 
 ## Commit Guidelines
 
@@ -155,6 +160,7 @@ BREAKING CHANGE: The create method now requires explicit type parameters"
 ### Scope (Optional)
 
 The scope should be the name of the affected module:
+
 - `mapper`
 - `utils`
 - `types`
@@ -162,6 +168,7 @@ The scope should be the name of the affected module:
 - `deps`
 
 Example:
+
 ```bash
 git commit -m "feat(mapper): add caching support"
 ```
@@ -171,17 +178,19 @@ git commit -m "feat(mapper): add caching support"
 ### Before Submitting
 
 1. Update your branch with the latest changes from upstream:
+
    ```bash
    git fetch upstream
    git rebase upstream/main
    ```
 
 2. Ensure all checks pass:
+
    ```bash
-   npm run build
-   npm test
-   npm run lint
-   npm run format:check
+   pnpm run build
+   pnpm test
+   pnpm run lint
+   pnpm run format:check
    ```
 
 3. Update documentation if needed
@@ -189,6 +198,7 @@ git commit -m "feat(mapper): add caching support"
 ### Submitting a Pull Request
 
 1. Push your branch to your fork:
+
    ```bash
    git push origin feature/your-feature-name
    ```
@@ -251,17 +261,15 @@ src/
 - ❌ **Coverage decreased** → PR is automatically blocked
 
 When you submit a PR, the CI will:
+
 1. Run tests on your branch and collect coverage
 2. Run tests on the main branch and collect coverage
 3. Compare the coverage metrics
 4. Post a detailed comparison comment on your PR
 5. **Block the PR from merging** if coverage decreases
 
-See the [Coverage Protection Guide](./docs/COVERAGE_PROTECTION.md) for detailed information on:
-- How to check coverage locally
-- How to identify uncovered code
-- How to fix coverage issues
-- Best practices for writing tests
+Coverage thresholds are enforced via the `coverage.thresholds` config in
+[`vitest.config.mts`](./vitest.config.mts); run `pnpm test` locally (it runs with coverage enabled) to see your numbers before opening a PR.
 
 ### Writing Tests
 
@@ -275,33 +283,45 @@ See the [Coverage Protection Guide](./docs/COVERAGE_PROTECTION.md) for detailed 
 
 ```typescript
 import { describe, it, expect } from 'vitest';
-import { Mapper } from '../src';
+import { Mapper, Map, plainToInstance } from '../src';
+
+@Mapper()
+class ExampleMapper {
+  @Map('sourceField')
+  targetField!: string;
+}
 
 describe('Feature Name', () => {
   it('should do something specific', () => {
     // Arrange
-    const input = { /* ... */ };
-    
+    const input = {
+      sourceField: 'value',
+    };
+
     // Act
-    const result = Mapper.create(/* ... */).execute(input);
-    
+    const result = plainToInstance(ExampleMapper, input);
+
     // Assert
-    expect(result).toEqual(/* ... */);
+    expect(result).toEqual({ targetField: 'value' });
   });
 });
 ```
+
+`Mapper` here is the class decorator (the only mapping API this package publishes) — not the
+retired `Mapper.create()` class API, which is no longer re-exported from `../src` at all. See
+[docs/transformer-usage.md](./docs/transformer-usage.md) for the full Decorator API guide.
 
 ### Running Tests
 
 ```bash
 # Run all tests with coverage
-npm test
+pnpm test
 
 # Run tests in watch mode
-npm run test:watch
+pnpm run test:watch
 
 # Run specific test file
-npx vitest tests/smoke.test.ts
+pnpm exec vitest tests/smoke.test.ts
 ```
 
 ### Checking Coverage Locally
@@ -310,7 +330,7 @@ Before submitting your PR, verify that coverage is maintained:
 
 ```bash
 # Run tests with coverage
-npm test
+pnpm test
 
 # Open the HTML coverage report
 open coverage/index.html
@@ -324,6 +344,7 @@ open coverage/index.html
 ```
 
 The HTML report will highlight:
+
 - ✅ **Green**: Covered lines
 - ❌ **Red**: Uncovered lines
 - ⚠️ **Yellow**: Partially covered branches
@@ -349,6 +370,7 @@ Focus on covering the red and yellow lines in your tests.
 ### Examples
 
 Add examples to the `example/` directory:
+
 - Create a new directory for your example
 - Include a README explaining the example
 - Provide runnable code
@@ -364,6 +386,7 @@ Add examples to the `example/` directory:
 ### Reporting Bugs
 
 Use the [bug report template](.github/ISSUE_TEMPLATE/bug_report.yml) and include:
+
 - Clear description of the issue
 - Steps to reproduce
 - Expected vs actual behavior
@@ -373,6 +396,7 @@ Use the [bug report template](.github/ISSUE_TEMPLATE/bug_report.yml) and include
 ### Requesting Features
 
 Use the [feature request template](.github/ISSUE_TEMPLATE/feature_request.yml) and include:
+
 - Clear description of the feature
 - Use cases and benefits
 - Proposed API (if applicable)
@@ -381,6 +405,7 @@ Use the [feature request template](.github/ISSUE_TEMPLATE/feature_request.yml) a
 ## Recognition
 
 Contributors will be recognized in:
+
 - GitHub contributors list
 - Release notes (for significant contributions)
 - CHANGELOG.md
@@ -392,4 +417,3 @@ By contributing to `om-data-mapper`, you agree that your contributions will be l
 ---
 
 Thank you for contributing to `om-data-mapper`! 🎉
-

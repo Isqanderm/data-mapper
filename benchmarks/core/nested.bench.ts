@@ -1,5 +1,5 @@
 import { bench, describe } from 'vitest';
-import { Mapper } from '../../../src/core/Mapper';
+import { Mapper, Map as MapProp, MapFrom, createMapper } from '@tech-pioneer/data-mapper-core';
 
 interface NestedSource {
   level1: {
@@ -46,11 +46,19 @@ const nestedSourceData: NestedSource = {
   ],
 };
 
-const nestedMapper = Mapper.create<NestedSource, NestedTarget>({
-  deepValue: 'level1.level2.level3.level4.value',
-  deepNumber: 'level1.level2.level3.level4.number',
-  flattenedData: (src) => src.array.flatMap((a) => a.items.map((i) => i.data)),
-});
+@Mapper<NestedSource, NestedTarget>()
+class NestedMapper {
+  @MapProp('level1.level2.level3.level4.value')
+  deepValue!: string;
+
+  @MapProp('level1.level2.level3.level4.number')
+  deepNumber!: number;
+
+  @MapFrom((src: NestedSource) => src.array.flatMap((a) => a.items.map((i) => i.data)))
+  flattenedData!: string[];
+}
+
+const nestedMapper = createMapper<NestedSource, NestedTarget>(NestedMapper);
 
 function vanillaNestedMapper(source: NestedSource): NestedTarget {
   return {
@@ -60,13 +68,23 @@ function vanillaNestedMapper(source: NestedSource): NestedTarget {
   };
 }
 
+// Honesty guard: prove the JIT-compiled mapper actually produces the
+// vanilla-equivalent output (including the flattened nested array) before
+// trusting the throughput numbers below.
+const omResult = nestedMapper.transform(nestedSourceData);
+const vanillaResult = vanillaNestedMapper(nestedSourceData);
+if (JSON.stringify(omResult) !== JSON.stringify(vanillaResult)) {
+  throw new Error(
+    `honesty guard: om mapping output differs from vanilla baseline: ${JSON.stringify(omResult)} vs ${JSON.stringify(vanillaResult)}`,
+  );
+}
+
 describe('Nested Mapping Benchmark', () => {
   bench('OmDataMapper - Deep nested access', () => {
-    nestedMapper.execute(nestedSourceData);
+    nestedMapper.transform(nestedSourceData);
   });
 
   bench('Vanilla - Deep nested access', () => {
     vanillaNestedMapper(nestedSourceData);
   });
 });
-

@@ -48,29 +48,23 @@ function addJsExtensions(dir, rootDir) {
 
       // Replace relative imports without extensions with proper extension
       // Matches: from './path' or from "./path" or from './path/file'
-      content = content.replace(
-        /from\s+['"](\.[^'"]+)['"]/g,
-        (match, importPath) => {
-          const resolvedPath = resolveImportPath(importPath);
-          return `from '${resolvedPath}'`;
-        }
-      );
+      content = content.replace(/from\s+['"](\.[^'"]+)['"]/g, (match, importPath) => {
+        const resolvedPath = resolveImportPath(importPath);
+        return `from '${resolvedPath}'`;
+      });
 
       // Also handle export statements
-      content = content.replace(
-        /export\s+\*\s+from\s+['"](\.[^'"]+)['"]/g,
-        (match, importPath) => {
-          const resolvedPath = resolveImportPath(importPath);
-          return `export * from '${resolvedPath}'`;
-        }
-      );
+      content = content.replace(/export\s+\*\s+from\s+['"](\.[^'"]+)['"]/g, (match, importPath) => {
+        const resolvedPath = resolveImportPath(importPath);
+        return `export * from '${resolvedPath}'`;
+      });
 
       fs.writeFileSync(fullPath, content, 'utf8');
     }
   }
 }
 
-const esmDir = path.join(__dirname, '..', 'build', 'esm');
+const esmDir = path.join(process.cwd(), 'build', 'esm');
 
 if (fs.existsSync(esmDir)) {
   console.log('Adding .js extensions to ESM imports...');
@@ -80,4 +74,3 @@ if (fs.existsSync(esmDir)) {
   console.error('ESM build directory not found:', esmDir);
   process.exit(1);
 }
-

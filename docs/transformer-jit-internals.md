@@ -12,14 +12,16 @@ This document explains the internal implementation details of the JIT compilatio
 
 ### 1. Metadata Storage
 
-The transformer uses two different metadata storage systems depending on the API:
+Both the native decorator API and the class-transformer compatibility API store their metadata
+the same way — in a module-level `WeakMap<Function, ...>` keyed by the class constructor. What
+differs between them is the shape of the metadata each one stores, not the storage mechanism.
 
-#### Decorator API (`src/decorators/metadata.ts`)
+#### Decorator API (`packages/core/src/decorators/metadata.ts`)
 
-Uses **Symbol-based metadata storage** for the native decorator API:
+Uses a **`WeakMap`-based metadata store** for the native decorator API:
 
 ```typescript
-const MAPPER_METADATA = Symbol('om-data-mapper:metadata');
+const metadataStore = new WeakMap<Function, MapperMetadata>();
 
 interface MapperMetadata {
   properties: Map<string | symbol, PropertyMapping>;
@@ -37,9 +39,10 @@ interface PropertyMapping {
 }
 ```
 
-#### class-transformer Compatibility API (`src/compat/class-transformer/metadata.ts`)
+#### class-transformer Compatibility API (`packages/class-transformer/src/metadata.ts`)
 
-Uses **WeakMap-based metadata storage** for class-transformer compatibility:
+Also uses a **`WeakMap`-based metadata store**, keyed by the class constructor, for
+class-transformer compatibility:
 
 ```typescript
 const metadataStorage = new WeakMap<Function, ClassMetadata>();
@@ -59,13 +62,18 @@ interface PropertyMetadata {
   excludeOptions?: ExcludeOptions;
   typeFunction?: TypeHelpFunction;
   transformFn?: TransformFn;
-  name?: string;  // Property name mapping
+  name?: string; // Property name mapping
 }
 ```
 
 **Key Differences:**
-- **Decorator API**: Symbol-based, attached to class constructor
-- **Compatibility API**: WeakMap-based, prevents memory leaks
+
+- **Storage mechanism**: Identical — both use a `WeakMap<Function, ...>` keyed by the class
+  constructor, so metadata is garbage-collected along with the class and there is no manual
+  cleanup needed.
+- **Metadata shape**: Different — the Decorator API stores a flat `properties` map of
+  `PropertyMapping` entries plus mapper-level `options`; the compatibility API stores
+  `PropertyMetadata` entries (expose/exclude/type/transform info) plus `classOptions`.
 - **Both**: Use TC39 Stage 3 decorators
 
 ---
@@ -129,16 +137,17 @@ interface PropertyMetadata {
 
 Generates safe property access with optional chaining:
 
+<!-- prettier-ignore -->
 ```typescript
 // Decorator: @Map('user.profile.email')
 // Generated code:
-target.email = source?.user?.profile?.email;
+target["email"] = source?.["user"]?.["profile"]?.["email"];
 
 // With default value: @Map('score') @Default(0)
-target.score = source?.score ?? cache['__defValues']['score'];
+target["score"] = source?.["score"] ?? cache['__defValues']["score"];
 
 // With value transform: @Map('name') @Transform(v => v.toUpperCase())
-target.name = cache['name__valueTransform'](source?.name);
+target["name"] = cache["name__valueTransform"](source?.["name"]);
 ```
 
 **Optimization**: Uses optional chaining (`?.`) instead of try-catch for null safety.
@@ -147,37 +156,36 @@ target.name = cache['name__valueTransform'](source?.name);
 
 Stores transformer in cache and calls it:
 
+<!-- prettier-ignore -->
 ```typescript
 // Decorator: @MapFrom((src) => src.firstName + ' ' + src.lastName)
 // Generated code:
-target.fullName = cache['fullName__transformer'](source);
+target["fullName"] = cache["fullName__transformer"](source);
 
 // With default: @MapFrom(fn) @Default('Unknown')
-target.fullName = cache['fullName__transformer'](source) ?? cache['__defValues']['fullName'];
+target["fullName"] = cache["fullName__transformer"](source) ?? cache['__defValues']["fullName"];
 
-// With condition: @When(condition) @MapFrom(fn)
-if (cache['fullName__condition'](source)) {
-  target.fullName = cache['fullName__transformer'](source);
-}
+// Conditional codegen exists internally (`PropertyMapping.condition`) but no
+// public decorator sets it today — @MapFrom's function receives the full
+// source object, so conditional mapping is expressed there instead:
+// @MapFrom((src) => (src.isPremium ? src.premiumName : undefined))
 ```
 
 **Optimization**: Functions stored in cache to avoid closure overhead.
 
-### 3. Nested Mapper (`@MapNested(NestedMapper)`)
+### 3. Nested Mapper (`@MapWith(NestedMapper)`)
 
-Recursively calls nested mapper:
+Calls the nested mapper's own compiled `transform()`:
 
+<!-- prettier-ignore -->
 ```typescript
-// Decorator: @MapNested(AddressMapper)
+// Decorators: @MapWith(AddressMapper) @Map('address')
 // Generated code:
-if (source?.address) {
-  const nestedMapper = cache['address__nestedMapper'];
-  const nestedResult = nestedMapper.execute(source.address);
-  target.address = nestedResult.result;
-  if (nestedResult.errors.length > 0) {
-    __errors.push(...nestedResult.errors.map(e => 'address.' + e));
-  }
-}
+const __nestedSource = source?.["address"];
+target["address"] =
+  __nestedSource !== undefined && __nestedSource !== null
+    ? cache["address__nestedMapper"].transform(__nestedSource)
+    : undefined;
 ```
 
 **Optimization**: Nested mappers are pre-compiled and cached.
@@ -186,18 +194,20 @@ if (source?.address) {
 
 Handles array transformations:
 
+<!-- prettier-ignore -->
 ```typescript
 // Decorator: @MapFrom((src) => src.items.map(i => i.name))
 // Generated code:
-target.itemNames = cache['itemNames__transformer'](source);
+target["itemNames"] = cache["itemNames__transformer"](source);
+```
 
-// For nested arrays with mapper:
-if (Array.isArray(source?.items)) {
-  target.items = source.items.map(item => {
-    const nestedMapper = cache['items__nestedMapper'];
-    return nestedMapper.execute(item).result;
-  });
-}
+There is no separate array-of-nested-mappers codegen path — arrays of nested
+objects are handled the same way, by calling the nested mapper's `transform()`
+from inside a `@MapFrom` function:
+
+```typescript
+@MapFrom((src: Source) => src.items.map((item) => new ItemMapper().transform(item)))
+items!: ItemTarget[];
 ```
 
 ---
@@ -208,20 +218,24 @@ The `generateSafePropertyAccess()` function converts dot-notation paths to optio
 
 ```typescript
 function generateSafePropertyAccess(sourcePath: string): string {
-  const parts = sourcePath.split('.');
-  if (parts.length === 1) {
-    return sourcePath;
-  }
-  return parts.join('?.');
+  return sourcePath
+    .split('.')
+    .map((part) => `?.[${JSON.stringify(part)}]`)
+    .join('');
 }
 
+// The returned string includes the leading accessor - callers emit
+// `source${generateSafePropertyAccess(path)}`. Every key is JSON-escaped
+// bracket access, so kebab-case, quotes, and unicode keys are data, never code.
+
 // Examples:
-// 'name' → 'name'
-// 'user.name' → 'user?.name'
-// 'user.profile.email' → 'user?.profile?.email'
+// 'name' → '?.["name"]'
+// 'user.name' → '?.["user"]?.["name"]'
+// 'user.profile.email' → '?.["user"]?.["profile"]?.["email"]'
 ```
 
 **Why Optional Chaining?**
+
 - ✅ Faster than try-catch
 - ✅ More readable generated code
 - ✅ Native JavaScript feature (ES2020+)
@@ -235,10 +249,11 @@ function generateSafePropertyAccess(sourcePath: string): string {
 
 No error handling - maximum performance:
 
+<!-- prettier-ignore -->
 ```typescript
 // Generated code (unsafe mode):
-target.name = source?.firstName;
-target.email = source?.user?.email;
+target["name"] = source?.["firstName"];
+target["email"] = source?.["user"]?.["email"];
 ```
 
 **Use when**: Data is trusted and performance is critical.
@@ -247,17 +262,18 @@ target.email = source?.user?.email;
 
 Wraps each property in try-catch:
 
+<!-- prettier-ignore -->
 ```typescript
 // Generated code (safe mode):
 try {
-  target.name = source?.firstName;
-} catch (error) {
+  target["name"] = source?.["firstName"];
+} catch(error) {
   __errors.push("Mapping error at field 'name': " + error.message);
 }
 
 try {
-  target.email = source?.user?.email;
-} catch (error) {
+  target["email"] = source?.["user"]?.["email"];
+} catch(error) {
   __errors.push("Mapping error at field 'email': " + error.message);
 }
 ```
@@ -288,13 +304,14 @@ Transformer functions are stored in a cache object:
 
 ```typescript
 const cache = {
-  'fullName__transformer': (src) => src.firstName + ' ' + src.lastName,
-  'age__condition': (src) => src.age !== undefined,
-  '__defValues': { score: 0, status: 'active' }
+  fullName__transformer: (src) => src.firstName + ' ' + src.lastName,
+  age__condition: (src) => src.age !== undefined,
+  __defValues: { score: 0, status: 'active' },
 };
 ```
 
 **Benefits:**
+
 - Avoids closure overhead
 - Enables function reuse
 - Simplifies generated code
@@ -303,12 +320,13 @@ const cache = {
 
 Simple operations are inlined instead of function calls:
 
+<!-- prettier-ignore -->
 ```typescript
 // ❌ Slow: Function call
 target.name = transformName(source.firstName);
 
 // ✅ Fast: Inlined
-target.name = source?.firstName;
+target["name"] = source?.["firstName"];
 ```
 
 ### 4. **Conditional Compilation**
@@ -319,7 +337,7 @@ Only generates code for properties that exist:
 // If no @Ignore() decorator, generates code
 // If @Ignore() decorator, skips code generation
 if (mapping.type === 'ignore') {
-  continue;  // Skip this property
+  continue; // Skip this property
 }
 ```
 
@@ -327,6 +345,7 @@ if (mapping.type === 'ignore') {
 
 Uses native optional chaining instead of manual null checks:
 
+<!-- prettier-ignore -->
 ```typescript
 // ❌ Slow: Manual checks
 if (source && source.user && source.user.profile) {
@@ -334,7 +353,7 @@ if (source && source.user && source.user.profile) {
 }
 
 // ✅ Fast: Optional chaining
-target.email = source?.user?.profile?.email;
+target["email"] = source?.["user"]?.["profile"]?.["email"];
 ```
 
 ---
@@ -364,41 +383,31 @@ transformPlainToClass(UserDto, plainObject, 'plainToClass', options)
 
 ### Key Differences from Decorator API:
 
-| Feature | Decorator API | class-transformer Compat |
-|---------|--------------|-------------------------|
-| Compilation | JIT at instantiation | Interpreted at runtime |
-| Performance | 10x faster | Compatible with class-transformer |
-| Metadata | Symbol-based | WeakMap-based |
-| API | `@Map()`, `@MapFrom()` | `@Expose()`, `@Type()` |
-| Use Case | New projects | Migration from class-transformer |
+| Feature     | Decorator API                           | class-transformer Compat                           |
+| ----------- | --------------------------------------- | -------------------------------------------------- |
+| Compilation | JIT at instantiation                    | Interpreted at runtime (walks registered metadata) |
+| Metadata    | WeakMap-based (`PropertyMapping` shape) | WeakMap-based (`PropertyMetadata` shape)           |
+| API         | `@Map()`, `@MapFrom()`                  | `@Expose()`, `@Type()`                             |
+| Use Case    | New projects                            | Migration from class-transformer                   |
 
 ---
 
 ## Performance Characteristics
 
-### Compilation Cost
+The two APIs behave differently here:
 
-- **First Instantiation**: ~1-3ms (metadata parsing + code generation + compilation)
-- **Subsequent Instantiations**: ~0.001ms (uses same compiled function)
-- **Amortization**: Cost is amortized over thousands of transformations
+- **Decorator/core API**: compiles a specialized transform function once per mapper class, on
+  first use (`context.addInitializer` triggers `_compileMapper()`, see
+  `packages/core/src/decorators/core.ts` and `packages/core/src/core/Mapper.ts`), and reuses that
+  compiled function on every subsequent call — there is no per-call reflection or metadata
+  re-parsing after the first instantiation.
+- **class-transformer compatibility API**: registers metadata once, at class definition time
+  (via the `@Expose()`/`@Exclude()`/`@Type()`/`@Transform()` decorators), but does not compile a
+  function. Each call to `plainToClass`/`plainToInstance`/etc. walks that registered metadata and
+  interprets it directly — there is no `new Function()` step in this code path.
 
-### Execution Performance
-
-Compared to class-transformer:
-
-| Transformation Type | class-transformer | om-data-mapper | Speedup |
-|--------------------|------------------|----------------|---------|
-| Simple mapping | 326K ops/sec | **3.2M ops/sec** | **10x** |
-| Complex transformations | 150K ops/sec | **1.5M ops/sec** | **10x** |
-| Nested objects | 80K ops/sec | **800K ops/sec** | **10x** |
-| Array transformations | 50K ops/sec | **500K ops/sec** | **10x** |
-
-### Memory Usage
-
-- **Metadata**: ~500 bytes per property
-- **Compiled Function**: ~1-5KB per mapper class
-- **Cache Object**: ~100 bytes per transformer function
-- **Total**: ~5-10KB per mapper class
+For measured throughput, see [`../benchmarks/README.md`](../benchmarks/README.md), which runs
+this package's actual code against real class-transformer.
 
 ---
 
@@ -406,6 +415,7 @@ Compared to class-transformer:
 
 ### Example 1: Simple Mapping
 
+<!-- prettier-ignore -->
 ```typescript
 @Mapper<Source, Target>()
 class UserMapper {
@@ -418,13 +428,14 @@ class UserMapper {
 
 // Generated code:
 function transform(source, target, __errors, cache) {
-  target.name = source?.firstName;
-  target.email = source?.email;
+  target["name"] = source?.["firstName"];
+  target["email"] = source?.["email"];
 }
 ```
 
 ### Example 2: Complex Transformations
 
+<!-- prettier-ignore -->
 ```typescript
 @Mapper<Source, Target>()
 class UserMapper {
@@ -441,49 +452,46 @@ class UserMapper {
 
 // Generated code:
 function transform(source, target, __errors, cache) {
-  target.fullName = cache['fullName__transformer'](source);
-  target.isAdult = cache['isAdult__transformer'](source);
-  target.score = source?.score ?? cache['__defValues']['score'];
+  target["fullName"] = cache["fullName__transformer"](source);
+  target["isAdult"] = cache["isAdult__transformer"](source);
+  target["score"] = source?.["score"] ?? cache['__defValues']["score"];
 }
 ```
 
 ### Example 3: Conditional Mapping
 
+<!-- prettier-ignore -->
 ```typescript
 @Mapper<Source, Target>()
 class UserMapper {
-  @When((src) => src.isPremium)
-  @Map('premiumFeatures')
+  @MapFrom((src) => (src.isPremium ? src.premiumFeatures : undefined))
   features?: string[];
 }
 
 // Generated code:
 function transform(source, target, __errors, cache) {
-  if (cache['features__condition'](source)) {
-    target.features = source?.premiumFeatures;
-  }
+  target["features"] = cache["features__transformer"](source);
 }
 ```
 
 ### Example 4: Nested Mapping
 
+<!-- prettier-ignore -->
 ```typescript
 @Mapper<Source, Target>()
 class UserMapper {
-  @MapNested(AddressMapper)
+  @MapWith(AddressMapper)
+  @Map('address')
   address!: Address;
 }
 
 // Generated code:
 function transform(source, target, __errors, cache) {
-  if (source?.address) {
-    const nestedMapper = cache['address__nestedMapper'];
-    const nestedResult = nestedMapper.execute(source.address);
-    target.address = nestedResult.result;
-    if (nestedResult.errors.length > 0) {
-      __errors.push(...nestedResult.errors.map(e => 'address.' + e));
-    }
-  }
+  const __nestedSource = source?.["address"];
+  target["address"] =
+    __nestedSource !== undefined && __nestedSource !== null
+      ? cache["address__nestedMapper"].transform(__nestedSource)
+      : undefined;
 }
 ```
 
@@ -512,7 +520,7 @@ class UserMapper {
         mapping,
         cache,
         defaultValues,
-        false
+        false,
       );
       if (code) codeLines.push(code);
     }
@@ -558,14 +566,14 @@ console.timeEnd('1000 executions');
 
 The Decorator API uses the same JIT compilation approach as BaseMapper but with better ergonomics:
 
-| Feature | BaseMapper | Decorator API |
-|---------|-----------|---------------|
-| API Style | Imperative | Declarative |
-| Type Safety | Manual | Automatic |
-| Code Generation | ✅ Yes | ✅ Yes |
-| Performance | Fast | **Faster** (less overhead) |
-| Maintainability | Medium | High |
-| Recommended | ❌ Legacy | ✅ Modern |
+| Feature         | BaseMapper | Decorator API              |
+| --------------- | ---------- | -------------------------- |
+| API Style       | Imperative | Declarative                |
+| Type Safety     | Manual     | Automatic                  |
+| Code Generation | ✅ Yes     | ✅ Yes                     |
+| Performance     | Fast       | **Faster** (less overhead) |
+| Maintainability | Medium     | High                       |
+| Recommended     | ❌ Legacy  | ✅ Modern                  |
 
 ---
 
@@ -581,13 +589,15 @@ The Decorator API uses the same JIT compilation approach as BaseMapper but with 
 
 ## Conclusion
 
-The JIT compilation approach provides:
+The Decorator/core API's JIT compilation approach provides:
 
-- ✅ **10x faster** than class-transformer
+- ✅ **JIT-compiled** - a specialized function is generated once per class and reused, with no per-call reflection
 - ✅ **Zero runtime overhead** after compilation
 - ✅ **Type-safe** with full TypeScript support
 - ✅ **Memory efficient** with function caching
 - ✅ **Extensible** with custom transformers
 
-This architecture makes `om-data-mapper` one of the fastest object transformation libraries available for TypeScript/JavaScript.
+The class-transformer compatibility API does not compile a function — see
+[Performance Characteristics](#performance-characteristics) above.
 
+For measured throughput against class-transformer, see [`../benchmarks/README.md`](../benchmarks/README.md).

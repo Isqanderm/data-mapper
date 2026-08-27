@@ -84,42 +84,59 @@ When using `om-data-mapper`:
 
 ### ⚠️ Critical: Dynamic Code Generation Security
 
-This library uses dynamic code generation (`new Function()`) for performance optimization. **Mapping configurations MUST come from trusted sources only.**
+The **Decorator API** (`@Mapper`, `@Map`, `@Transform`, etc.) is the only mapping API this
+package publishes — `packages/core/src/index.ts` does not re-export the legacy `Mapper` class,
+and there is no deep-import subpath for it, so it cannot be reached by any consumer of the
+published package. The Decorator API compiles field paths into a function body via
+`new Function()` for performance. Keys and paths are emitted through JSON-escaped bracket access
+(`packages/core/src/decorators/core.ts`), so arbitrary key/path strings — including kebab-case
+keys or keys containing quotes — cannot break out of the generated string literal.
 
 #### ✅ Safe Usage
 
 ```typescript
-// ✅ SAFE: Developer-defined configuration
-const userMapper = Mapper.create({
-  name: 'user.fullName',
-  email: 'user.email'
-});
-
-// ✅ SAFE: Using Decorator API (recommended)
+// ✅ SAFE: mapping paths are literal strings written by a developer in source
+// code, evaluated once at class-definition time — never derived from a
+// request at runtime
 @Mapper()
 class UserDTO {
   @Map('user.fullName')
   name: string;
+
+  @Map('user.email')
+  email: string;
 }
 ```
 
 #### ❌ Unsafe Usage - NEVER DO THIS
 
 ```typescript
-// ❌ DANGEROUS: User input as mapping config
-const userConfig = JSON.parse(request.body.mappingConfig);
-const mapper = Mapper.create(userConfig); // CODE INJECTION RISK!
+// ❌ DANGEROUS: building a decorator argument from untrusted runtime data
+const path = request.query.mappingPath; // attacker-controlled
 
-// ❌ DANGEROUS: External untrusted source
-const externalConfig = await fetch('https://untrusted-api.com/config');
-const mapper = Mapper.create(externalConfig); // CODE INJECTION RISK!
+@Mapper()
+class UserDTO {
+  @Map(path) // NEVER pass a runtime-derived string here
+  name: string;
+}
 ```
 
-**Why this matters**: If an attacker can control the mapping configuration, they could inject arbitrary JavaScript code that executes with your application's privileges.
+**Why this matters**: a `@Map` argument is compiled into generated source. The generator escapes
+what it's given, but mapping paths should always be literal strings a developer wrote, never a
+value threaded through from request data at runtime.
 
-**Recommended approach**: Use the Decorator API (`@Mapper`, `@Map`, `@Transform`) which is compile-time safe and provides better performance (112-474% faster).
+> **The legacy `Mapper.create()` class API is not part of the published surface, and it is not
+> safe.** `packages/core/src/core/Mapper.ts` keeps a `Mapper` class around only as an internal
+> implementation detail — the decorator API references it in type position and the core
+> package's own tests exercise it via direct `src` imports, but no consumer can import it. It
+> also has its own unescaped-interpolation hazard the decorator API's generator does not share
+> (see the `@internal` warning at the top of that file): it interpolates config-derived keys and
+> paths verbatim into generated source, so a kebab-case key compiles to a `SyntaxError` and a
+> quote-bearing key escapes the string literal and injects code, regardless of how trusted the
+> source of that config is. It has not been fixed to match the Decorator API's JSON-escaped
+> codegen. Do not treat any example using `Mapper.create()` as safe, supported guidance.
 
-See the class documentation and `docs/DECORATOR_API.md` for more details.
+See the class documentation and `docs/transformer-usage.md` for more details.
 
 ## Additional Resources
 
@@ -134,4 +151,3 @@ If you have suggestions on how this process could be improved, please submit a p
 ---
 
 Thank you for helping keep `om-data-mapper` and its users safe!
-
