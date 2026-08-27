@@ -1570,3 +1570,446 @@ export function IsRFC3339(options?: ValidationDecoratorOptions) {
     });
   };
 }
+
+/**
+ * Checks if the string contains only ASCII characters.
+ *
+ * @param options - Validation options
+ */
+export function IsAscii(options?: ValidationDecoratorOptions) {
+  return function (target: undefined, context: ClassFieldDecoratorContext): any {
+    const propertyKey = context.name;
+
+    context.addInitializer(function (this: any) {
+      addValidationConstraint(this.constructor, propertyKey, {
+        type: 'isAscii',
+        message: options?.message,
+        groups: options?.groups,
+        always: options?.always,
+        each: options?.each,
+      });
+    });
+  };
+}
+
+/**
+ * Checks if the string is base32 encoded.
+ *
+ * @param options - Validation options
+ */
+export function IsBase32(options?: ValidationDecoratorOptions) {
+  return function (target: undefined, context: ClassFieldDecoratorContext): any {
+    const propertyKey = context.name;
+
+    context.addInitializer(function (this: any) {
+      addValidationConstraint(this.constructor, propertyKey, {
+        type: 'isBase32',
+        message: options?.message,
+        groups: options?.groups,
+        always: options?.always,
+        each: options?.each,
+      });
+    });
+  };
+}
+
+/**
+ * Checks if the string is base58 encoded.
+ *
+ * @param options - Validation options
+ */
+export function IsBase58(options?: ValidationDecoratorOptions) {
+  return function (target: undefined, context: ClassFieldDecoratorContext): any {
+    const propertyKey = context.name;
+
+    context.addInitializer(function (this: any) {
+      addValidationConstraint(this.constructor, propertyKey, {
+        type: 'isBase58',
+        message: options?.message,
+        groups: options?.groups,
+        always: options?.always,
+        each: options?.each,
+      });
+    });
+  };
+}
+
+/**
+ * Checks if the string is `'true'`, `'false'`, `'0'` or `'1'`.
+ *
+ * @param options - Validation options
+ */
+export function IsBooleanString(options?: ValidationDecoratorOptions) {
+  return function (target: undefined, context: ClassFieldDecoratorContext): any {
+    const propertyKey = context.name;
+
+    context.addInitializer(function (this: any) {
+      addValidationConstraint(this.constructor, propertyKey, {
+        type: 'isBooleanString',
+        message: options?.message,
+        groups: options?.groups,
+        always: options?.always,
+        each: options?.each,
+      });
+    });
+  };
+}
+
+/**
+ * Checks if the string contains any full-width characters.
+ *
+ * @param options - Validation options
+ */
+export function IsFullWidth(options?: ValidationDecoratorOptions) {
+  return function (target: undefined, context: ClassFieldDecoratorContext): any {
+    const propertyKey = context.name;
+
+    context.addInitializer(function (this: any) {
+      addValidationConstraint(this.constructor, propertyKey, {
+        type: 'isFullWidth',
+        message: options?.message,
+        groups: options?.groups,
+        always: options?.always,
+        each: options?.each,
+      });
+    });
+  };
+}
+
+/**
+ * Checks if the string contains any half-width characters.
+ *
+ * @param options - Validation options
+ */
+export function IsHalfWidth(options?: ValidationDecoratorOptions) {
+  return function (target: undefined, context: ClassFieldDecoratorContext): any {
+    const propertyKey = context.name;
+
+    context.addInitializer(function (this: any) {
+      addValidationConstraint(this.constructor, propertyKey, {
+        type: 'isHalfWidth',
+        message: options?.message,
+        groups: options?.groups,
+        always: options?.always,
+        each: options?.each,
+      });
+    });
+  };
+}
+
+/**
+ * Checks if the string contains both half-width and full-width characters.
+ *
+ * @param options - Validation options
+ */
+export function IsVariableWidth(options?: ValidationDecoratorOptions) {
+  return function (target: undefined, context: ClassFieldDecoratorContext): any {
+    const propertyKey = context.name;
+
+    context.addInitializer(function (this: any) {
+      addValidationConstraint(this.constructor, propertyKey, {
+        type: 'isVariableWidth',
+        message: options?.message,
+        groups: options?.groups,
+        always: options?.always,
+        each: options?.each,
+      });
+    });
+  };
+}
+
+/**
+ * Checks if the string is a hexadecimal number, with an optional `0x` prefix.
+ *
+ * @param options - Validation options
+ */
+export function IsHexadecimal(options?: ValidationDecoratorOptions) {
+  return function (target: undefined, context: ClassFieldDecoratorContext): any {
+    const propertyKey = context.name;
+
+    context.addInitializer(function (this: any) {
+      addValidationConstraint(this.constructor, propertyKey, {
+        type: 'isHexadecimal',
+        message: options?.message,
+        groups: options?.groups,
+        always: options?.always,
+        each: options?.each,
+      });
+    });
+  };
+}
+
+/**
+ * Checks if the string contains one or more multibyte characters.
+ *
+ * @param options - Validation options
+ */
+export function IsMultibyte(options?: ValidationDecoratorOptions) {
+  return function (target: undefined, context: ClassFieldDecoratorContext): any {
+    const propertyKey = context.name;
+
+    context.addInitializer(function (this: any) {
+      addValidationConstraint(this.constructor, propertyKey, {
+        type: 'isMultibyte',
+        message: options?.message,
+        groups: options?.groups,
+        always: options?.always,
+        each: options?.each,
+      });
+    });
+  };
+}
+
+/**
+ * Checks if the string contains any surrogate pairs.
+ *
+ * @param options - Validation options
+ */
+export function IsSurrogatePair(options?: ValidationDecoratorOptions) {
+  return function (target: undefined, context: ClassFieldDecoratorContext): any {
+    const propertyKey = context.name;
+
+    context.addInitializer(function (this: any) {
+      addValidationConstraint(this.constructor, propertyKey, {
+        type: 'isSurrogatePair',
+        message: options?.message,
+        groups: options?.groups,
+        always: options?.always,
+        each: options?.each,
+      });
+    });
+  };
+}
+
+/**
+ * Checks if the string is numeric.
+ *
+ * @param options - Validation options
+ */
+export function IsNumberString(options?: ValidationDecoratorOptions) {
+  return function (target: undefined, context: ClassFieldDecoratorContext): any {
+    const propertyKey = context.name;
+
+    context.addInitializer(function (this: any) {
+      addValidationConstraint(this.constructor, propertyKey, {
+        type: 'isNumberString',
+        message: options?.message,
+        groups: options?.groups,
+        always: options?.always,
+        each: options?.each,
+      });
+    });
+  };
+}
+
+/**
+ * Checks if the string is an octal number, with an optional `0o` prefix.
+ *
+ * @param options - Validation options
+ */
+export function IsOctal(options?: ValidationDecoratorOptions) {
+  return function (target: undefined, context: ClassFieldDecoratorContext): any {
+    const propertyKey = context.name;
+
+    context.addInitializer(function (this: any) {
+      addValidationConstraint(this.constructor, propertyKey, {
+        type: 'isOctal',
+        message: options?.message,
+        groups: options?.groups,
+        always: options?.always,
+        each: options?.each,
+      });
+    });
+  };
+}
+
+/**
+ * Checks if the string is a time in `HH:MM` 24-hour form.
+ *
+ * @param options - Validation options
+ */
+export function IsMilitaryTime(options?: ValidationDecoratorOptions) {
+  return function (target: undefined, context: ClassFieldDecoratorContext): any {
+    const propertyKey = context.name;
+
+    context.addInitializer(function (this: any) {
+      addValidationConstraint(this.constructor, propertyKey, {
+        type: 'isMilitaryTime',
+        message: options?.message,
+        groups: options?.groups,
+        always: options?.always,
+        each: options?.each,
+      });
+    });
+  };
+}
+
+/**
+ * Checks if the string is an International Standard Recording Code.
+ *
+ * @param options - Validation options
+ */
+export function IsISRC(options?: ValidationDecoratorOptions) {
+  return function (target: undefined, context: ClassFieldDecoratorContext): any {
+    const propertyKey = context.name;
+
+    context.addInitializer(function (this: any) {
+      addValidationConstraint(this.constructor, propertyKey, {
+        type: 'isISRC',
+        message: options?.message,
+        groups: options?.groups,
+        always: options?.always,
+        each: options?.each,
+      });
+    });
+  };
+}
+
+/**
+ * Checks if the string is an ISSN, verifying its mod-11 check digit.
+ *
+ * @param options - Validation options
+ */
+export function IsISSN(options?: ValidationDecoratorOptions) {
+  return function (target: undefined, context: ClassFieldDecoratorContext): any {
+    const propertyKey = context.name;
+
+    context.addInitializer(function (this: any) {
+      addValidationConstraint(this.constructor, propertyKey, {
+        type: 'isISSN',
+        message: options?.message,
+        groups: options?.groups,
+        always: options?.always,
+        each: options?.each,
+      });
+    });
+  };
+}
+
+/**
+ * Checks if the string is a Firebase push id. Note the error key is `IsFirebasePushId`, capitalised, which is how upstream reports it.
+ *
+ * @param options - Validation options
+ */
+export function IsFirebasePushId(options?: ValidationDecoratorOptions) {
+  return function (target: undefined, context: ClassFieldDecoratorContext): any {
+    const propertyKey = context.name;
+
+    context.addInitializer(function (this: any) {
+      addValidationConstraint(this.constructor, propertyKey, {
+        type: 'IsFirebasePushId',
+        message: options?.message,
+        groups: options?.groups,
+        always: options?.always,
+        each: options?.each,
+      });
+    });
+  };
+}
+
+/**
+ * Checks if the string is a tax identification number. Only the `en-US` format is recognised; upstream supports a locale argument this package does not accept.
+ *
+ * @param options - Validation options
+ */
+export function IsTaxId(options?: ValidationDecoratorOptions) {
+  return function (target: undefined, context: ClassFieldDecoratorContext): any {
+    const propertyKey = context.name;
+
+    context.addInitializer(function (this: any) {
+      addValidationConstraint(this.constructor, propertyKey, {
+        type: 'isTaxId',
+        message: options?.message,
+        groups: options?.groups,
+        always: options?.always,
+        each: options?.each,
+      });
+    });
+  };
+}
+
+/**
+ * Checks if the string is an HSL colour.
+ *
+ * @param options - Validation options
+ */
+export function IsHSL(options?: ValidationDecoratorOptions) {
+  return function (target: undefined, context: ClassFieldDecoratorContext): any {
+    const propertyKey = context.name;
+
+    context.addInitializer(function (this: any) {
+      addValidationConstraint(this.constructor, propertyKey, {
+        type: 'isHSL',
+        message: options?.message,
+        groups: options?.groups,
+        always: options?.always,
+        each: options?.each,
+      });
+    });
+  };
+}
+
+/**
+ * Checks if the string is an RGB or RGBA colour. As upstream, spaces between the components are rejected.
+ *
+ * @param options - Validation options
+ */
+export function IsRgbColor(options?: ValidationDecoratorOptions) {
+  return function (target: undefined, context: ClassFieldDecoratorContext): any {
+    const propertyKey = context.name;
+
+    context.addInitializer(function (this: any) {
+      addValidationConstraint(this.constructor, propertyKey, {
+        type: 'isRgbColor',
+        message: options?.message,
+        groups: options?.groups,
+        always: options?.always,
+        each: options?.each,
+      });
+    });
+  };
+}
+
+/**
+ * Checks that the string's length in UTF-8 bytes — not characters — falls within a range.
+ *
+ * @param options - Validation options
+ */
+export function IsByteLength(min: number, max?: number, options?: ValidationDecoratorOptions) {
+  return function (target: undefined, context: ClassFieldDecoratorContext): any {
+    const propertyKey = context.name;
+
+    context.addInitializer(function (this: any) {
+      addValidationConstraint(this.constructor, propertyKey, {
+        type: 'isByteLength',
+        value: { min, max },
+        message: options?.message,
+        groups: options?.groups,
+        always: options?.always,
+        each: options?.each,
+      });
+    });
+  };
+}
+
+/**
+ * Checks if the string is a hash of the given algorithm (`md5`, `sha1`, `sha256`, `sha512`, `crc32`, …).
+ *
+ * @param options - Validation options
+ */
+export function IsHash(algorithm: string, options?: ValidationDecoratorOptions) {
+  return function (target: undefined, context: ClassFieldDecoratorContext): any {
+    const propertyKey = context.name;
+
+    context.addInitializer(function (this: any) {
+      addValidationConstraint(this.constructor, propertyKey, {
+        type: 'isHash',
+        value: algorithm,
+        message: options?.message,
+        groups: options?.groups,
+        always: options?.always,
+        each: options?.each,
+      });
+    });
+  };
+}

@@ -65,7 +65,7 @@ String: `IsString` (see above), `MinLength`, `MaxLength`, `Length`, `IsEmail`, `
 `IsStrongPassword`, `IsPort`, `IsMACAddress`, `IsBase64`, `IsIBAN`, `IsBIC`, `IsCurrency`,
 `IsISO4217CurrencyCode`, `IsEthereumAddress`, `IsBtcAddress`, `IsPassportNumber`, `IsIdentityCard`,
 `IsEAN`, `IsISIN`, `IsMagnetURI`, `IsDataURI`, `IsISO31661Alpha2`, `IsISO31661Alpha3`, `IsLocale`,
-`IsSemVer`, `IsMimeType`, `IsTimeZone`, `IsRFC3339`
+`IsSemVer`, `IsMimeType`, `IsTimeZone`, `IsRFC3339` `IsAscii`, `IsBase32`, `IsBase58`, `IsBooleanString`, `IsByteLength`, `IsFirebasePushId`, `IsFullWidth`, `IsHSL`, `IsHalfWidth`, `IsHash`, `IsHexadecimal`, `IsISRC`, `IsISSN`, `IsMilitaryTime`, `IsMultibyte`, `IsNumberString`, `IsOctal`, `IsRgbColor`, `IsSurrogatePair`, `IsTaxId`, `IsVariableWidth`.
 
 Nested / conditional: `ValidateNested`, `ValidateIf`, `ValidatePromise`
 
@@ -76,24 +76,13 @@ Note: `IsPositive`/`IsNegative` are implemented by reusing the `min`/`max` engin
 to a combined `minLength` + `maxLength` pair — both behave identically to upstream from the caller's
 perspective.
 
-### Missing vs upstream (not exhaustive)
+### Missing vs upstream
 
-Compared against the `class-validator@0.14` public decorator list, from memory — treat this section
-as a starting point, not a guarantee, and verify against upstream before relying on an omission:
-
-- `IsBooleanString`, `IsNumberString`
-- `IsHexadecimal`, `IsOctal`, `IsAscii`
-- `IsFullWidth`, `IsHalfWidth`, `IsVariableWidth`, `IsMultibyte`, `IsSurrogatePair`
-- `IsBase32`, `IsBase58`
-- `IsHash`, `IsISRC`
-- `IsRgbColor`, `IsHSL`
-- `IsMilitaryTime`
-- `IsTaxId`
-- `IsISO31661Alpha3` sub-variants / `strictGroups`-adjacent decorator options (see ValidatorOptions
-  table above)
-
-If you need one of these and it isn't listed here as supported, assume it is missing until proven
-otherwise by reading `packages/class-validator/src/decorators/`.
+None. Every decorator `class-validator@0.14.4` exports is exported here too, verified by comparing
+the two packages' runtime exports rather than by reading either list. What still differs is depth,
+not presence: several decorators ignore the validator.js options object upstream accepts (`@IsEmail`,
+`@IsURL`, `@IsStrongPassword`, `@IsUUID` version, `@IsHash` beyond the algorithm name), and
+`@IsTaxId` recognises only the `en-US` format. Those rows are marked in the tables above.
 
 ## Migrating custom decorators (registerDecorator)
 

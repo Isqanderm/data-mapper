@@ -1246,6 +1246,263 @@ function generateConstraintCheck(
       lines.push(`    }`);
       break;
 
+    case 'isAscii':
+      lines.push(
+        `${indent}  if (typeof ${valueName} !== 'string' || !/^[\\x00-\\x7F]+$/.test(${valueName})) {`,
+      );
+      lines.push(
+        `${indent}    ${errorsName}.isAscii = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must contain only ASCII characters')};`,
+      );
+      lines.push(`${indent}  }`);
+      break;
+
+    case 'isBase32':
+      lines.push(
+        `${indent}  if (typeof ${valueName} !== 'string' || ${valueName}.length % 8 !== 0 || !/^[A-Z2-7]+=*$/.test(${valueName})) {`,
+      );
+      lines.push(
+        `${indent}    ${errorsName}.isBase32 = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be base32 encoded')};`,
+      );
+      lines.push(`${indent}  }`);
+      break;
+
+    case 'isBase58':
+      lines.push(
+        `${indent}  if (typeof ${valueName} !== 'string' || !/^[A-HJ-NP-Za-km-z1-9]+$/.test(${valueName})) {`,
+      );
+      lines.push(
+        `${indent}    ${errorsName}.isBase58 = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be base58 encoded')};`,
+      );
+      lines.push(`${indent}  }`);
+      break;
+
+    case 'isBooleanString':
+      lines.push(
+        `${indent}  if (typeof ${valueName} !== 'string' || !['true', 'false', '0', '1'].includes(${valueName})) {`,
+      );
+      lines.push(
+        `${indent}    ${errorsName}.isBooleanString = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be a boolean string')};`,
+      );
+      lines.push(`${indent}  }`);
+      break;
+
+    case 'isFullWidth':
+      lines.push(
+        `${indent}  if (typeof ${valueName} !== 'string' || !/[^\\u0000-\\u007F\\uFF61-\\uFF9F\\uFFA0-\\uFFDC\\uFFE8-\\uFFEE]/.test(${valueName})) {`,
+      );
+      lines.push(
+        `${indent}    ${errorsName}.isFullWidth = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must contain a full-width character')};`,
+      );
+      lines.push(`${indent}  }`);
+      break;
+
+    case 'isHalfWidth':
+      lines.push(
+        `${indent}  if (typeof ${valueName} !== 'string' || !/[\\u0020-\\u007E\\uFF61-\\uFF9F\\uFFA0-\\uFFDC\\uFFE8-\\uFFEE]/.test(${valueName})) {`,
+      );
+      lines.push(
+        `${indent}    ${errorsName}.isHalfWidth = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must contain a half-width character')};`,
+      );
+      lines.push(`${indent}  }`);
+      break;
+
+    case 'isVariableWidth':
+      lines.push(
+        `${indent}  if (typeof ${valueName} !== 'string' || !/[\\u0020-\\u007E\\uFF61-\\uFF9F\\uFFA0-\\uFFDC\\uFFE8-\\uFFEE]/.test(${valueName}) || !/[^\\u0000-\\u007F\\uFF61-\\uFF9F\\uFFA0-\\uFFDC\\uFFE8-\\uFFEE]/.test(${valueName})) {`,
+      );
+      lines.push(
+        `${indent}    ${errorsName}.isVariableWidth = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must contain both half-width and full-width characters')};`,
+      );
+      lines.push(`${indent}  }`);
+      break;
+
+    case 'isHexadecimal':
+      lines.push(
+        `${indent}  if (typeof ${valueName} !== 'string' || !/^(0[xX])?[0-9A-Fa-f]+$/.test(${valueName})) {`,
+      );
+      lines.push(
+        `${indent}    ${errorsName}.isHexadecimal = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be a hexadecimal number')};`,
+      );
+      lines.push(`${indent}  }`);
+      break;
+
+    case 'isMultibyte':
+      lines.push(
+        `${indent}  if (typeof ${valueName} !== 'string' || !/[^\\x00-\\x7F]/.test(${valueName})) {`,
+      );
+      lines.push(
+        `${indent}    ${errorsName}.isMultibyte = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must contain one or more multibyte chars')};`,
+      );
+      lines.push(`${indent}  }`);
+      break;
+
+    case 'isSurrogatePair':
+      lines.push(
+        `${indent}  if (typeof ${valueName} !== 'string' || !/[\\uD800-\\uDBFF][\\uDC00-\\uDFFF]/.test(${valueName})) {`,
+      );
+      lines.push(
+        `${indent}    ${errorsName}.isSurrogatePair = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must contain any surrogate pairs chars')};`,
+      );
+      lines.push(`${indent}  }`);
+      break;
+
+    case 'isNumberString':
+      lines.push(
+        `${indent}  if (typeof ${valueName} !== 'string' || !/^[+-]?(\\d+(\\.\\d*)?|\\.\\d+)$/.test(${valueName})) {`,
+      );
+      lines.push(
+        `${indent}    ${errorsName}.isNumberString = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be a number string')};`,
+      );
+      lines.push(`${indent}  }`);
+      break;
+
+    case 'isOctal':
+      lines.push(
+        `${indent}  if (typeof ${valueName} !== 'string' || !/^(0o)?[0-7]+$/i.test(${valueName})) {`,
+      );
+      lines.push(
+        `${indent}    ${errorsName}.isOctal = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be valid octal number')};`,
+      );
+      lines.push(`${indent}  }`);
+      break;
+
+    case 'isMilitaryTime':
+      lines.push(
+        `${indent}  if (typeof ${valueName} !== 'string' || !/^([01]\\d|2[0-3]):[0-5]\\d$/.test(${valueName})) {`,
+      );
+      lines.push(
+        `${indent}    ${errorsName}.isMilitaryTime = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be a valid representation of military time in the format HH:MM')};`,
+      );
+      lines.push(`${indent}  }`);
+      break;
+
+    case 'isISRC':
+      lines.push(
+        `${indent}  if (typeof ${valueName} !== 'string' || !/^[A-Z]{2}[0-9A-Z]{3}\\d{7}$/.test(${valueName})) {`,
+      );
+      lines.push(
+        `${indent}    ${errorsName}.isISRC = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be an ISRC')};`,
+      );
+      lines.push(`${indent}  }`);
+      break;
+
+    case 'IsFirebasePushId':
+      lines.push(
+        `${indent}  if (typeof ${valueName} !== 'string' || !/^[-\\w]{20}$/.test(${valueName})) {`,
+      );
+      lines.push(
+        `${indent}    ${errorsName}.IsFirebasePushId = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be a Firebase Push Id')};`,
+      );
+      lines.push(`${indent}  }`);
+      break;
+
+    case 'isTaxId':
+      lines.push(
+        `${indent}  if (typeof ${valueName} !== 'string' || !/^\\d{2}[- ]?\\d{7}$/.test(${valueName})) {`,
+      );
+      lines.push(
+        `${indent}    ${errorsName}.isTaxId = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be a Tax Identification Number')};`,
+      );
+      lines.push(`${indent}  }`);
+      break;
+
+    case 'isHSL':
+      lines.push(
+        `${indent}  if (typeof ${valueName} !== 'string' || !/^hsla?\\(\\s*[+-]?\\d+(\\.\\d+)?(deg|grad|rad|turn)?\\s*,\\s*[+-]?\\d+(\\.\\d+)?%\\s*,\\s*[+-]?\\d+(\\.\\d+)?%\\s*(,\\s*[+-]?\\d*(\\.\\d+)?%?\\s*)?\\)$/.test(${valueName})) {`,
+      );
+      lines.push(
+        `${indent}    ${errorsName}.isHSL = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be a HSL color')};`,
+      );
+      lines.push(`${indent}  }`);
+      break;
+
+    case 'isRgbColor':
+      lines.push(
+        `${indent}  if (typeof ${valueName} !== 'string' || !/^rgba?\\((((0|1?\\d?\\d|2[0-4]\\d|25[0-5]),){2}(0|1?\\d?\\d|2[0-4]\\d|25[0-5])|((0|1?\\d?\\d|2[0-4]\\d|25[0-5]),){3}(0|0?\\.\\d+|1(\\.0)?))\\)$/.test(${valueName})) {`,
+      );
+      lines.push(
+        `${indent}    ${errorsName}.isRgbColor = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be RGB color')};`,
+      );
+      lines.push(`${indent}  }`);
+      break;
+
+    case 'isByteLength': {
+      // Bytes, not characters: upstream measures the UTF-8 encoding.
+      const byteMin = constraint.value?.min ?? 0;
+      const byteMax = constraint.value?.max;
+      const overByteMax = byteMax === undefined ? '' : ` || byteLen > ${JSON.stringify(byteMax)}`;
+      lines.push(`${indent}  if (typeof ${valueName} !== 'string') {`);
+      lines.push(
+        `${indent}    ${errorsName}.isByteLength = ${emitMessage(constraint, constraintIndex, propertyName, valueName, "'s byte length must fall into (" + byteMin + ', ' + (byteMax ?? '') + ') range')};`,
+      );
+      lines.push(`${indent}  } else {`);
+      lines.push(`${indent}    const byteLen = new TextEncoder().encode(${valueName}).length;`);
+      lines.push(`${indent}    if (byteLen < ${JSON.stringify(byteMin)}${overByteMax}) {`);
+      lines.push(
+        `${indent}      ${errorsName}.isByteLength = ${emitMessage(constraint, constraintIndex, propertyName, valueName, "'s byte length must fall into (" + byteMin + ', ' + (byteMax ?? '') + ') range')};`,
+      );
+      lines.push(`${indent}    }`);
+      lines.push(`${indent}  }`);
+      break;
+    }
+
+    case 'isHash': {
+      // Hex digits, count fixed by the algorithm.
+      const hashLengths: Record<string, number> = {
+        md5: 32,
+        md4: 32,
+        ripemd128: 32,
+        tiger128: 32,
+        sha1: 40,
+        ripemd160: 40,
+        tiger160: 40,
+        tiger192: 48,
+        sha256: 64,
+        'sha3-256': 64,
+        sha384: 96,
+        'sha3-384': 96,
+        sha512: 128,
+        'sha3-512': 128,
+        crc32: 8,
+        crc32b: 8,
+      };
+      const hashLength = hashLengths[String(constraint.value).toLowerCase()] ?? 0;
+      lines.push(
+        `${indent}  if (typeof ${valueName} !== 'string' || !new RegExp('^[a-fA-F0-9]{' + ${JSON.stringify(hashLength)} + '}$').test(${valueName})) {`,
+      );
+      lines.push(
+        `${indent}    ${errorsName}.isHash = ${emitMessage(constraint, constraintIndex, propertyName, valueName, `must be a hash of type ${constraint.value}`)};`,
+      );
+      lines.push(`${indent}  }`);
+      break;
+    }
+
+    case 'isISSN':
+      // Eight digits, hyphen optional, last position a mod-11 check digit
+      // that may be 'X'.
+      lines.push(
+        `${indent}  if (typeof ${valueName} !== 'string' || !/^\\d{4}-?\\d{3}[\\dX]$/i.test(${valueName})) {`,
+      );
+      lines.push(
+        `${indent}    ${errorsName}.isISSN = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be a ISSN')};`,
+      );
+      lines.push(`${indent}  } else {`);
+      lines.push(`${indent}    const issnDigits = ${valueName}.replace('-', '').toUpperCase();`);
+      lines.push(`${indent}    let issnSum = 0;`);
+      lines.push(`${indent}    for (let i = 0; i < 8; i++) {`);
+      lines.push(
+        `${indent}      const issnChar = issnDigits[i] === 'X' ? 10 : Number(issnDigits[i]);`,
+      );
+      lines.push(`${indent}      issnSum += issnChar * (8 - i);`);
+      lines.push(`${indent}    }`);
+      lines.push(`${indent}    if (issnSum % 11 !== 0) {`);
+      lines.push(
+        `${indent}      ${errorsName}.isISSN = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be a ISSN')};`,
+      );
+      lines.push(`${indent}    }`);
+      lines.push(`${indent}  }`);
+      break;
+
     case 'isPositive':
       lines.push(`${indent}  if (typeof ${valueName} !== 'number' || ${valueName} <= 0) {`);
       lines.push(

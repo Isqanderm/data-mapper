@@ -68,7 +68,7 @@
 `IsStrongPassword`, `IsPort`, `IsMACAddress`, `IsBase64`, `IsIBAN`, `IsBIC`, `IsCurrency`,
 `IsISO4217CurrencyCode`, `IsEthereumAddress`, `IsBtcAddress`, `IsPassportNumber`, `IsIdentityCard`,
 `IsEAN`, `IsISIN`, `IsMagnetURI`, `IsDataURI`, `IsISO31661Alpha2`, `IsISO31661Alpha3`, `IsLocale`,
-`IsSemVer`, `IsMimeType`, `IsTimeZone`, `IsRFC3339`
+`IsSemVer`, `IsMimeType`, `IsTimeZone`, `IsRFC3339` `IsAscii`, `IsBase32`, `IsBase58`, `IsBooleanString`, `IsByteLength`, `IsFirebasePushId`, `IsFullWidth`, `IsHSL`, `IsHalfWidth`, `IsHash`, `IsHexadecimal`, `IsISRC`, `IsISSN`, `IsMilitaryTime`, `IsMultibyte`, `IsNumberString`, `IsOctal`, `IsRgbColor`, `IsSurrogatePair`, `IsTaxId`, `IsVariableWidth`.
 
 Вложенные / условные: `ValidateNested`, `ValidateIf`, `ValidatePromise`
 
@@ -79,25 +79,13 @@
 компилируется в комбинацию `minLength` + `maxLength` — оба варианта ведут себя идентично апстриму
 с точки зрения вызывающего кода.
 
-### Отсутствует относительно апстрима (список неполный)
+### Отсутствует относительно апстрима
 
-Сопоставлено со списком публичных декораторов `class-validator@0.14` по памяти — воспринимайте
-этот раздел как отправную точку, а не гарантию, и проверяйте по апстриму, прежде чем полагаться на
-отсутствие декоратора:
-
-- `IsBooleanString`, `IsNumberString`
-- `IsHexadecimal`, `IsOctal`, `IsAscii`
-- `IsFullWidth`, `IsHalfWidth`, `IsVariableWidth`, `IsMultibyte`, `IsSurrogatePair`
-- `IsBase32`, `IsBase58`
-- `IsHash`, `IsISRC`
-- `IsRgbColor`, `IsHSL`
-- `IsMilitaryTime`
-- `IsTaxId`
-- `IsISO31661Alpha3` под-варианты / опции декораторов рядом со `strictGroups` (см. таблицу
-  ValidatorOptions выше)
-
-Если вам нужен один из этих декораторов и он не отмечен здесь как поддерживаемый, считайте его
-отсутствующим, пока обратное не подтверждено чтением `packages/class-validator/src/decorators/`.
+Ничего. Все декораторы, которые экспортирует `class-validator@0.14.4`, экспортируются и здесь —
+проверено сравнением рантайм-экспортов обоих пакетов, а не чтением списков. Различается глубина, а
+не наличие: часть декораторов игнорирует объект опций validator.js, который принимает апстрим
+(`@IsEmail`, `@IsURL`, `@IsStrongPassword`, версия у `@IsUUID`, `@IsHash` сверх имени алгоритма), а
+`@IsTaxId` распознаёт только формат `en-US`. Эти строки отмечены в таблицах выше.
 
 ## Миграция пользовательских декораторов (registerDecorator)
 
