@@ -133,15 +133,81 @@ export const instanceToPlain = classToPlain;
 export function classToClass<T>(object: T, options?: ClassTransformOptions): T;
 export function classToClass<T>(object: T[], options?: ClassTransformOptions): T[];
 export function classToClass<T>(object: T | T[], options: ClassTransformOptions = {}): T | T[] {
-  if (Array.isArray(object)) {
-    return object.map((item) => {
-      const plain = transformClassToPlain(item, 'classToClass', options);
-      return transformPlainToClass((item as any).constructor, plain, 'classToClass', options);
-    });
+  return cloneInstance(object, options) as T | T[];
+}
+
+/**
+ * Recursively clone a value, keeping each object's class.
+ *
+ * This used to be a classToPlain -> plainToClass round trip carrying the
+ * 'classToClass' type through both legs. Neither leg recursed — each descends
+ * only for its own direction — so nested values were copied by reference,
+ * while `@Transform` ran on both legs and was applied twice.
+ *
+ * The class of a nested value is taken from the value itself rather than from
+ * `@Type`, matching upstream: it clones a nested instance back into its own
+ * class whether or not the property carries a `@Type`.
+ */
+function cloneInstance(value: any, options: ClassTransformOptions): any {
+  if (Array.isArray(value)) {
+    return value.map((item) => cloneInstance(item, options));
   }
 
-  const plain = transformClassToPlain(object, 'classToClass', options);
-  return transformPlainToClass((object as any).constructor, plain, 'classToClass', options);
+  if (value === null || typeof value !== 'object') {
+    return value;
+  }
+
+  // Values that carry their own contents rather than decorated properties.
+  // Walking them as plain objects would empty them.
+  if (value instanceof Date) {
+    return new Date(value.getTime());
+  }
+  if (value instanceof Map) {
+    return new Map(value);
+  }
+  if (value instanceof Set) {
+    return new Set(value);
+  }
+
+  const cls = value.constructor;
+  const metadata = getCompatMetadata(cls);
+  // Constructed, not Object.create'd: an excluded property is not copied, and
+  // upstream leaves it holding whatever the field initializer gives it rather
+  // than leaving it absent. This is also how transformPlainToClass builds its
+  // target, so both directions treat a class the same way.
+  const result = cls === Object ? {} : new cls();
+
+  const allKeys = new Set<string | symbol>([...Object.keys(value), ...metadata.properties.keys()]);
+
+  for (const propertyKey of allKeys) {
+    const propertyMeta = metadata.properties.get(propertyKey);
+
+    if (!shouldExposeProperty(propertyMeta, propertyKey, 'classToClass', options)) {
+      continue;
+    }
+
+    let propertyValue = value[propertyKey];
+
+    // Applied here and nowhere else, so it runs once per property.
+    if (propertyMeta?.transformFn) {
+      const transformOpts = propertyMeta.transformOptions || {};
+      if (!transformOpts.toPlainOnly && !transformOpts.toClassOnly) {
+        propertyValue = propertyMeta.transformFn({
+          value: propertyValue,
+          key: String(propertyKey),
+          obj: value,
+          type: 'classToClass',
+          options,
+        });
+      }
+    }
+
+    // The property keeps its own name: unlike class->plain, this direction
+    // does not rename through `@Expose({ name })`.
+    result[propertyKey] = cloneInstance(propertyValue, options);
+  }
+
+  return result;
 }
 
 /**
