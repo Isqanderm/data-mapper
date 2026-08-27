@@ -366,5 +366,34 @@ function transformValue(
     }
   }
 
+  // A nested instance carries its own metadata, so its @Exclude/@Expose only
+  // run if we transform it too — otherwise an excluded field is copied straight
+  // into the output. Not gated on `typeFunction`: in the class->plain direction
+  // the class is known from the value itself, and upstream recurses whether or
+  // not the property carries a @Type.
+  if (transformationType === 'classToPlain') {
+    return transformNestedToPlain(value, transformationType, options);
+  }
+
   return value;
+}
+
+/**
+ * Recursively transform a value on its way out to a plain object.
+ */
+function transformNestedToPlain(
+  value: any,
+  transformationType: TransformationType,
+  options: ClassTransformOptions,
+): any {
+  if (Array.isArray(value)) {
+    return value.map((item) => transformNestedToPlain(item, transformationType, options));
+  }
+
+  // A Date is a value, not a structure to expand — upstream passes it through.
+  if (value === null || typeof value !== 'object' || value instanceof Date) {
+    return value;
+  }
+
+  return transformClassToPlain(value, transformationType, options);
 }
