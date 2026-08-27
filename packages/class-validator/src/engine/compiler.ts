@@ -753,7 +753,7 @@ function generateConstraintCheck(
 
     case 'minLength':
       lines.push(
-        `${indent}  if (typeof ${valueName} === 'string' && ${valueName}.length < ${constraint.value}) {`,
+        `${indent}  if (typeof ${valueName} !== 'string' || ${valueName}.length < ${constraint.value}) {`,
       );
       lines.push(
         `${indent}    ${errorsName}.minLength = ${emitMessage(constraint, constraintIndex, propertyName, valueName, `must be at least ${constraint.value} characters`)};`,
@@ -763,7 +763,7 @@ function generateConstraintCheck(
 
     case 'maxLength':
       lines.push(
-        `${indent}  if (typeof ${valueName} === 'string' && ${valueName}.length > ${constraint.value}) {`,
+        `${indent}  if (typeof ${valueName} !== 'string' || ${valueName}.length > ${constraint.value}) {`,
       );
       lines.push(
         `${indent}    ${errorsName}.maxLength = ${emitMessage(constraint, constraintIndex, propertyName, valueName, `must be at most ${constraint.value} characters`)};`,
@@ -781,7 +781,7 @@ function generateConstraintCheck(
 
     case 'min':
       lines.push(
-        `${indent}  if (typeof ${valueName} === 'number' && ${valueName} < ${constraint.value}) {`,
+        `${indent}  if (typeof ${valueName} !== 'number' || ${valueName} < ${constraint.value}) {`,
       );
       lines.push(
         `${indent}    ${errorsName}.min = ${emitMessage(constraint, constraintIndex, propertyName, valueName, `must not be less than ${constraint.value}`)};`,
@@ -791,7 +791,7 @@ function generateConstraintCheck(
 
     case 'max':
       lines.push(
-        `${indent}  if (typeof ${valueName} === 'number' && ${valueName} > ${constraint.value}) {`,
+        `${indent}  if (typeof ${valueName} !== 'number' || ${valueName} > ${constraint.value}) {`,
       );
       lines.push(
         `${indent}    ${errorsName}.max = ${emitMessage(constraint, constraintIndex, propertyName, valueName, `must not be greater than ${constraint.value}`)};`,
@@ -854,7 +854,7 @@ function generateConstraintCheck(
 
     case 'arrayMinSize':
       lines.push(
-        `${indent}  if (Array.isArray(${valueName}) && ${valueName}.length < ${constraint.value}) {`,
+        `${indent}  if (!Array.isArray(${valueName}) || ${valueName}.length < ${constraint.value}) {`,
       );
       lines.push(
         `${indent}    ${errorsName}.arrayMinSize = ${emitMessage(constraint, constraintIndex, propertyName, valueName, `must contain at least ${constraint.value} elements`)};`,
@@ -864,7 +864,7 @@ function generateConstraintCheck(
 
     case 'arrayMaxSize':
       lines.push(
-        `${indent}  if (Array.isArray(${valueName}) && ${valueName}.length > ${constraint.value}) {`,
+        `${indent}  if (!Array.isArray(${valueName}) || ${valueName}.length > ${constraint.value}) {`,
       );
       lines.push(
         `${indent}    ${errorsName}.arrayMaxSize = ${emitMessage(constraint, constraintIndex, propertyName, valueName, `must contain no more than ${constraint.value} elements`)};`,
@@ -873,7 +873,11 @@ function generateConstraintCheck(
       break;
 
     case 'arrayContains':
-      lines.push(`${indent}  if (Array.isArray(${valueName})) {`);
+      lines.push(`${indent}  if (!Array.isArray(${valueName})) {`);
+      lines.push(
+        `${indent}      ${errorsName}.arrayContains = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must contain required values')};`,
+      );
+      lines.push(`${indent}  } else {`);
       lines.push(`${indent}    const requiredValues = ${JSON.stringify(constraint.value)};`);
       lines.push(
         `${indent}    const hasAll = requiredValues.every(v => ${valueName}.includes(v));`,
@@ -887,7 +891,11 @@ function generateConstraintCheck(
       break;
 
     case 'arrayNotContains':
-      lines.push(`${indent}  if (Array.isArray(${valueName})) {`);
+      lines.push(`${indent}  if (!Array.isArray(${valueName})) {`);
+      lines.push(
+        `${indent}      ${errorsName}.arrayNotContains = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must not contain forbidden values')};`,
+      );
+      lines.push(`${indent}  } else {`);
       lines.push(`${indent}    const forbiddenValues = ${JSON.stringify(constraint.value)};`);
       lines.push(
         `${indent}    const hasAny = forbiddenValues.some(v => ${valueName}.includes(v));`,
@@ -901,7 +909,11 @@ function generateConstraintCheck(
       break;
 
     case 'arrayUnique':
-      lines.push(`${indent}  if (Array.isArray(${valueName})) {`);
+      lines.push(`${indent}  if (!Array.isArray(${valueName})) {`);
+      lines.push(
+        `${indent}      ${errorsName}.arrayUnique = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'all elements must be unique')};`,
+      );
+      lines.push(`${indent}  } else {`);
       lines.push(`${indent}    const uniqueSet = new Set(${valueName});`);
       lines.push(`${indent}    if (uniqueSet.size !== ${valueName}.length) {`);
       lines.push(
@@ -943,7 +955,11 @@ function generateConstraintCheck(
 
     // String validators - Email & Web
     case 'isEmail':
-      lines.push(`${indent}  if (typeof ${valueName} === 'string') {`);
+      lines.push(`${indent}  if (typeof ${valueName} !== 'string') {`);
+      lines.push(
+        `${indent}      ${errorsName}.isEmail = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be an email')};`,
+      );
+      lines.push(`${indent}  } else {`);
       lines.push(`${indent}    const emailRegex = /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/;`);
       lines.push(`${indent}    if (!emailRegex.test(${valueName})) {`);
       lines.push(
@@ -954,7 +970,11 @@ function generateConstraintCheck(
       break;
 
     case 'isURL':
-      lines.push(`${indent}  if (typeof ${valueName} === 'string') {`);
+      lines.push(`${indent}  if (typeof ${valueName} !== 'string') {`);
+      lines.push(
+        `${indent}      ${errorsName}.isURL = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be a URL address')};`,
+      );
+      lines.push(`${indent}  } else {`);
       lines.push(`${indent}    try {`);
       lines.push(`${indent}      new URL(${valueName});`);
       lines.push(`${indent}    } catch {`);
@@ -966,7 +986,11 @@ function generateConstraintCheck(
       break;
 
     case 'isUUID':
-      lines.push(`${indent}  if (typeof ${valueName} === 'string') {`);
+      lines.push(`${indent}  if (typeof ${valueName} !== 'string') {`);
+      lines.push(
+        `${indent}      ${errorsName}.isUUID = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be a UUID')};`,
+      );
+      lines.push(`${indent}  } else {`);
       if (constraint.value === '3') {
         lines.push(
           `${indent}    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-3[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;`,
@@ -993,7 +1017,11 @@ function generateConstraintCheck(
       break;
 
     case 'isJSON':
-      lines.push(`${indent}  if (typeof ${valueName} === 'string') {`);
+      lines.push(`${indent}  if (typeof ${valueName} !== 'string') {`);
+      lines.push(
+        `${indent}      ${errorsName}.isJSON = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be a json string')};`,
+      );
+      lines.push(`${indent}  } else {`);
       lines.push(`${indent}    try {`);
       lines.push(`${indent}      JSON.parse(${valueName});`);
       lines.push(`${indent}    } catch {`);
@@ -1006,7 +1034,11 @@ function generateConstraintCheck(
 
     // String validators - Format
     case 'isAlpha':
-      lines.push(`${indent}  if (typeof ${valueName} === 'string') {`);
+      lines.push(`${indent}  if (typeof ${valueName} !== 'string') {`);
+      lines.push(
+        `${indent}      ${errorsName}.isAlpha = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must contain only letters (a-zA-Z)')};`,
+      );
+      lines.push(`${indent}  } else {`);
       lines.push(`${indent}    const alphaRegex = /^[a-zA-Z]+$/;`);
       lines.push(`${indent}    if (!alphaRegex.test(${valueName})) {`);
       lines.push(
@@ -1017,7 +1049,11 @@ function generateConstraintCheck(
       break;
 
     case 'isAlphanumeric':
-      lines.push(`${indent}  if (typeof ${valueName} === 'string') {`);
+      lines.push(`${indent}  if (typeof ${valueName} !== 'string') {`);
+      lines.push(
+        `${indent}      ${errorsName}.isAlphanumeric = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must contain only letters and numbers')};`,
+      );
+      lines.push(`${indent}  } else {`);
       lines.push(`${indent}    const alphanumericRegex = /^[a-zA-Z0-9]+$/;`);
       lines.push(`${indent}    if (!alphanumericRegex.test(${valueName})) {`);
       lines.push(
@@ -1028,7 +1064,11 @@ function generateConstraintCheck(
       break;
 
     case 'isHexColor':
-      lines.push(`${indent}  if (typeof ${valueName} === 'string') {`);
+      lines.push(`${indent}  if (typeof ${valueName} !== 'string') {`);
+      lines.push(
+        `${indent}      ${errorsName}.isHexColor = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be a hexadecimal color')};`,
+      );
+      lines.push(`${indent}  } else {`);
       lines.push(`${indent}    const hexColorRegex = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i;`);
       lines.push(`${indent}    if (!hexColorRegex.test(${valueName})) {`);
       lines.push(
@@ -1039,7 +1079,11 @@ function generateConstraintCheck(
       break;
 
     case 'isIP':
-      lines.push(`${indent}  if (typeof ${valueName} === 'string') {`);
+      lines.push(`${indent}  if (typeof ${valueName} !== 'string') {`);
+      lines.push(
+        `${indent}      ${errorsName}.isIP = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be an ip address')};`,
+      );
+      lines.push(`${indent}  } else {`);
       if (constraint.value === '4') {
         lines.push(
           `${indent}    const ipRegex = /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;`,
@@ -1069,7 +1113,11 @@ function generateConstraintCheck(
 
     // String validators - Specialized
     case 'isCreditCard':
-      lines.push(`${indent}  if (typeof ${valueName} === 'string') {`);
+      lines.push(`${indent}  if (typeof ${valueName} !== 'string') {`);
+      lines.push(
+        `${indent}      ${errorsName}.isCreditCard = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be a credit card')};`,
+      );
+      lines.push(`${indent}  } else {`);
       lines.push(`${indent}    const sanitized = ${valueName}.replace(/[- ]/g, '');`);
       lines.push(`${indent}    if (!/^[0-9]{13,19}$/.test(sanitized)) {`);
       lines.push(
@@ -1098,7 +1146,11 @@ function generateConstraintCheck(
       break;
 
     case 'isISBN':
-      lines.push(`${indent}  if (typeof ${valueName} === 'string') {`);
+      lines.push(`${indent}  if (typeof ${valueName} !== 'string') {`);
+      lines.push(
+        `${indent}      ${errorsName}.isISBN = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be an ISBN')};`,
+      );
+      lines.push(`${indent}  } else {`);
       lines.push(`${indent}    const sanitized = ${valueName}.replace(/[- ]/g, '');`);
       if (constraint.value === '10') {
         lines.push(`${indent}    if (!/^[0-9]{9}[0-9X]$/i.test(sanitized)) {`);
@@ -1125,7 +1177,11 @@ function generateConstraintCheck(
       break;
 
     case 'isPhoneNumber':
-      lines.push(`${indent}  if (typeof ${valueName} === 'string') {`);
+      lines.push(`${indent}  if (typeof ${valueName} !== 'string') {`);
+      lines.push(
+        `${indent}      ${errorsName}.isPhoneNumber = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be a valid phone number')};`,
+      );
+      lines.push(`${indent}  } else {`);
       lines.push(
         `${indent}    const phoneRegex = /^[+]?[(]?[0-9]{1,4}[)]?[-\\s.]?[(]?[0-9]{1,4}[)]?[-\\s.]?[0-9]{1,9}$/;`,
       );
@@ -1140,7 +1196,7 @@ function generateConstraintCheck(
     // String validators - Content
     case 'contains':
       lines.push(
-        `${indent}  if (typeof ${valueName} === 'string' && !${valueName}.includes(${JSON.stringify(constraint.value)})) {`,
+        `${indent}  if (typeof ${valueName} !== 'string' || !${valueName}.includes(${JSON.stringify(constraint.value)})) {`,
       );
       lines.push(
         `${indent}    ${errorsName}.contains = ${emitMessage(constraint, constraintIndex, propertyName, valueName, `must contain a ${constraint.value} string`)};`,
@@ -1150,7 +1206,7 @@ function generateConstraintCheck(
 
     case 'notContains':
       lines.push(
-        `${indent}  if (typeof ${valueName} === 'string' && ${valueName}.includes(${JSON.stringify(constraint.value)})) {`,
+        `${indent}  if (typeof ${valueName} !== 'string' || ${valueName}.includes(${JSON.stringify(constraint.value)})) {`,
       );
       lines.push(
         `${indent}    ${errorsName}.notContains = ${emitMessage(constraint, constraintIndex, propertyName, valueName, `should not contain a ${constraint.value} string`)};`,
@@ -1160,7 +1216,7 @@ function generateConstraintCheck(
 
     case 'isLowercase':
       lines.push(
-        `${indent}  if (typeof ${valueName} === 'string' && ${valueName} !== ${valueName}.toLowerCase()) {`,
+        `${indent}  if (typeof ${valueName} !== 'string' || ${valueName} !== ${valueName}.toLowerCase()) {`,
       );
       lines.push(
         `${indent}    ${errorsName}.isLowercase = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be a lowercase string')};`,
@@ -1170,7 +1226,7 @@ function generateConstraintCheck(
 
     case 'isUppercase':
       lines.push(
-        `${indent}  if (typeof ${valueName} === 'string' && ${valueName} !== ${valueName}.toUpperCase()) {`,
+        `${indent}  if (typeof ${valueName} !== 'string' || ${valueName} !== ${valueName}.toUpperCase()) {`,
       );
       lines.push(
         `${indent}    ${errorsName}.isUppercase = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be an uppercase string')};`,
@@ -1182,7 +1238,11 @@ function generateConstraintCheck(
       if (constraint.value && typeof constraint.value === 'object') {
         const pattern = constraint.value.pattern;
         const modifiers = constraint.value.modifiers || '';
-        lines.push(`${indent}  if (typeof ${valueName} === 'string') {`);
+        lines.push(`${indent}  if (typeof ${valueName} !== 'string') {`);
+        lines.push(
+          `${indent}      ${errorsName}.matches = ${emitMessage(constraint, constraintIndex, propertyName, valueName, `must match ${pattern} regular expression`)};`,
+        );
+        lines.push(`${indent}  } else {`);
         lines.push(
           `${indent}    const regex = new RegExp(${JSON.stringify(pattern)}, ${JSON.stringify(modifiers)});`,
         );
@@ -1197,7 +1257,11 @@ function generateConstraintCheck(
 
     // High Priority Validators
     case 'isFQDN':
-      lines.push(`${indent}  if (typeof ${valueName} === 'string') {`);
+      lines.push(`${indent}  if (typeof ${valueName} !== 'string') {`);
+      lines.push(
+        `${indent}      ${errorsName}.isFQDN = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be a valid domain name')};`,
+      );
+      lines.push(`${indent}  } else {`);
       lines.push(
         `${indent}    const fqdnRegex = /^([a-zA-Z0-9-_]+\\.)*[a-zA-Z0-9][a-zA-Z0-9-_]+\\.[a-zA-Z]{2,11}$/;`,
       );
@@ -1210,7 +1274,11 @@ function generateConstraintCheck(
       break;
 
     case 'isISO8601':
-      lines.push(`${indent}  if (typeof ${valueName} === 'string') {`);
+      lines.push(`${indent}  if (typeof ${valueName} !== 'string') {`);
+      lines.push(
+        `${indent}      ${errorsName}.isISO8601 = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be a valid ISO 8601 date string')};`,
+      );
+      lines.push(`${indent}  } else {`);
       lines.push(
         `${indent}    const iso8601Regex = /^\\d{4}-\\d{2}-\\d{2}(T\\d{2}:\\d{2}:\\d{2}(\\.\\d{1,3})?(Z|[+-]\\d{2}:\\d{2})?)?$/;`,
       );
@@ -1223,7 +1291,11 @@ function generateConstraintCheck(
       break;
 
     case 'isMobilePhone':
-      lines.push(`${indent}  if (typeof ${valueName} === 'string') {`);
+      lines.push(`${indent}  if (typeof ${valueName} !== 'string') {`);
+      lines.push(
+        `${indent}      ${errorsName}.isMobilePhone = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be a valid phone number')};`,
+      );
+      lines.push(`${indent}  } else {`);
       lines.push(
         `${indent}    const phoneRegex = /^[+]?[(]?[0-9]{1,4}[)]?[-\\s.()]?[0-9]{1,4}[-\\s.()]?[0-9]{1,4}[-\\s.()]?[0-9]{1,9}$/;`,
       );
@@ -1236,7 +1308,11 @@ function generateConstraintCheck(
       break;
 
     case 'isPostalCode':
-      lines.push(`${indent}  if (typeof ${valueName} === 'string') {`);
+      lines.push(`${indent}  if (typeof ${valueName} !== 'string') {`);
+      lines.push(
+        `${indent}      ${errorsName}.isPostalCode = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be a valid postal code')};`,
+      );
+      lines.push(`${indent}  } else {`);
       if (constraint.value === 'US') {
         lines.push(`${indent}    const postalRegex = /^\\d{5}(-\\d{4})?$/;`);
       } else if (constraint.value === 'RU') {
@@ -1257,7 +1333,11 @@ function generateConstraintCheck(
       break;
 
     case 'isMongoId':
-      lines.push(`${indent}  if (typeof ${valueName} === 'string') {`);
+      lines.push(`${indent}  if (typeof ${valueName} !== 'string') {`);
+      lines.push(
+        `${indent}      ${errorsName}.isMongoId = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be a mongodb id')};`,
+      );
+      lines.push(`${indent}  } else {`);
       lines.push(`${indent}    const mongoIdRegex = /^[0-9a-fA-F]{24}$/;`);
       lines.push(`${indent}    if (!mongoIdRegex.test(${valueName})) {`);
       lines.push(
@@ -1268,7 +1348,11 @@ function generateConstraintCheck(
       break;
 
     case 'isJWT':
-      lines.push(`${indent}  if (typeof ${valueName} === 'string') {`);
+      lines.push(`${indent}  if (typeof ${valueName} !== 'string') {`);
+      lines.push(
+        `${indent}      ${errorsName}.isJWT = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be a jwt string')};`,
+      );
+      lines.push(`${indent}  } else {`);
       lines.push(`${indent}    const parts = ${valueName}.split('.');`);
       lines.push(`${indent}    if (parts.length !== 3 || !parts[0] || !parts[1]) {`);
       lines.push(
@@ -1288,7 +1372,11 @@ function generateConstraintCheck(
       break;
 
     case 'isStrongPassword':
-      lines.push(`${indent}  if (typeof ${valueName} === 'string') {`);
+      lines.push(`${indent}  if (typeof ${valueName} !== 'string') {`);
+      lines.push(
+        `${indent}      ${errorsName}.isStrongPassword = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be a strong password (min 8 chars, uppercase, lowercase, number, special char)')};`,
+      );
+      lines.push(`${indent}  } else {`);
       lines.push(`${indent}    const hasLower = /[a-z]/.test(${valueName});`);
       lines.push(`${indent}    const hasUpper = /[A-Z]/.test(${valueName});`);
       lines.push(`${indent}    const hasNumber = /[0-9]/.test(${valueName});`);
@@ -1305,7 +1393,11 @@ function generateConstraintCheck(
       break;
 
     case 'isPort':
-      lines.push(`${indent}  if (typeof ${valueName} === 'string') {`);
+      lines.push(`${indent}  if (typeof ${valueName} !== 'string') {`);
+      lines.push(
+        `${indent}      ${errorsName}.isPort = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be a valid port number')};`,
+      );
+      lines.push(`${indent}  } else {`);
       lines.push(`${indent}    const port = parseInt(${valueName}, 10);`);
       lines.push(`${indent}    if (isNaN(port) || port < 0 || port > 65535) {`);
       lines.push(
@@ -1316,7 +1408,11 @@ function generateConstraintCheck(
       break;
 
     case 'isMACAddress':
-      lines.push(`${indent}  if (typeof ${valueName} === 'string') {`);
+      lines.push(`${indent}  if (typeof ${valueName} !== 'string') {`);
+      lines.push(
+        `${indent}      ${errorsName}.isMACAddress = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be a MAC Address')};`,
+      );
+      lines.push(`${indent}  } else {`);
       lines.push(`${indent}    const macRegex = /^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$/;`);
       lines.push(`${indent}    if (!macRegex.test(${valueName})) {`);
       lines.push(
@@ -1327,7 +1423,11 @@ function generateConstraintCheck(
       break;
 
     case 'isBase64':
-      lines.push(`${indent}  if (typeof ${valueName} === 'string') {`);
+      lines.push(`${indent}  if (typeof ${valueName} !== 'string') {`);
+      lines.push(
+        `${indent}      ${errorsName}.isBase64 = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be base64 encoded')};`,
+      );
+      lines.push(`${indent}  } else {`);
       lines.push(
         `${indent}    const base64Regex = /^(?:[A-Za-z0-9+\\/]{4})*(?:[A-Za-z0-9+\\/]{2}==|[A-Za-z0-9+\\/]{3}=|[A-Za-z0-9+\\/]{2,3})?$/;`,
       );
@@ -1341,7 +1441,11 @@ function generateConstraintCheck(
 
     // Medium Priority Validators - Banking & Financial
     case 'isIBAN':
-      lines.push(`${indent}  if (typeof ${valueName} === 'string') {`);
+      lines.push(`${indent}  if (typeof ${valueName} !== 'string') {`);
+      lines.push(
+        `${indent}      ${errorsName}.isIBAN = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be a valid IBAN')};`,
+      );
+      lines.push(`${indent}  } else {`);
       lines.push(`${indent}    const ibanRegex = /^[A-Z]{2}[0-9]{2}[A-Z0-9]{1,30}$/;`);
       lines.push(`${indent}    if (!ibanRegex.test(${valueName})) {`);
       lines.push(
@@ -1352,7 +1456,11 @@ function generateConstraintCheck(
       break;
 
     case 'isBIC':
-      lines.push(`${indent}  if (typeof ${valueName} === 'string') {`);
+      lines.push(`${indent}  if (typeof ${valueName} !== 'string') {`);
+      lines.push(
+        `${indent}      ${errorsName}.isBIC = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be a valid BIC or SWIFT code')};`,
+      );
+      lines.push(`${indent}  } else {`);
       lines.push(`${indent}    const bicRegex = /^[A-Z]{6}[A-Z0-9]{2}([A-Z0-9]{3})?$/;`);
       lines.push(`${indent}    if (!bicRegex.test(${valueName})) {`);
       lines.push(
@@ -1363,7 +1471,11 @@ function generateConstraintCheck(
       break;
 
     case 'isCurrency':
-      lines.push(`${indent}  if (typeof ${valueName} === 'string') {`);
+      lines.push(`${indent}  if (typeof ${valueName} !== 'string') {`);
+      lines.push(
+        `${indent}      ${errorsName}.isCurrency = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be a valid currency amount')};`,
+      );
+      lines.push(`${indent}  } else {`);
       lines.push(
         `${indent}    const currencyRegex = /^[\\$€£¥₽]?\\s?[0-9]{1,3}(,[0-9]{3})*(\\.\\d{2})?$/;`,
       );
@@ -1376,7 +1488,11 @@ function generateConstraintCheck(
       break;
 
     case 'isISO4217CurrencyCode':
-      lines.push(`${indent}  if (typeof ${valueName} === 'string') {`);
+      lines.push(`${indent}  if (typeof ${valueName} !== 'string') {`);
+      lines.push(
+        `${indent}      ${errorsName}.isISO4217CurrencyCode = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be a valid ISO 4217 currency code')};`,
+      );
+      lines.push(`${indent}  } else {`);
       lines.push(`${indent}    const currencyCodeRegex = /^[A-Z]{3}$/;`);
       lines.push(`${indent}    if (!currencyCodeRegex.test(${valueName})) {`);
       lines.push(
@@ -1388,7 +1504,11 @@ function generateConstraintCheck(
 
     // Medium Priority Validators - Cryptocurrency
     case 'isEthereumAddress':
-      lines.push(`${indent}  if (typeof ${valueName} === 'string') {`);
+      lines.push(`${indent}  if (typeof ${valueName} !== 'string') {`);
+      lines.push(
+        `${indent}      ${errorsName}.isEthereumAddress = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be a valid Ethereum address')};`,
+      );
+      lines.push(`${indent}  } else {`);
       lines.push(`${indent}    const ethRegex = /^0x[a-fA-F0-9]{39,40}$/;`);
       lines.push(`${indent}    if (!ethRegex.test(${valueName})) {`);
       lines.push(
@@ -1399,7 +1519,11 @@ function generateConstraintCheck(
       break;
 
     case 'isBtcAddress':
-      lines.push(`${indent}  if (typeof ${valueName} === 'string') {`);
+      lines.push(`${indent}  if (typeof ${valueName} !== 'string') {`);
+      lines.push(
+        `${indent}      ${errorsName}.isBtcAddress = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be a valid Bitcoin address')};`,
+      );
+      lines.push(`${indent}  } else {`);
       lines.push(`${indent}    const btcRegex = /^(bc1|[13])[a-zA-HJ-NP-Z0-9]{25,62}$/;`);
       lines.push(`${indent}    if (!btcRegex.test(${valueName})) {`);
       lines.push(
@@ -1411,7 +1535,11 @@ function generateConstraintCheck(
 
     // Medium Priority Validators - Documents & Identifiers
     case 'isPassportNumber':
-      lines.push(`${indent}  if (typeof ${valueName} === 'string') {`);
+      lines.push(`${indent}  if (typeof ${valueName} !== 'string') {`);
+      lines.push(
+        `${indent}      ${errorsName}.isPassportNumber = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be a valid passport number')};`,
+      );
+      lines.push(`${indent}  } else {`);
       if (constraint.value === 'US') {
         lines.push(`${indent}    const passportRegex = /^[0-9]{9}$/;`);
       } else {
@@ -1426,7 +1554,11 @@ function generateConstraintCheck(
       break;
 
     case 'isIdentityCard':
-      lines.push(`${indent}  if (typeof ${valueName} === 'string') {`);
+      lines.push(`${indent}  if (typeof ${valueName} !== 'string') {`);
+      lines.push(
+        `${indent}      ${errorsName}.isIdentityCard = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be a valid identity card')};`,
+      );
+      lines.push(`${indent}  } else {`);
       lines.push(`${indent}    const idRegex = /^[A-Z0-9]{5,20}$/;`);
       lines.push(`${indent}    if (!idRegex.test(${valueName})) {`);
       lines.push(
@@ -1437,7 +1569,11 @@ function generateConstraintCheck(
       break;
 
     case 'isEAN':
-      lines.push(`${indent}  if (typeof ${valueName} === 'string') {`);
+      lines.push(`${indent}  if (typeof ${valueName} !== 'string') {`);
+      lines.push(
+        `${indent}      ${errorsName}.isEAN = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be a valid EAN')};`,
+      );
+      lines.push(`${indent}  } else {`);
       lines.push(`${indent}    const eanRegex = /^[0-9]{8}$|^[0-9]{13}$/;`);
       lines.push(`${indent}    if (!eanRegex.test(${valueName})) {`);
       lines.push(
@@ -1448,7 +1584,11 @@ function generateConstraintCheck(
       break;
 
     case 'isISIN':
-      lines.push(`${indent}  if (typeof ${valueName} === 'string') {`);
+      lines.push(`${indent}  if (typeof ${valueName} !== 'string') {`);
+      lines.push(
+        `${indent}      ${errorsName}.isISIN = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be a valid ISIN')};`,
+      );
+      lines.push(`${indent}  } else {`);
       lines.push(`${indent}    const isinRegex = /^[A-Z]{2}[A-Z0-9]{9}[0-9]$/;`);
       lines.push(`${indent}    if (!isinRegex.test(${valueName})) {`);
       lines.push(
@@ -1460,7 +1600,11 @@ function generateConstraintCheck(
 
     // Medium Priority Validators - Network & URI
     case 'isMagnetURI':
-      lines.push(`${indent}  if (typeof ${valueName} === 'string') {`);
+      lines.push(`${indent}  if (typeof ${valueName} !== 'string') {`);
+      lines.push(
+        `${indent}      ${errorsName}.isMagnetURI = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be a valid Magnet URI')};`,
+      );
+      lines.push(`${indent}  } else {`);
       lines.push(
         `${indent}    const magnetRegex = /^magnet:\\?xt=urn:[a-z0-9]+:[a-z0-9]{32,40}/i;`,
       );
@@ -1473,7 +1617,11 @@ function generateConstraintCheck(
       break;
 
     case 'isDataURI':
-      lines.push(`${indent}  if (typeof ${valueName} === 'string') {`);
+      lines.push(`${indent}  if (typeof ${valueName} !== 'string') {`);
+      lines.push(
+        `${indent}      ${errorsName}.isDataURI = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be a valid Data URI')};`,
+      );
+      lines.push(`${indent}  } else {`);
       lines.push(`${indent}    const dataUriRegex = /^data:([a-z]+\\/[a-z0-9-+.]+)?;base64,/i;`);
       lines.push(`${indent}    if (!dataUriRegex.test(${valueName})) {`);
       lines.push(
@@ -1485,7 +1633,11 @@ function generateConstraintCheck(
 
     // Medium Priority Validators - Localization
     case 'isISO31661Alpha2':
-      lines.push(`${indent}  if (typeof ${valueName} === 'string') {`);
+      lines.push(`${indent}  if (typeof ${valueName} !== 'string') {`);
+      lines.push(
+        `${indent}      ${errorsName}.isISO31661Alpha2 = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be a valid ISO 3166-1 alpha-2 country code')};`,
+      );
+      lines.push(`${indent}  } else {`);
       lines.push(`${indent}    const alpha2Regex = /^[A-Z]{2}$/;`);
       lines.push(`${indent}    if (!alpha2Regex.test(${valueName})) {`);
       lines.push(
@@ -1496,7 +1648,11 @@ function generateConstraintCheck(
       break;
 
     case 'isISO31661Alpha3':
-      lines.push(`${indent}  if (typeof ${valueName} === 'string') {`);
+      lines.push(`${indent}  if (typeof ${valueName} !== 'string') {`);
+      lines.push(
+        `${indent}      ${errorsName}.isISO31661Alpha3 = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be a valid ISO 3166-1 alpha-3 country code')};`,
+      );
+      lines.push(`${indent}  } else {`);
       lines.push(`${indent}    const alpha3Regex = /^[A-Z]{3}$/;`);
       lines.push(`${indent}    if (!alpha3Regex.test(${valueName})) {`);
       lines.push(
@@ -1507,7 +1663,11 @@ function generateConstraintCheck(
       break;
 
     case 'isLocale':
-      lines.push(`${indent}  if (typeof ${valueName} === 'string') {`);
+      lines.push(`${indent}  if (typeof ${valueName} !== 'string') {`);
+      lines.push(
+        `${indent}      ${errorsName}.isLocale = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be a valid locale')};`,
+      );
+      lines.push(`${indent}  } else {`);
       lines.push(`${indent}    const localeRegex = /^[a-z]{2}(-[A-Z]{2})?$/;`);
       lines.push(`${indent}    if (!localeRegex.test(${valueName})) {`);
       lines.push(
@@ -1519,7 +1679,11 @@ function generateConstraintCheck(
 
     // Medium Priority Validators - Formats & Standards
     case 'isSemVer':
-      lines.push(`${indent}  if (typeof ${valueName} === 'string') {`);
+      lines.push(`${indent}  if (typeof ${valueName} !== 'string') {`);
+      lines.push(
+        `${indent}      ${errorsName}.isSemVer = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be a valid semantic version')};`,
+      );
+      lines.push(`${indent}  } else {`);
       lines.push(
         `${indent}    const semverRegex = /^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$/;`,
       );
@@ -1532,7 +1696,11 @@ function generateConstraintCheck(
       break;
 
     case 'isMimeType':
-      lines.push(`${indent}  if (typeof ${valueName} === 'string') {`);
+      lines.push(`${indent}  if (typeof ${valueName} !== 'string') {`);
+      lines.push(
+        `${indent}      ${errorsName}.isMimeType = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be a valid MIME type')};`,
+      );
+      lines.push(`${indent}  } else {`);
       lines.push(`${indent}    const mimeRegex = /^[a-z]+\\/[a-z0-9\\-+.]+$/i;`);
       lines.push(`${indent}    if (!mimeRegex.test(${valueName})) {`);
       lines.push(
@@ -1543,7 +1711,11 @@ function generateConstraintCheck(
       break;
 
     case 'isTimeZone':
-      lines.push(`${indent}  if (typeof ${valueName} === 'string') {`);
+      lines.push(`${indent}  if (typeof ${valueName} !== 'string') {`);
+      lines.push(
+        `${indent}      ${errorsName}.isTimeZone = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be a valid timezone')};`,
+      );
+      lines.push(`${indent}  } else {`);
       lines.push(`${indent}    const timezoneRegex = /^[A-Z][a-zA-Z]+\\/[A-Z][a-zA-Z_]+$/;`);
       lines.push(`${indent}    if (!timezoneRegex.test(${valueName}) && ${valueName} !== 'UTC') {`);
       lines.push(
@@ -1554,7 +1726,11 @@ function generateConstraintCheck(
       break;
 
     case 'isRFC3339':
-      lines.push(`${indent}  if (typeof ${valueName} === 'string') {`);
+      lines.push(`${indent}  if (typeof ${valueName} !== 'string') {`);
+      lines.push(
+        `${indent}      ${errorsName}.isRFC3339 = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be a valid RFC 3339 date')};`,
+      );
+      lines.push(`${indent}  } else {`);
       lines.push(
         `${indent}    const rfc3339Regex = /^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?(Z|[+-]\\d{2}:\\d{2})$/;`,
       );
@@ -1569,7 +1745,7 @@ function generateConstraintCheck(
     // Number validators
     case 'isDivisibleBy':
       lines.push(
-        `${indent}  if (typeof ${valueName} === 'number' && ${valueName} % ${constraint.value} !== 0) {`,
+        `${indent}  if (typeof ${valueName} !== 'number' || ${valueName} % ${constraint.value} !== 0) {`,
       );
       lines.push(
         `${indent}    ${errorsName}.isDivisibleBy = ${emitMessage(constraint, constraintIndex, propertyName, valueName, `must be divisible by ${constraint.value}`)};`,
@@ -1578,7 +1754,11 @@ function generateConstraintCheck(
       break;
 
     case 'isDecimal':
-      lines.push(`${indent}  if (typeof ${valueName} === 'number') {`);
+      lines.push(`${indent}  if (typeof ${valueName} !== 'number') {`);
+      lines.push(
+        `${indent}      ${errorsName}.isDecimal = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be a decimal number')};`,
+      );
+      lines.push(`${indent}  } else {`);
       lines.push(`${indent}    if (Number.isInteger(${valueName})) {`);
       lines.push(
         `${indent}      ${errorsName}.isDecimal = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be a decimal number')};`,
@@ -1591,7 +1771,11 @@ function generateConstraintCheck(
     case 'minDate':
       if (constraint.value instanceof Date) {
         const minTime = constraint.value.getTime();
-        lines.push(`${indent}  if (${valueName} instanceof Date) {`);
+        lines.push(`${indent}  if (!(${valueName} instanceof Date)) {`);
+        lines.push(
+          `${indent}      ${errorsName}.minDate = ${emitMessage(constraint, constraintIndex, propertyName, valueName, `minimal allowed date is ${constraint.value.toISOString()}`)};`,
+        );
+        lines.push(`${indent}  } else {`);
         lines.push(`${indent}    if (${valueName}.getTime() < ${minTime}) {`);
         lines.push(
           `${indent}      ${errorsName}.minDate = ${emitMessage(constraint, constraintIndex, propertyName, valueName, `minimal allowed date is ${constraint.value.toISOString()}`)};`,
@@ -1604,7 +1788,11 @@ function generateConstraintCheck(
     case 'maxDate':
       if (constraint.value instanceof Date) {
         const maxTime = constraint.value.getTime();
-        lines.push(`${indent}  if (${valueName} instanceof Date) {`);
+        lines.push(`${indent}  if (!(${valueName} instanceof Date)) {`);
+        lines.push(
+          `${indent}      ${errorsName}.maxDate = ${emitMessage(constraint, constraintIndex, propertyName, valueName, `maximal allowed date is ${constraint.value.toISOString()}`)};`,
+        );
+        lines.push(`${indent}  } else {`);
         lines.push(`${indent}    if (${valueName}.getTime() > ${maxTime}) {`);
         lines.push(
           `${indent}      ${errorsName}.maxDate = ${emitMessage(constraint, constraintIndex, propertyName, valueName, `maximal allowed date is ${constraint.value.toISOString()}`)};`,
@@ -1690,7 +1878,11 @@ function generateConstraintCheck(
 
     // Geographic validators
     case 'isLatLong':
-      lines.push(`${indent}  if (typeof ${valueName} === 'string') {`);
+      lines.push(`${indent}  if (typeof ${valueName} !== 'string') {`);
+      lines.push(
+        `${indent}      ${errorsName}.isLatLong = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'must be a latitude,longitude string')};`,
+      );
+      lines.push(`${indent}  } else {`);
       lines.push(
         `${indent}    const latLongRegex = /^[-+]?([1-8]?\\d(\\.\\d+)?|90(\\.0+)?),\\s*[-+]?(180(\\.0+)?|((1[0-7]\\d)|([1-9]?\\d))(\\.\\d+)?)$/;`,
       );
@@ -1703,37 +1895,51 @@ function generateConstraintCheck(
       break;
 
     case 'isLatitude':
-      lines.push(`${indent}  if (typeof ${valueName} === 'number') {`);
+      // Accepts a number or a numeric string; anything else cannot be measured.
+      lines.push(
+        `${indent}  if (typeof ${valueName} !== 'number' && typeof ${valueName} !== 'string') {`,
+      );
+      lines.push(
+        `${indent}      ${errorsName}.isLatitude = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'latitude must be a number between -90 and 90')};`,
+      );
+      lines.push(`${indent}  } else if (typeof ${valueName} === 'number') {`);
       lines.push(`${indent}    if (${valueName} < -90 || ${valueName} > 90) {`);
       lines.push(
         `${indent}      ${errorsName}.isLatitude = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'latitude must be a number between -90 and 90')};`,
       );
       lines.push(`${indent}    }`);
-      lines.push(`    } else if (typeof ${valueName} === 'string') {`);
-      lines.push(`${indent}    const lat = parseFloat(${valueName});`);
-      lines.push(`${indent}    if (isNaN(lat) || lat < -90 || lat > 90) {`);
+      lines.push(`${indent}  } else {`);
+      lines.push(`${indent}    const parsed = parseFloat(${valueName});`);
+      lines.push(`${indent}    if (isNaN(parsed) || parsed < -90 || parsed > 90) {`);
       lines.push(
         `${indent}      ${errorsName}.isLatitude = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'latitude must be a number between -90 and 90')};`,
       );
       lines.push(`${indent}    }`);
-      lines.push(`    }`);
+      lines.push(`${indent}  }`);
       break;
 
     case 'isLongitude':
-      lines.push(`${indent}  if (typeof ${valueName} === 'number') {`);
+      // Accepts a number or a numeric string; anything else cannot be measured.
+      lines.push(
+        `${indent}  if (typeof ${valueName} !== 'number' && typeof ${valueName} !== 'string') {`,
+      );
+      lines.push(
+        `${indent}      ${errorsName}.isLongitude = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'longitude must be a number between -180 and 180')};`,
+      );
+      lines.push(`${indent}  } else if (typeof ${valueName} === 'number') {`);
       lines.push(`${indent}    if (${valueName} < -180 || ${valueName} > 180) {`);
       lines.push(
         `${indent}      ${errorsName}.isLongitude = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'longitude must be a number between -180 and 180')};`,
       );
       lines.push(`${indent}    }`);
-      lines.push(`    } else if (typeof ${valueName} === 'string') {`);
-      lines.push(`${indent}    const lon = parseFloat(${valueName});`);
-      lines.push(`${indent}    if (isNaN(lon) || lon < -180 || lon > 180) {`);
+      lines.push(`${indent}  } else {`);
+      lines.push(`${indent}    const parsed = parseFloat(${valueName});`);
+      lines.push(`${indent}    if (isNaN(parsed) || parsed < -180 || parsed > 180) {`);
       lines.push(
         `${indent}      ${errorsName}.isLongitude = ${emitMessage(constraint, constraintIndex, propertyName, valueName, 'longitude must be a number between -180 and 180')};`,
       );
       lines.push(`${indent}    }`);
-      lines.push(`    }`);
+      lines.push(`${indent}  }`);
       break;
 
     case 'custom':
