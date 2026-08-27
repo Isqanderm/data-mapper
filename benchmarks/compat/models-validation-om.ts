@@ -12,7 +12,7 @@ import {
   IsOptional,
   IsEmail,
   ValidateNested,
-} from '@om-data-mapper/class-validator';
+} from '@tech-pioneer/data-mapper-class-validator';
 
 export class OmSimpleUser {
   @IsString()

@@ -11,8 +11,8 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { validateSync } from '@om-data-mapper/class-validator';
-import { plainToInstance } from '@om-data-mapper/class-transformer';
+import { validateSync } from '@tech-pioneer/data-mapper-class-validator';
+import { plainToInstance } from '@tech-pioneer/data-mapper-class-transformer';
 import {
   IsString,
   IsEmail,
@@ -24,8 +24,8 @@ import {
   ValidateNested,
   IsArray,
   IsNotEmpty,
-} from '@om-data-mapper/class-validator';
-import { Type } from '@om-data-mapper/class-transformer';
+} from '@tech-pioneer/data-mapper-class-validator';
+import { Type } from '@tech-pioneer/data-mapper-class-transformer';
 
 /**
  * Maximum memory a test may retain after its operations and a forced collection.

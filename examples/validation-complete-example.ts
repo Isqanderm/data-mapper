@@ -33,7 +33,7 @@ import {
   type ValidatorConstraintInterface,
   type ValidationArguments,
   Validate,
-} from '@om-data-mapper/class-validator';
+} from '@tech-pioneer/data-mapper-class-validator';
 
 // ============================================================================
 // CUSTOM VALIDATORS

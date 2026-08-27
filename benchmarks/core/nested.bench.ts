@@ -1,5 +1,5 @@
 import { bench, describe } from 'vitest';
-import { Mapper, Map as MapProp, MapFrom, createMapper } from '@om-data-mapper/core';
+import { Mapper, Map as MapProp, MapFrom, createMapper } from '@tech-pioneer/data-mapper-core';
 
 interface NestedSource {
   level1: {

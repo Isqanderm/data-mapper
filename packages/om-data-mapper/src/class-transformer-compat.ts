@@ -1,1 +1,1 @@
-export * from '@om-data-mapper/class-transformer';
+export * from '@tech-pioneer/data-mapper-class-transformer';

@@ -1,6 +1,6 @@
 /**
  * Honest transformation comparison: om-data-mapper's own decorators
- * (@om-data-mapper/class-transformer) vs real upstream class-transformer.
+ * (@tech-pioneer/data-mapper-class-transformer) vs real upstream class-transformer.
  *
  * Why "honest": see validation.bench.ts for the general rationale (an
  * engine silently no-op'ing on foreign decorator metadata can look
@@ -36,7 +36,7 @@ import { bench, describe } from 'vitest';
 import {
   plainToInstance as omPlainToInstance,
   instanceToPlain as omInstanceToPlain,
-} from '@om-data-mapper/class-transformer';
+} from '@tech-pioneer/data-mapper-class-transformer';
 import {
   plainToInstance as ctPlainToInstance,
   instanceToPlain as ctInstanceToPlain,

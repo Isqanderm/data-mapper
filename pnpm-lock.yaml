@@ -50,13 +50,13 @@ importers:
 
   benchmarks:
     devDependencies:
-      '@om-data-mapper/class-transformer':
+      '@tech-pioneer/data-mapper-class-transformer':
         specifier: workspace:*
         version: link:../packages/class-transformer
-      '@om-data-mapper/class-validator':
+      '@tech-pioneer/data-mapper-class-validator':
         specifier: workspace:*
         version: link:../packages/class-validator
-      '@om-data-mapper/core':
+      '@tech-pioneer/data-mapper-core':
         specifier: workspace:*
         version: link:../packages/core
       class-transformer:
@@ -74,10 +74,10 @@ importers:
 
   examples:
     dependencies:
-      '@om-data-mapper/class-validator':
+      '@tech-pioneer/data-mapper-class-validator':
         specifier: workspace:*
         version: link:../packages/class-validator
-      '@om-data-mapper/core':
+      '@tech-pioneer/data-mapper-core':
         specifier: workspace:*
         version: link:../packages/core
       om-data-mapper:
@@ -92,7 +92,7 @@ importers:
 
   packages/class-validator:
     devDependencies:
-      '@om-data-mapper/class-transformer':
+      '@tech-pioneer/data-mapper-class-transformer':
         specifier: workspace:^
         version: link:../class-transformer
 
@@ -100,13 +100,13 @@ importers:
 
   packages/om-data-mapper:
     dependencies:
-      '@om-data-mapper/class-transformer':
+      '@tech-pioneer/data-mapper-class-transformer':
         specifier: workspace:^
         version: link:../class-transformer
-      '@om-data-mapper/class-validator':
+      '@tech-pioneer/data-mapper-class-validator':
         specifier: workspace:^
         version: link:../class-validator
-      '@om-data-mapper/core':
+      '@tech-pioneer/data-mapper-core':
         specifier: workspace:^
         version: link:../core
 

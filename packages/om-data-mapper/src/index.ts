@@ -1,1 +1,1 @@
-export * from '@om-data-mapper/core';
+export * from '@tech-pioneer/data-mapper-core';

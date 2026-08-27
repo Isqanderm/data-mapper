@@ -17,7 +17,7 @@ import {
   plainToInstanceArray,
   tryPlainToInstance,
   getMapper,
-} from '@om-data-mapper/core';
+} from '@tech-pioneer/data-mapper-core';
 
 // ============================================================================
 // Example 1: Basic Usage with plainToInstance

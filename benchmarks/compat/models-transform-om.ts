@@ -6,7 +6,7 @@
  * docs/compat-class-transformer.md ("Class-level @Expose / @Exclude") —
  * only field-level decorators are used here.
  */
-import { Expose, Exclude, Type } from '@om-data-mapper/class-transformer';
+import { Expose, Exclude, Type } from '@tech-pioneer/data-mapper-class-transformer';
 
 export class OmAddress {
   @Expose()

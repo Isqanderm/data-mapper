@@ -1,1 +1,1 @@
-export * from '@om-data-mapper/class-validator';
+export * from '@tech-pioneer/data-mapper-class-validator';

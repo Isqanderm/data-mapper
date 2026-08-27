@@ -1,6 +1,6 @@
 /**
  * Honest validation comparison: om-data-mapper's own decorators
- * (@om-data-mapper/class-validator) vs real upstream class-validator.
+ * (@tech-pioneer/data-mapper-class-validator) vs real upstream class-validator.
  *
  * Why "honest": an earlier (v4) benchmark fed class-validator-decorated
  * classes straight into om's engine. om's engine looks for its OWN
@@ -23,7 +23,7 @@ import { bench, describe } from 'vitest';
 import {
   validateSync as omValidateSync,
   type ValidationError as OmValidationError,
-} from '@om-data-mapper/class-validator';
+} from '@tech-pioneer/data-mapper-class-validator';
 import { validateSync as cvValidateSync } from 'class-validator';
 import type { ValidationError as CvValidationError } from 'class-validator';
 import { OmSimpleUser, OmOptionalUser, OmAddress, OmUserWithAddress } from './models-validation-om';

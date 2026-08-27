@@ -1,7 +1,7 @@
 {
   "name": "om-data-mapper",
   "version": "5.0.0",
-  "description": "High-performance TypeScript/JavaScript data mapper and validator with JIT compilation. Meta-package: re-exports @om-data-mapper/core and the class-transformer / class-validator compatibility adapters.",
+  "description": "High-performance TypeScript/JavaScript data mapper and validator with JIT compilation. Meta-package: re-exports @tech-pioneer/data-mapper-core and the class-transformer / class-validator compatibility adapters.",
   "license": "MIT",
   "author": "Isqanderm <aleksandr.melnik.personal@gmail.com> (https://www.linkedin.com/in/isqander-melnik)",
   "repository": {
@@ -45,9 +45,9 @@
     "test:esm": "node test/esm-post-install-simulation.test.mjs"
   },
   "dependencies": {
-    "@om-data-mapper/core": "workspace:^",
-    "@om-data-mapper/class-transformer": "workspace:^",
-    "@om-data-mapper/class-validator": "workspace:^"
+    "@tech-pioneer/data-mapper-core": "workspace:^",
+    "@tech-pioneer/data-mapper-class-transformer": "workspace:^",
+    "@tech-pioneer/data-mapper-class-validator": "workspace:^"
   },
   "engines": {
     "node": ">=18.0.0"

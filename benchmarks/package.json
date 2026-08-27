@@ -10,9 +10,9 @@
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
-    "@om-data-mapper/core": "workspace:*",
-    "@om-data-mapper/class-transformer": "workspace:*",
-    "@om-data-mapper/class-validator": "workspace:*",
+    "@tech-pioneer/data-mapper-core": "workspace:*",
+    "@tech-pioneer/data-mapper-class-transformer": "workspace:*",
+    "@tech-pioneer/data-mapper-class-validator": "workspace:*",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.2",
     "reflect-metadata": "^0.2.2",

@@ -4,8 +4,8 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { validate, validateSync } from '@om-data-mapper/class-validator';
-import { plainToInstance } from '@om-data-mapper/class-transformer';
+import { validate, validateSync } from '@tech-pioneer/data-mapper-class-validator';
+import { plainToInstance } from '@tech-pioneer/data-mapper-class-transformer';
 import {
   IsString,
   IsEmail,
@@ -17,8 +17,8 @@ import {
   ValidateNested,
   IsArray,
   IsNotEmpty,
-} from '@om-data-mapper/class-validator';
-import { Type } from '@om-data-mapper/class-transformer';
+} from '@tech-pioneer/data-mapper-class-validator';
+import { Type } from '@tech-pioneer/data-mapper-class-transformer';
 
 // Baseline performance values (in milliseconds)
 // These should be updated when intentional performance improvements are made

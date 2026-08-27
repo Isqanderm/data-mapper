@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * ESM Runtime Smoke Test — @om-data-mapper/class-transformer
+ * ESM Runtime Smoke Test — @tech-pioneer/data-mapper-class-transformer
  *
  * Catches exactly the bug class that shipped broken once: a `require()`
  * call inside TransformClassToPlain / TransformClassToClass /
@@ -29,7 +29,7 @@ import { strict as assert } from 'assert';
 console.log('🧪 class-transformer ESM Runtime Smoke Test\n');
 
 const { plainToInstance, TransformClassToPlain, TransformClassToClass, TransformPlainToClass } =
-  await import('@om-data-mapper/class-transformer');
+  await import('@tech-pioneer/data-mapper-class-transformer');
 
 // Minimal TC39 method-decorator context. None of the three decorators under
 // test read `name` or call `addInitializer`, but both are provided to match

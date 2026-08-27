@@ -1,5 +1,5 @@
 {
-  "name": "@om-data-mapper/class-transformer",
+  "name": "@tech-pioneer/data-mapper-class-transformer",
   "version": "1.0.0",
   "description": "class-transformer compatibility adapter for om-data-mapper: Expose/Exclude/Type/Transform decorators and plainToInstance on TC39 decorator metadata, zero dependencies.",
   "license": "MIT",

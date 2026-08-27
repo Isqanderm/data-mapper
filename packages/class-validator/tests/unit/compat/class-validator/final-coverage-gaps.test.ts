@@ -5,7 +5,7 @@
 
 import { describe, it, expect } from 'vitest';
 import { IsUUID, IsIP, validateSync } from '../../../../src';
-import { Type } from '@om-data-mapper/class-transformer';
+import { Type } from '@tech-pioneer/data-mapper-class-transformer';
 import { ValidateNested } from '../../../../src/decorators/nested';
 
 describe('Final Coverage Gaps', () => {

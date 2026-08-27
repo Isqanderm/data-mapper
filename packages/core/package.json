@@ -1,5 +1,5 @@
 {
-  "name": "@om-data-mapper/core",
+  "name": "@tech-pioneer/data-mapper-core",
   "version": "1.0.0",
   "description": "High-performance TypeScript/JavaScript data mapper with JIT compilation. TC39 decorators, zero dependencies.",
   "license": "MIT",

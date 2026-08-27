@@ -19,7 +19,7 @@ import {
   MaxLength,
   Min,
 } from '../../../../src/decorators';
-import { Type } from '@om-data-mapper/class-transformer';
+import { Type } from '@tech-pioneer/data-mapper-class-transformer';
 
 describe('Complex Combinations - Optional + Groups', () => {
   it('should handle optional with groups and constraint with different groups', async () => {

@@ -9,8 +9,8 @@
   },
   "dependencies": {
     "om-data-mapper": "workspace:*",
-    "@om-data-mapper/core": "workspace:*",
-    "@om-data-mapper/class-validator": "workspace:*"
+    "@tech-pioneer/data-mapper-core": "workspace:*",
+    "@tech-pioneer/data-mapper-class-validator": "workspace:*"
   },
   "devDependencies": {
     "typescript": "^5.3.3"
