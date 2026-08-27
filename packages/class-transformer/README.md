@@ -1,11 +1,11 @@
-# @om-data-mapper/class-transformer
+# @tech-pioneer/data-mapper-class-transformer
 
 class-transformer compatibility adapter for om-data-mapper: Expose/Exclude/Type/Transform
 decorators and plainToInstance on TC39 decorator metadata.
 
 This package is a standalone compat adapter for the supported subset of `class-transformer`'s
 API — it is not a fork or a wrapper around the upstream package, and it does not depend on
-`@om-data-mapper/core`. Metadata is registered once at class definition via TC39 decorators;
+`@tech-pioneer/data-mapper-core`. Metadata is registered once at class definition via TC39 decorators;
 transformation walks that metadata at call time — there is no per-call decorator re-evaluation
 and no `reflect-metadata` dependency. It has zero runtime dependencies and ships dual CJS and ESM
 builds. It is a **drop-in replacement for the supported subset** of `class-transformer`, not a
@@ -14,13 +14,13 @@ claim of full parity — see the compatibility table linked below before migrati
 ## Install
 
 ```bash
-npm install @om-data-mapper/class-transformer
+npm install @tech-pioneer/data-mapper-class-transformer
 ```
 
 ## Quick start
 
 ```ts
-import { plainToClass, Expose, Type } from '@om-data-mapper/class-transformer';
+import { plainToClass, Expose, Type } from '@tech-pioneer/data-mapper-class-transformer';
 
 class Address {
   @Expose() street!: string;

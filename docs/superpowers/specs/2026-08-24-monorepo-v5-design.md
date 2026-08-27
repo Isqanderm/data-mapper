@@ -3,6 +3,13 @@
 **Date:** 2026-08-24
 **Status:** Approved
 
+**Amendment (2026-08-27):** the scoped packages ship as
+`@tech-pioneer/data-mapper-*` rather than `@om-data-mapper/*` — the
+`@tech-pioneer` npm namespace already exists, so nothing has to be
+registered before Phase 5. This document is updated throughout; the
+Phase 0-4 plans under `docs/superpowers/plans/` still name the old
+scope and are left as the historical record of what was executed.
+
 ## Goal
 
 Revive the project to a state where it can be honestly promoted:
@@ -51,7 +58,7 @@ Broken:
 
 | Decision    | Choice                                                                                                                                                                        |
 | ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| npm naming  | `om-data-mapper` becomes a **meta-package** re-exporting everything; core lives at `@om-data-mapper/core`                                                                     |
+| npm naming  | `om-data-mapper` becomes a **meta-package** re-exporting everything; core lives at `@tech-pioneer/data-mapper-core`                                                           |
 | Tooling     | **pnpm workspaces + changesets**; semantic-release removed                                                                                                                    |
 | Package set | **4 packages**: core, class-transformer, class-validator (engine included), meta. NestJS adapter deferred                                                                     |
 | Order       | **Structure first**, then compat honesty, then benchmarks, then docs, then release                                                                                            |
@@ -61,9 +68,9 @@ Broken:
 
 ```
 packages/
-  core/                @om-data-mapper/core          # src/core + src/decorators
-  class-transformer/   @om-data-mapper/class-transformer  # depends on core
-  class-validator/     @om-data-mapper/class-validator    # own validation engine
+  core/                @tech-pioneer/data-mapper-core          # src/core + src/decorators
+  class-transformer/   @tech-pioneer/data-mapper-class-transformer  # depends on core
+  class-validator/     @tech-pioneer/data-mapper-class-validator    # own validation engine
   om-data-mapper/      om-data-mapper                # meta: re-exports all three
 ```
 
@@ -89,8 +96,8 @@ packages/
   `.augment/`, committed `build-*` artifacts, legacy
   `benchmarks/package.json`.
 - **Phase 1 — monorepo:** move code without behavior change; all 518
-  tests green in the new structure; no publish. Register the
-  `@om-data-mapper` npm scope/org first.
+  tests green in the new structure; no publish. Publish under the
+  existing `@tech-pioneer` npm namespace — no new org to register.
 - **Phase 2 — compat honesty:** implement the 7 ValidatorOptions in the
   compiler, function-form `message`, `registerDecorator` +
   `getMetadataStorage`, `ValidationError.target/value`. In
@@ -105,7 +112,7 @@ packages/
   moved to `docs/`; v4→v5 migration guide; sync `docs-ru/`.
 - **Phase 5 — release & revival:** publish all 4 packages; merge
   dependabot PRs; decide PR #21 (candidate for a future
-  `@om-data-mapper/nestjs`); then promotion.
+  `@tech-pioneer/data-mapper-nestjs`); then promotion.
 
 ## Risks
 
@@ -114,5 +121,9 @@ packages/
 - **Behavior change in Phase 2** (`whitelist` starts actually
   stripping fields) may break users who relied on the no-op — recorded
   in the changelog as a bugfix shipped under a major (5.0.0).
-- **npm scope** `@om-data-mapper` must be registered before Phase 1
-  completes; verify availability early.
+- **npm scope** — resolved: the packages ship under the pre-existing
+  `@tech-pioneer` namespace as `@tech-pioneer/data-mapper-*`, so no org
+  registration blocks Phase 5. The meta-package keeps its published
+  unscoped name `om-data-mapper` so 4.x installs upgrade in place. What
+  remains manual before publishing: `npm login`, and an `NPM_TOKEN` with
+  publish rights for `@tech-pioneer`.

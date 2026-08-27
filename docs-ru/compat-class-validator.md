@@ -1,6 +1,6 @@
 # Совместимость с class-validator
 
-Статус `@om-data-mapper/class-validator` относительно `class-validator@0.14`.
+Статус `@tech-pioneer/data-mapper-class-validator` относительно `class-validator@0.14`.
 
 Эта таблица сгенерирована на основе чтения текущего исходного кода
 (`packages/class-validator/src`), а не документации апстрима. Если
@@ -108,7 +108,7 @@ import {
   registerDecorator,
   type ValidationArguments,
   type ValidationDecoratorOptions,
-} from '@om-data-mapper/class-validator';
+} from '@tech-pioneer/data-mapper-class-validator';
 
 function IsLongerThan(property: string, options?: ValidationDecoratorOptions) {
   return function (_: undefined, context: ClassFieldDecoratorContext) {

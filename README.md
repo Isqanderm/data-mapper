@@ -24,12 +24,12 @@ runtime dependencies, and every package ships dual CJS and ESM builds.
 
 This is a monorepo of four npm packages:
 
-| Package                                                                       | Version | Description                                                                                               |
-| ----------------------------------------------------------------------------- | ------- | --------------------------------------------------------------------------------------------------------- |
-| [`om-data-mapper`](./packages/om-data-mapper/README.md)                       | 5.x     | Meta-package — re-exports `@om-data-mapper/core` plus the class-transformer and class-validator adapters. |
-| [`@om-data-mapper/core`](./packages/core/README.md)                           | 1.x     | The decorator API: `@Mapper`, `@Map`, `@MapFrom`, `@Transform`, `@MapWith`, `@Default`, `@Ignore`.        |
-| [`@om-data-mapper/class-transformer`](./packages/class-transformer/README.md) | 1.x     | Compatibility adapter for `class-transformer` — `Expose`/`Exclude`/`Type`/`Transform`, `plainToInstance`. |
-| [`@om-data-mapper/class-validator`](./packages/class-validator/README.md)     | 1.x     | Compatibility adapter for `class-validator` — its own JIT validation engine, ~90 decorators.              |
+| Package                                                                                 | Version | Description                                                                                                         |
+| --------------------------------------------------------------------------------------- | ------- | ------------------------------------------------------------------------------------------------------------------- |
+| [`om-data-mapper`](./packages/om-data-mapper/README.md)                                 | 5.x     | Meta-package — re-exports `@tech-pioneer/data-mapper-core` plus the class-transformer and class-validator adapters. |
+| [`@tech-pioneer/data-mapper-core`](./packages/core/README.md)                           | 1.x     | The decorator API: `@Mapper`, `@Map`, `@MapFrom`, `@Transform`, `@MapWith`, `@Default`, `@Ignore`.                  |
+| [`@tech-pioneer/data-mapper-class-transformer`](./packages/class-transformer/README.md) | 1.x     | Compatibility adapter for `class-transformer` — `Expose`/`Exclude`/`Type`/`Transform`, `plainToInstance`.           |
+| [`@tech-pioneer/data-mapper-class-validator`](./packages/class-validator/README.md)     | 1.x     | Compatibility adapter for `class-validator` — its own JIT validation engine, ~90 decorators.                        |
 
 ## Installation
 
@@ -41,9 +41,9 @@ npm install om-data-mapper
 directly:
 
 ```bash
-npm install @om-data-mapper/core
-npm install @om-data-mapper/class-transformer
-npm install @om-data-mapper/class-validator
+npm install @tech-pioneer/data-mapper-core
+npm install @tech-pioneer/data-mapper-class-transformer
+npm install @tech-pioneer/data-mapper-class-validator
 ```
 
 ## Quick start
@@ -76,7 +76,7 @@ const dto = plainToInstance<Employee, EmployeeDTO>(EmployeeMapper, employee);
 ### class-transformer compatibility
 
 ```ts
-import { plainToClass, Expose, Type } from '@om-data-mapper/class-transformer';
+import { plainToClass, Expose, Type } from '@tech-pioneer/data-mapper-class-transformer';
 
 class Address {
   @Expose() street!: string;
@@ -101,7 +101,7 @@ const user = plainToClass(User, {
 ### class-validator compatibility
 
 ```ts
-import { IsString, MinLength, validate } from '@om-data-mapper/class-validator';
+import { IsString, MinLength, validate } from '@tech-pioneer/data-mapper-class-validator';
 
 class UserDto {
   @IsString()

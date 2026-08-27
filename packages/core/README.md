@@ -1,4 +1,4 @@
-# @om-data-mapper/core
+# @tech-pioneer/data-mapper-core
 
 High-performance TypeScript/JavaScript data mapper with JIT compilation. TC39 decorators, zero
 dependencies.
@@ -9,7 +9,7 @@ dependencies and ships dual CJS and ESM builds.
 
 ## TC39 decorators
 
-`@om-data-mapper/core` uses TC39 Stage 3 decorators, not the legacy `experimentalDecorators`
+`@tech-pioneer/data-mapper-core` uses TC39 Stage 3 decorators, not the legacy `experimentalDecorators`
 flag. You do not need `"experimentalDecorators": true` in `tsconfig.json` — the package works
 with the standard decorator proposal and requires `"useDefineForClassFields": true` (the default
 under modern `target`s).
@@ -17,13 +17,13 @@ under modern `target`s).
 ## Install
 
 ```bash
-npm install @om-data-mapper/core
+npm install @tech-pioneer/data-mapper-core
 ```
 
 ## Quick start
 
 ```ts
-import { Mapper, Map, MapFrom, plainToInstance } from '@om-data-mapper/core';
+import { Mapper, Map, MapFrom, plainToInstance } from '@tech-pioneer/data-mapper-core';
 
 type Employee = { name: string; email: string; age: number };
 type EmployeeDTO = { fullName: string; emailAddress: string; isAdult: boolean };

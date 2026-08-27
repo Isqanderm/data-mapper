@@ -1,6 +1,6 @@
 # Совместимость с class-transformer
 
-Статус `@om-data-mapper/class-transformer` относительно `class-transformer@0.5`.
+Статус `@tech-pioneer/data-mapper-class-transformer` относительно `class-transformer@0.5`.
 
 Эта таблица сгенерирована на основе чтения текущего исходного кода
 (`packages/class-transformer/src`), а не документации апстрима. Если
@@ -21,7 +21,7 @@
 | enableCircularCheck      | ❌ удалено | не реализовано; этот движок не выполняет обнаружение циклических ссылок во время трансформации                                                                                                                                                                                                                  |
 | exposeUnsetFields        | ❌ удалено | не реализовано                                                                                                                                                                                                                                                                                                  |
 | targetMaps               | ❌ удалено | не реализовано                                                                                                                                                                                                                                                                                                  |
-| enableValidation         | ❌ удалено | не реализовано — этот пакет не выполняет валидацию; используйте `@om-data-mapper/class-validator` отдельно                                                                                                                                                                                                      |
+| enableValidation         | ❌ удалено | не реализовано — этот пакет не выполняет валидацию; используйте `@tech-pioneer/data-mapper-class-validator` отдельно                                                                                                                                                                                            |
 
 ## Функции
 

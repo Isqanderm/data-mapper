@@ -9,22 +9,22 @@ top-level import keeps working.
 
 ## Package layout
 
-| Package                             | Version | What it is                                                                        |
-| ----------------------------------- | ------- | --------------------------------------------------------------------------------- |
-| `om-data-mapper`                    | 5.0.0   | Meta-package. Re-exports `@om-data-mapper/core` and keeps the v4 compat subpaths. |
-| `@om-data-mapper/core`              | 1.0.0   | The mapper/transformer engine (JIT compilation, decorators, core types).          |
-| `@om-data-mapper/class-transformer` | 1.0.0   | `class-transformer`-compatible API, standalone (does not depend on core).         |
-| `@om-data-mapper/class-validator`   | 1.0.0   | `class-validator`-compatible API, with its own validation engine.                 |
+| Package                                       | Version | What it is                                                                                  |
+| --------------------------------------------- | ------- | ------------------------------------------------------------------------------------------- |
+| `om-data-mapper`                              | 5.0.0   | Meta-package. Re-exports `@tech-pioneer/data-mapper-core` and keeps the v4 compat subpaths. |
+| `@tech-pioneer/data-mapper-core`              | 1.0.0   | The mapper/transformer engine (JIT compilation, decorators, core types).                    |
+| `@tech-pioneer/data-mapper-class-transformer` | 1.0.0   | `class-transformer`-compatible API, standalone (does not depend on core).                   |
+| `@tech-pioneer/data-mapper-class-validator`   | 1.0.0   | `class-validator`-compatible API, with its own validation engine.                           |
 
-The scoped packages (`@om-data-mapper/core`, `@om-data-mapper/class-transformer`,
-`@om-data-mapper/class-validator`) can be installed individually if you only
+The scoped packages (`@tech-pioneer/data-mapper-core`, `@tech-pioneer/data-mapper-class-transformer`,
+`@tech-pioneer/data-mapper-class-validator`) can be installed individually if you only
 need part of the functionality — this gives you a smaller dependency
 footprint than pulling in the `om-data-mapper` meta-package.
 
 ## Imports
 
 **Unchanged** — importing from the meta-package keeps working, because it
-re-exports `@om-data-mapper/core`:
+re-exports `@tech-pioneer/data-mapper-core`:
 
 ```typescript
 import { Mapper, Map } from 'om-data-mapper';
@@ -45,11 +45,11 @@ Optionally, migrate those two to the scoped packages directly — same API,
 one less indirection:
 
 ```typescript
-import { plainToInstance, Type } from '@om-data-mapper/class-transformer';
+import { plainToInstance, Type } from '@tech-pioneer/data-mapper-class-transformer';
 ```
 
 ```typescript
-import { validate, IsString } from '@om-data-mapper/class-validator';
+import { validate, IsString } from '@tech-pioneer/data-mapper-class-validator';
 ```
 
 ## Behavior changes in the class-validator adapter
@@ -94,7 +94,7 @@ upstream-matching, stricter behavior. See
 
 **NestJS note:** `ValidationPipe`'s default options
 (`whitelist`, `forbidNonWhitelisted`, and friends) now take effect for real.
-If you use `@om-data-mapper/class-validator` (or the `class-validator-compat`
+If you use `@tech-pioneer/data-mapper-class-validator` (or the `class-validator-compat`
 alias) behind NestJS's `ValidationPipe` with its defaults, upgrading to v5
 may start stripping or rejecting properties that previously passed through
 untouched — review your DTOs.
@@ -223,7 +223,7 @@ the supported subset described in those tables.
 - [ ] Bump `om-data-mapper` (or the scoped packages you use) to the v5
       versions.
 - [ ] Optionally switch from the meta-package to the scoped
-      `@om-data-mapper/*` packages you actually use, for a smaller
+      `@tech-pioneer/data-mapper-*` packages you actually use, for a smaller
       dependency footprint.
 - [ ] Audit any code that passes `whitelist: true` (directly, or via
       NestJS `ValidationPipe` defaults) — it now actually strips unknown

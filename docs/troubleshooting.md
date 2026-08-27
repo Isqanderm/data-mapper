@@ -160,7 +160,7 @@ import { plainToClass, Expose, Type } from 'class-transformer';
 // After:
 import { plainToClass, Expose, Type } from 'om-data-mapper/class-transformer-compat';
 // or, from the standalone package:
-// import { plainToClass, Expose, Type } from '@om-data-mapper/class-transformer';
+// import { plainToClass, Expose, Type } from '@tech-pioneer/data-mapper-class-transformer';
 ```
 
 **Solution 2:** Remove the `reflect-metadata` import — it isn't needed:

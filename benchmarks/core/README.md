@@ -1,6 +1,6 @@
 # Core Benchmarks
 
-Benchmarks for `@om-data-mapper/core`'s mapping engine, each compared against
+Benchmarks for `@tech-pioneer/data-mapper-core`'s mapping engine, each compared against
 a hand-written vanilla JavaScript baseline for the same transformation. There
 is no upstream library equivalent to core mapping, so every scenario here is
 om vs. vanilla, not om vs. a third-party competitor — see the
@@ -50,7 +50,7 @@ pnpm --filter benchmarks exec vitest bench core/ --watch
 
    ```typescript
    import { bench, describe } from 'vitest';
-   import { Mapper, createMapper } from '@om-data-mapper/core';
+   import { Mapper, createMapper } from '@tech-pioneer/data-mapper-core';
    ```
 
 3. Write a hand-written vanilla equivalent of whatever transform you're
@@ -64,7 +64,7 @@ pnpm --filter benchmarks exec vitest bench core/ --watch
 ## Troubleshooting
 
 - **Nothing runs / import errors**: run `pnpm -r build` from the repo root
-  first — the bench scripts depend on the built `@om-data-mapper/core`
+  first — the bench scripts depend on the built `@tech-pioneer/data-mapper-core`
   package, and `pnpm bench` / `pnpm bench:core` do this automatically.
 - **Inconsistent results across runs**: close other applications, avoid
   running benchmarks under CPU frequency scaling, and re-run rather than

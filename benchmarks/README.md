@@ -8,13 +8,13 @@ below, which also states the rules the root README's dated snapshot follows.
 
 ## Structure
 
-- `core/` — om's core mapping engine (`@om-data-mapper/core`) against a
+- `core/` — om's core mapping engine (`@tech-pioneer/data-mapper-core`) against a
   hand-written vanilla JavaScript baseline for the same transformation. There
   is no upstream library equivalent to core mapping, so the comparison is
   always om vs. vanilla, scenario by scenario (simple field mapping, nested
   property access, array/bulk transforms, complex multi-strategy mapping).
 - `compat/` — om's drop-in compatibility layers
-  (`@om-data-mapper/class-validator`, `@om-data-mapper/class-transformer`)
+  (`@tech-pioneer/data-mapper-class-validator`, `@tech-pioneer/data-mapper-class-transformer`)
   against the real upstream libraries they mirror: `class-validator` and
   `class-transformer`. Each scenario runs the identical fixture through both
   om's decorators and the real library's decorators.

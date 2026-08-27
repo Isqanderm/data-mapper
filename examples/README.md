@@ -2,7 +2,7 @@
 
 This directory is a private workspace package (`examples`) that contains practical,
 **type-checked** examples of om-data-mapper's mapping and validation APIs. Every example
-imports the published package names (`om-data-mapper`, `@om-data-mapper/class-validator`)
+imports the published package names (`om-data-mapper`, `@tech-pioneer/data-mapper-class-validator`)
 against the built workspace packages, so it reflects the real, current API.
 
 ## 📁 Directory Structure
@@ -33,7 +33,7 @@ Advanced examples showcasing powerful features.
   - Combining `@MapWith` composition with `@MapFrom` (e.g. array flattening)
 
 There is also `ergonomic-api.ts` (a tour of the decorator + helper-function API) and
-`validation-complete-example.ts` (a complete `@om-data-mapper/class-validator` walkthrough:
+`validation-complete-example.ts` (a complete `@tech-pioneer/data-mapper-class-validator` walkthrough:
 nested validation, validation groups, and sync/async custom validators).
 
 ## 🚀 Setup
@@ -54,7 +54,7 @@ pnpm --filter examples run typecheck
 ```
 
 This runs `tsc --noEmit` against every `*.ts` file in this directory using the built
-`@om-data-mapper/core` / `@om-data-mapper/class-validator` / `om-data-mapper` type
+`@tech-pioneer/data-mapper-core` / `@tech-pioneer/data-mapper-class-validator` / `om-data-mapper` type
 declarations, so it fails if an example ever drifts from the real API.
 
 ## ▶️ Running an example

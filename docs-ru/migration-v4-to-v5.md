@@ -9,22 +9,22 @@ class-transformer и class-validator, при этом сам `om-data-mapper`
 
 ## Структура пакетов
 
-| Пакет                               | Версия | Что это                                                                                 |
-| ----------------------------------- | ------ | --------------------------------------------------------------------------------------- |
-| `om-data-mapper`                    | 5.0.0  | Мета-пакет. Реэкспортирует `@om-data-mapper/core` и сохраняет подпути совместимости v4. |
-| `@om-data-mapper/core`              | 1.0.0  | Движок маппера/трансформера (JIT-компиляция, декораторы, базовые типы).                 |
-| `@om-data-mapper/class-transformer` | 1.0.0  | API, совместимый с `class-transformer`, автономный (не зависит от core).                |
-| `@om-data-mapper/class-validator`   | 1.0.0  | API, совместимый с `class-validator`, с собственным движком валидации.                  |
+| Пакет                                         | Версия | Что это                                                                                           |
+| --------------------------------------------- | ------ | ------------------------------------------------------------------------------------------------- |
+| `om-data-mapper`                              | 5.0.0  | Мета-пакет. Реэкспортирует `@tech-pioneer/data-mapper-core` и сохраняет подпути совместимости v4. |
+| `@tech-pioneer/data-mapper-core`              | 1.0.0  | Движок маппера/трансформера (JIT-компиляция, декораторы, базовые типы).                           |
+| `@tech-pioneer/data-mapper-class-transformer` | 1.0.0  | API, совместимый с `class-transformer`, автономный (не зависит от core).                          |
+| `@tech-pioneer/data-mapper-class-validator`   | 1.0.0  | API, совместимый с `class-validator`, с собственным движком валидации.                            |
 
-Скоуп-пакеты (`@om-data-mapper/core`, `@om-data-mapper/class-transformer`,
-`@om-data-mapper/class-validator`) можно устанавливать по отдельности, если
+Скоуп-пакеты (`@tech-pioneer/data-mapper-core`, `@tech-pioneer/data-mapper-class-transformer`,
+`@tech-pioneer/data-mapper-class-validator`) можно устанавливать по отдельности, если
 нужна только часть функциональности — это даёт меньший объём зависимостей,
 чем подключение мета-пакета `om-data-mapper`.
 
 ## Импорты
 
 **Без изменений** — импорт из мета-пакета продолжает работать, потому что он
-реэкспортирует `@om-data-mapper/core`:
+реэкспортирует `@tech-pioneer/data-mapper-core`:
 
 ```typescript
 import { Mapper, Map } from 'om-data-mapper';
@@ -45,11 +45,11 @@ import { validate, IsString } from 'om-data-mapper/class-validator-compat';
 на одно перенаправление меньше:
 
 ```typescript
-import { plainToInstance, Type } from '@om-data-mapper/class-transformer';
+import { plainToInstance, Type } from '@tech-pioneer/data-mapper-class-transformer';
 ```
 
 ```typescript
-import { validate, IsString } from '@om-data-mapper/class-validator';
+import { validate, IsString } from '@tech-pioneer/data-mapper-class-validator';
 ```
 
 ## Изменения поведения в адаптере class-validator
@@ -96,7 +96,7 @@ validateSync(dto, { whitelist: true });
 
 **Замечание про NestJS:** опции по умолчанию `ValidationPipe`
 (`whitelist`, `forbidNonWhitelisted` и подобные) теперь реально применяются.
-Если вы используете `@om-data-mapper/class-validator` (или алиас
+Если вы используете `@tech-pioneer/data-mapper-class-validator` (или алиас
 `class-validator-compat`) за `ValidationPipe` от NestJS с его настройками по
 умолчанию, обновление до v5 может начать удалять или отклонять свойства,
 которые раньше проходили без изменений — проверьте свои DTO.
@@ -226,7 +226,7 @@ firstItemName!: string;
 
 - [ ] Обновите `om-data-mapper` (или используемые скоуп-пакеты) до версий v5.
 - [ ] При желании перейдите с мета-пакета на используемые скоуп-пакеты
-      `@om-data-mapper/*`, чтобы уменьшить объём зависимостей.
+      `@tech-pioneer/data-mapper-*`, чтобы уменьшить объём зависимостей.
 - [ ] Проверьте весь код, передающий `whitelist: true` (напрямую или через
       настройки `ValidationPipe` в NestJS по умолчанию) — теперь он
       действительно удаляет неизвестные свойства.

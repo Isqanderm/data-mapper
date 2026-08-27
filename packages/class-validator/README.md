@@ -1,4 +1,4 @@
-# @om-data-mapper/class-validator
+# @tech-pioneer/data-mapper-class-validator
 
 class-validator compatibility adapter for om-data-mapper: JIT-compiled validation engine and
 decorators.
@@ -13,13 +13,13 @@ migrating.
 ## Install
 
 ```bash
-npm install @om-data-mapper/class-validator
+npm install @tech-pioneer/data-mapper-class-validator
 ```
 
 ## Quick start
 
 ```ts
-import { IsString, MinLength, validate } from '@om-data-mapper/class-validator';
+import { IsString, MinLength, validate } from '@tech-pioneer/data-mapper-class-validator';
 
 class UserDto {
   @IsString()

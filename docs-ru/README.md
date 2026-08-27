@@ -35,8 +35,8 @@
 
 ### Совместимость и миграция
 
-- **[Совместимость с class-transformer](./compat-class-transformer.md)** - Статус `@om-data-mapper/class-transformer` относительно `class-transformer@0.5` по каждому API, сгенерировано из текущего исходного кода
-- **[Совместимость с class-validator](./compat-class-validator.md)** - Статус `@om-data-mapper/class-validator` относительно `class-validator@0.14` по каждому API, сгенерировано из текущего исходного кода
+- **[Совместимость с class-transformer](./compat-class-transformer.md)** - Статус `@tech-pioneer/data-mapper-class-transformer` относительно `class-transformer@0.5` по каждому API, сгенерировано из текущего исходного кода
+- **[Совместимость с class-validator](./compat-class-validator.md)** - Статус `@tech-pioneer/data-mapper-class-validator` относительно `class-validator@0.14` по каждому API, сгенерировано из текущего исходного кода
 - **[Миграция с class-transformer](./migration-class-transformer.md)** - Пошаговые паттерны миграции с `class-transformer` на `om-data-mapper`
 - **[Миграция v4 → v5](./migration-v4-to-v5.md)** - Обновление со схемы пакета `om-data-mapper` v4 до монорепозитория
 

@@ -35,8 +35,8 @@ Welcome to the `om-data-mapper` documentation! This directory contains comprehen
 
 ### Compatibility & Migration
 
-- **[class-transformer Compatibility](./compat-class-transformer.md)** - API-by-API status of `@om-data-mapper/class-transformer` vs `class-transformer@0.5`, generated from the current source
-- **[class-validator Compatibility](./compat-class-validator.md)** - API-by-API status of `@om-data-mapper/class-validator` vs `class-validator@0.14`, generated from the current source
+- **[class-transformer Compatibility](./compat-class-transformer.md)** - API-by-API status of `@tech-pioneer/data-mapper-class-transformer` vs `class-transformer@0.5`, generated from the current source
+- **[class-validator Compatibility](./compat-class-validator.md)** - API-by-API status of `@tech-pioneer/data-mapper-class-validator` vs `class-validator@0.14`, generated from the current source
 - **[Migrating from class-transformer](./migration-class-transformer.md)** - Step-by-step migration patterns from `class-transformer` to `om-data-mapper`
 - **[Migrating v4 → v5](./migration-v4-to-v5.md)** - Upgrading from the pre-monorepo `om-data-mapper` v4 package layout
 

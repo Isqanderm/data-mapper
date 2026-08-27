@@ -1,7 +1,7 @@
 # om-data-mapper
 
 High-performance TypeScript/JavaScript data mapper and validator with JIT compilation.
-Meta-package: re-exports `@om-data-mapper/core` and the class-transformer / class-validator
+Meta-package: re-exports `@tech-pioneer/data-mapper-core` and the class-transformer / class-validator
 compatibility adapters.
 
 Install this one package to get everything — the mapper, and both compatibility adapters — in a
@@ -42,9 +42,9 @@ const dto = plainToInstance<Employee, EmployeeDTO>(EmployeeMapper, employee);
 
 ```
 om-data-mapper (5.x)
-├── @om-data-mapper/core (1.x)               — re-exported at the package root
-├── @om-data-mapper/class-transformer (1.x)  — re-exported at ./class-transformer-compat
-└── @om-data-mapper/class-validator (1.x)    — re-exported at ./class-validator-compat
+├── @tech-pioneer/data-mapper-core (1.x)               — re-exported at the package root
+├── @tech-pioneer/data-mapper-class-transformer (1.x)  — re-exported at ./class-transformer-compat
+└── @tech-pioneer/data-mapper-class-validator (1.x)    — re-exported at ./class-validator-compat
 ```
 
 `om-data-mapper` is versioned independently (5.x) from the three scoped packages it re-exports
